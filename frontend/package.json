@@ -1,6 +1,9 @@
 {
   "name": "notefusion-ai-frontend",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
@@ -44,7 +47,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "vercel-build": "node vercel-build.js"
   },
   "eslintConfig": {
     "extends": [
