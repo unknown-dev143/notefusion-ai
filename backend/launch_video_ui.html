@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Launch Video Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        .launch-container {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            max-width: 500px;
+            width: 100%;
+        }
+        .btn-launch {
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+        }
+        .instructions {
+            margin-top: 2rem;
+            text-align: left;
+            background: #f8f9fc;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            font-size: 0.9rem;
+        }
+        .step {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        .step-number {
+            background: #4e73df;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="launch-container">
+        <h2 class="mb-4">NoteFusion AI Video Generator</h2>
+        <p class="text-muted mb-4">Click the button below to launch the Video Generator UI</p>
+        
+        <div class="d-flex flex-column align-items-center">
+            <button onclick="openVideoGenerator()" class="btn btn-primary btn-launch mb-3">
+                <i class="fas fa-play me-2"></i> Launch Video Generator
+            </button>
+            
+            <div id="manualLink" class="text-muted small mt-2" style="display: none;">
+                If the button doesn't work, you can also:
+                <ol class="mt-2 mb-0">
+                    <li>Open File Explorer</li>
+                    <li>Navigate to this folder: <code>c:\Users\User\notefusion-ai\notefusion-ai\backend\</code></li>
+                    <li>Double-click on <code>test_video_ui.html</code></li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="instructions mt-4">
+            <h5 class="mb-3">How to use:</h5>
+            <div class="step">
+                <span class="step-number">1</span>
+                <span>Click the "Add Slide" button to create a new slide</span>
+            </div>
+            <div class="step">
+                <span class="step-number">2</span>
+                <span>Customize the text, colors, and transitions for each slide</span>
+            </div>
+            <div class="step">
+                <span class="step-number">3</span>
+                <span>Click "Generate Video" to create your video</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Font Awesome for icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    
+    <script>
+        function openVideoGenerator() {
+            try {
+                // Try to open in the same tab
+                window.location.href = 'test_video_ui.html';
+                
+                // If we get here, the navigation was blocked
+                document.getElementById('manualLink').style.display = 'block';
+                
+                // Try opening in a new tab as fallback
+                setTimeout(() => {
+                    window.open('test_video_ui.html', '_blank');
+                }, 1000);
+            } catch (e) {
+                document.getElementById('manualLink').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
