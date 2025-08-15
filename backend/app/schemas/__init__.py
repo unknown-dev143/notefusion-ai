@@ -13,7 +13,24 @@ from .ai_models import (
     UserAIModelSettingsInDB,
 )
 
+from .subscription import (
+    SubscriptionTier,
+    SubscriptionStatus,
+    SubscriptionBase,
+    SubscriptionCreate,
+    SubscriptionUpdate,
+    SubscriptionInDB,
+    InvoiceBase,
+    InvoiceCreate,
+    InvoiceInDB,
+    SubscriptionWithInvoices,
+    SubscriptionPlan,
+    SubscriptionFeatures,
+    SubscriptionStatusResponse,
+)
+
 __all__ = [
+    # AI Models
     'AIProvider',
     'AIModelStatus',
     'AIBase',
@@ -24,4 +41,19 @@ __all__ = [
     'UserAIModelSettingsCreate',
     'UserAIModelSettingsUpdate',
     'UserAIModelSettingsInDB',
+    
+    # Subscriptions
+    'SubscriptionTier',
+    'SubscriptionStatus',
+    'SubscriptionBase',
+    'SubscriptionCreate',
+    'SubscriptionUpdate',
+    'SubscriptionInDB',
+    'InvoiceBase',
+    'InvoiceCreate',
+    'InvoiceInDB',
+    'SubscriptionWithInvoices',
+    'SubscriptionPlan',
+    'SubscriptionFeatures',
+    'SubscriptionStatusResponse',
 ]

@@ -3,7 +3,9 @@ from .video_jobs import router as video_jobs_router
 from .audio_upload import router as audio_upload_router
 from .audio_to_notes import router as audio_to_notes_router
 from .endpoints.video import router as video_router
+from .endpoints.subscription import router as subscription_router
 from .test_video import router as test_video_router
+from .endpoints.test_subscription import router as test_subscription_router
 from fastapi.responses import FileResponse, JSONResponse
 import json
 import os
@@ -27,7 +29,8 @@ router.include_router(audio_upload_router)
 router.include_router(audio_to_notes_router)
 router.include_router(video_router, prefix="/api/v1")
 router.include_router(test_video_router)
-
+router.include_router(test_subscription_router, prefix="/api/v1")
+router.include_router(subscription_router, prefix="/api/v1", tags=["subscriptions"])
 
 # Initialize services
 fusion_service = FusionService()
@@ -39,6 +42,38 @@ from ..services.educational.learning import QuizGenerator
 import uuid
 
 quiz_generator = QuizGenerator()
+
+@router.post("/sessions")
+async def create_session(
+    module_code: str = Form(...),
+    title: str = Form(None),
+    chapters: str = Form(""),
+    detail_level: str = Form("basic")
+):
+    """Create a new blank session. Title is accepted but not stored if the schema lacks it."""
+    try:
+        session_id = str(uuid.uuid4())
+        now = datetime.now()
+        db = await get_db()
+        # Insert minimal required columns; store empty contents/fused_notes
+        await db.execute(
+            """
+            INSERT INTO sessions (session_id, module_code, chapters, detail_level, lecture_content, textbook_content, fused_notes, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (session_id, module_code, chapters, detail_level, "", "", json.dumps({}), now),
+        )
+        await db.commit()
+        await db.close()
+        return {
+            "session_id": session_id,
+            "module_code": module_code,
+            "chapters": chapters,
+            "detail_level": detail_level,
+            "created_at": now.isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create session: {str(e)}")
 
 @router.post("/api/flashcards/generate")
 async def generate_flashcards(session_id: str = Form(...)):

@@ -1,13 +1,12 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 interface PrivateRouteProps {
-  element?: React.ReactElement;
-  children?: ReactNode;
+  children: React.ReactNode;
 }
 
-const PrivateRoute: React.FC<PrivateRouteProps> = ({ element, children }) => {
+const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
   const { currentUser, loading } = useAuth();
   const location = useLocation();
 
@@ -19,16 +18,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ element, children }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Ensure we return a valid React element
-  if (element) {
-    return element;
-  }
-  
-  if (children) {
-    return <>{children}</>;
-  }
-  
-  return null;
+  return <>{children}</>;
 };
 
 export default PrivateRoute;

@@ -13,6 +13,7 @@ import {
   message,
   Select
 } from 'antd';
+import type { SelectProps } from 'antd';
 import { 
   SettingOutlined, 
   SaveOutlined, 
@@ -25,6 +26,8 @@ import { toast } from 'react-hot-toast';
 import { api, handleApiError } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 
+type AIModelStatus = 'active' | 'beta' | 'alpha' | 'deprecated';
+
 const { Text } = Typography;
 
 interface AIModel {
@@ -33,7 +36,7 @@ interface AIModel {
   model_id: string;
   provider: string;
   is_available: boolean;
-  status: 'active' | 'beta' | 'alpha' | 'deprecated';
+  status: AIModelStatus;
   max_tokens?: number;
   description?: string;
 }

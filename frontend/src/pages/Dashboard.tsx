@@ -1,6 +1,6 @@
 import React from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../features/auth';
 
 const Dashboard: React.FC = () => {
   const { currentUser, signOut } = useAuth();
@@ -18,65 +18,47 @@ const Dashboard: React.FC = () => {
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold">NoteFusion AI</h1>
+            <div className="flex">
+              <div className="flex-shrink-0 flex items-center">
+                <h1 className="text-xl font-bold text-gray-900">NoteFusion AI</h1>
+              </div>
+              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                <Link
+                  to="/dashboard"
+                  className="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >
+                  Dashboard
+                </Link>
+              </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">
-                {currentUser?.email}
-              </span>
+            <div className="hidden sm:ml-6 sm:flex sm:items-center">
               <button
                 onClick={handleSignOut}
-                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                Sign Out
+                Sign out
               </button>
             </div>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-6">Welcome to NoteFusion AI</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Link
-              to="/whiteboard"
-              className="p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <h3 className="text-lg font-medium mb-2">Whiteboard</h3>
-              <p className="text-sm text-gray-600">Create and manage your notes with our interactive whiteboard.</p>
-            </Link>
-            
-            <div className="p-6 border border-gray-200 rounded-lg bg-gray-50">
-              <h3 className="text-lg font-medium mb-2">Recent Notes</h3>
-              <p className="text-sm text-gray-600">Your recent notes will appear here.</p>
-            </div>
-            
-            <div className="p-6 border border-gray-200 rounded-lg bg-gray-50">
-              <h3 className="text-lg font-medium mb-2">Quick Actions</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link to="/whiteboard" className="text-indigo-600 hover:underline">
-                    New Whiteboard
-                  </Link>
-                </li>
-                <li>
-                  <button className="text-indigo-600 hover:underline">
-                    Upload File
-                  </button>
-                </li>
-                <li>
-                  <button className="text-indigo-600 hover:underline">
-                    Start Recording
-                  </button>
-                </li>
-              </ul>
+      <div className="py-10">
+        <header>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          </div>
+        </header>
+        <main>
+          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className="px-4 py-8 sm:px-0">
+              <div className="border-4 border-dashed border-gray-200 rounded-lg h-96 p-4">
+                <p className="text-center text-gray-500">Welcome to your dashboard, {currentUser?.email}!</p>
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };

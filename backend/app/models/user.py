@@ -1,8 +1,11 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from .database import Base
+
+if TYPE_CHECKING:
+    from .subscription_models import Subscription
 
 class User(Base):
     __tablename__ = "users"
@@ -20,6 +23,7 @@ class User(Base):
     
     # Relationships
     ai_model_settings = relationship("UserAIModelSettings", back_populates="user", uselist=False)
+    subscription = relationship("Subscription", back_populates="user", uselist=False)
     
     def __repr__(self):
         return f"<User {self.email}>"

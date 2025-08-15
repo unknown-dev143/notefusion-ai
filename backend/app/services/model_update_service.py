@@ -5,7 +5,7 @@ from typing import Dict, Optional
 import openai
 from openai import OpenAI
 from ..config.ai_models import AIModel, MODEL_CONFIGS, get_available_models
-from ..database.database import get_db
+from ..models.database import get_db
 from ..models.ai_models import AIProvider, AIModel as DBAIModel
 from sqlalchemy.orm import Session
 
@@ -143,7 +143,7 @@ async def start_model_update_task():
     Background task that periodically checks for model updates.
     """
     from ..main import app
-    from ..database.database import SessionLocal
+    from ..models.database import SessionLocal
     
     logger.info("Starting model update background task")
     

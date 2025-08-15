@@ -1,155 +1,257 @@
-import React, { useState, FC, ReactNode } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import * as React from 'react';
+const { Suspense, useEffect, lazy } = React;
+import { BrowserRouter, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { Layout, Menu, Button, Typography, Spin } from 'antd';
-import { 
-  HomeOutlined, 
-  FileTextOutlined, 
-  RobotOutlined,
-  LogoutOutlined
-} from '@ant-design/icons';
+import { Spin, ConfigProvider } from 'antd';
+import ErrorBoundary from './components/ErrorBoundary';
+import { AuthProvider } from './features/auth/context/AuthContext';
+import { AdminProvider } from './features/admin/context/AdminContext';
+import { SearchProvider } from './contexts/SearchContext';
+import { RbacProvider } from './features/auth/rbac/RbacContext';
+import { NoteProvider } from './features/notes/context/NoteContext';
+import { theme } from './theme';
 
-// Pages
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Dashboard from './pages/Dashboard';
-import Whiteboard from './pages/Whiteboard';
-import AISettings from './components/AISettings';
-import PrivateRoute from './components/PrivateRoute';
+// Lazy load layouts
+const PublicLayout = lazy(() => import('./layouts/PublicLayout'));
+const AppLayout = lazy(() => import('./layouts/AppLayout'));
+const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
 
-const { Header, Content, Footer, Sider } = Layout;
-const { Text } = Typography;
+// Lazy load pages
+const Home = lazy(() => import('./pages/Home'));
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
+const SignupPage = lazy(() => import('./pages/auth/SignupPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const NotesPage = lazy(() => import('./pages/notes/NotesPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
+const UserManagementPage = lazy(() => import('./pages/admin/UserManagementPage'));
+const AnalyticsPage = lazy(() => import('./pages/admin/AnalyticsPage'));
+const PricingManagement = lazy(() => import('./pages/admin/PricingManagement'));
+const SubscriptionPage = lazy(() => import('./pages/subscription/SubscriptionPage'));
 
-interface AppContentProps {
-  children?: ReactNode;
+// Type for route configuration
+interface RouteConfig {
+  path?: string;
+  index?: boolean;
+  element?: React.ReactNode;
+  children?: RouteConfig[];
+  isPrivate?: boolean;
+  roles?: string[];
+  component?: React.ComponentType<any>;
+  layout?: React.ComponentType<{ children: React.ReactNode }>;
+  key?: string;
 }
 
-const AppContent: FC<AppContentProps> = () => {
-  const { currentUser, loading, signOut } = useAuth();
-  const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
+// Loading component
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <Spin size="large" />
+  </div>
+);
 
-  // Navigation items
-  const menuItems = [
-    {
-      key: '/',
-      icon: <HomeOutlined />,
-      label: <Link to="/">Dashboard</Link>,
-    },
-    {
-      key: '/whiteboard',
-      icon: <FileTextOutlined />,
-      label: <Link to="/whiteboard">Whiteboard</Link>,
-    },
-    {
-      key: '/ai-settings',
-      icon: <RobotOutlined />,
-      label: <Link to="/ai-settings">AI Settings</Link>,
-    },
-  ];
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Spin size="large" />
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <Layout className="min-h-screen">
-      {currentUser && (
-        <Sider 
-          collapsible 
-          collapsed={collapsed} 
-          onCollapse={setCollapsed}
-          theme="light"
-          width={250}
-          className="border-r"
-        >
-          <div className="p-4 h-16 flex items-center">
-            <h1 className="text-xl font-bold text-blue-600">
-              {collapsed ? 'NF' : 'NoteFusion AI'}
-            </h1>
-          </div>
-          <Menu
-            theme="light"
-            mode="inline"
-            selectedKeys={[location.pathname]}
-            items={menuItems}
-            className="border-r-0"
-          />
-        </Sider>
-      )}
-      <Layout>
-        {currentUser && (
-          <Header className="bg-white shadow-sm p-0 px-6 flex items-center justify-between">
-            <div></div>
-            <div className="flex items-center space-x-4">
-              <Button 
-                type="text" 
-                icon={<LogoutOutlined />} 
-                onClick={signOut}
-              >
-                Logout
-              </Button>
-            </div>
-          </Header>
-        )}
-        <Content className="p-6 bg-gray-50">
-          <Toaster position="top-right" />
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route
-              path="/"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/whiteboard"
-              element={
-                <PrivateRoute>
-                  <Whiteboard />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/ai-settings"
-              element={
-                <PrivateRoute>
-                  <AISettings />
-                </PrivateRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Content>
-        <Footer className="text-center bg-white border-t">
-          <Text type="secondary">
-            {new Date().getFullYear()} NoteFusion AI. All rights reserved.
-          </Text>
-        </Footer>
-      </Layout>
-    </Layout>
-  );
+// Auth hooks
+const useAuth = () => {
+  const { isAuthenticated, isLoading, user } = React.useContext(AuthContext);
+  return { isAuthenticated, isLoading, user };
 };
 
-// Main App component with AuthProvider
-const App: FC = () => {
+const useRbac = () => {
+  return {
+    hasRole: (role: string) => true, // Implement role check logic
+  };
+};
+
+// Layout component for routes
+const RouteLayout: React.FC<{ route: RouteConfig; children: React.ReactNode }> = ({ route, children }) => {
+  const { isPrivate, roles } = route;
+  const { isAuthenticated, isLoading } = useAuth();
+  const { hasRole } = useRbac();
+  const location = useLocation();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (isPrivate && !isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (roles?.some(role => !hasRole(role))) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+// Render routes recursively
+const renderRoutes = (routes: RouteConfig[] = []) => {
+  return routes.map((route, index) => {
+    const Layout = route.layout || React.Fragment;
+    const Element = route.component || (() => null);
+    const key = route.key || route.path || `route-${index}`;
+
+    return (
+      <Route
+        key={key}
+        path={route.path}
+        index={route.index}
+        element={
+          <RouteLayout route={route}>
+            <Layout>
+              <Suspense fallback={<LoadingSpinner />}>
+                {route.element || <Element />}
+              </Suspense>
+            </Layout>
+          </RouteLayout>
+        }
+      >
+        {route.children && renderRoutes(route.children)}
+      </Route>
+    );
+  });
+};
+
+// Route configurations
+const routes: RouteConfig[] = [
+  // Public routes
+  {
+    path: '/',
+    element: <Home />,
+    layout: PublicLayout,
+  },
+  {
+    path: '/login',
+    element: <LoginPage />,
+    layout: PublicLayout,
+  },
+  {
+    path: '/signup',
+    element: <SignupPage />,
+    layout: PublicLayout,
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPasswordPage />,
+    layout: PublicLayout,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPasswordPage />,
+    layout: PublicLayout,
+  },
+  
+  // Authenticated routes
+  {
+    path: '/dashboard',
+    element: <DashboardPage />,
+    isPrivate: true,
+  },
+  {
+    path: '/notes',
+    element: <NotesPage />,
+    isPrivate: true,
+  },
+  {
+    path: '/notes/:noteId',
+    element: <NotesPage />,
+    isPrivate: true,
+  },
+  {
+    path: '/notes/new',
+    element: <NotesPage />,
+    isPrivate: true,
+  },
+  {
+    path: '/profile',
+    element: <ProfilePage />,
+    isPrivate: true,
+  },
+  {
+    path: '/settings',
+    element: <SettingsPage />,
+    layout: AppLayout,
+    isPrivate: true,
+  },
+  {
+    path: '/subscription',
+    element: <SubscriptionPage />,
+    layout: AppLayout,
+    isPrivate: true,
+  },
+  
+  // Admin routes - Using less obvious paths
+  {
+    path: '/sys/console',
+    element: <AdminDashboard />,
+    layout: AdminLayout,
+    isPrivate: true,
+    roles: ['admin'],
+  },
+  {
+    path: '/sys/console/users',
+    element: <UserManagementPage />,
+    layout: AdminLayout,
+    isPrivate: true,
+    roles: ['admin'],
+  },
+  {
+    path: '/sys/console/analytics',
+    element: <AnalyticsPage />,
+    layout: AdminLayout,
+    isPrivate: true,
+    roles: ['admin'],
+  },
+  {
+    path: '/sys/console/pricing',
+    element: <PricingManagement />,
+    layout: AdminLayout,
+    isPrivate: true,
+    roles: ['admin'],
+  },
+];
+
+// Main App component
+const App: React.FC = () => {
+  // Set up global error handler
+  useEffect(() => {
+    const handleGlobalError = (event: ErrorEvent) => {
+      console.error('Global error:', event.error);
+      // You can add error reporting here (e.g., Sentry)
+    };
+
+    window.addEventListener('error', handleGlobalError);
+    return () => {
+      window.removeEventListener('error', handleGlobalError);
+    };
+  }, []);
+
   return (
-    <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </AuthProvider>
+    <ConfigProvider theme={theme}>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <AuthProvider>
+            <RbacProvider>
+              <AdminProvider>
+                <SearchProvider>
+                  <NoteProvider>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <Toaster position="top-right" />
+                      <Routes>
+                        {renderRoutes(routes)}
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                      </Routes>
+                    </Suspense>
+                  </NoteProvider>
+                </SearchProvider>
+              </AdminProvider>
+            </RbacProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </ErrorBoundary>
+    </ConfigProvider>
   );
 };
 

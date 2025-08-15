@@ -1,33 +1,32 @@
-import React, { useState, useCallback, useEffect } from 'react';
-// import DiagramCanvas from '../components/DiagramCanvas';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '../services/apiService';
-import toast from 'react-hot-toast';
-import { FiSave, FiVideo, FiPlus, FiX } from 'react-icons/fi';
+import { FiPlus, FiX, FiSave, FiDownload } from 'react-icons/fi';
+import { Form, Button, message } from 'antd';
+import html2canvas from 'html2canvas';
 
-interface SessionsApiResponse {
-  sessions: Session[];
+declare global {
+  interface Window {
+    saveToLocalStorage?: (data: string) => void;
+  }
 }
 
+// Temporary type definitions
 interface Session {
-  session_id: string;
-  module_code: string;
+  id: string;
   title: string;
-  chapters: string;
-  detail_level: string;
   created_at: string;
   updated_at: string;
-  diagram_data?: string;
+  session_id?: string; // Add session_id for backward compatibility
+  diagram_data?: string; // Add diagram_data for backward compatibility
 }
 
-interface NoteFormData {
-  title: string;
-  module_code: string;
-  chapters: string;
-  detail_level: string;
-  content: string;
-  diagram_data?: string;
+interface DiagramCanvasRef {
+  getDiagramData: () => string;
+  loadDiagramData: (data: string) => void;
 }
+
+
 
 interface SaveDiagramParams {
   sessionId: string;
@@ -36,512 +35,369 @@ interface SaveDiagramParams {
 }
 
 const Whiteboard: React.FC = () => {
-  // State management
-  const [diagramData, setDiagramData] = useState<string>('');
-  const [selectedSession, setSelectedSession] = useState<string>('');
-  const [showVideoPanel, setShowVideoPanel] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [showNewNoteForm, setShowNewNoteForm] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  
-  // Video generation state
-  const [videoState, setVideoState] = useState({
-    text: '',
-    voice: 'default' as 'default' | 'male' | 'female',
-    style: 'default' as 'default' | 'educational' | 'casual',
-    url: undefined as string | undefined,
-    loading: false,
-    error: null as string | null
+  const [isExporting, setIsExporting] = useState(false);
+  const [form] = Form.useForm();
+  const canvasRef = useRef<DiagramCanvasRef>({
+    getDiagramData: () => '',
+    loadDiagramData: () => {}
+  });
+  const queryClient = useQueryClient();
+
+  // Fetch sessions
+  const { data: sessions = [], isLoading } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: async (): Promise<Session[]> => {
+      const response = await apiService.getSessions();
+      return response.data || [];
+    }
   });
 
-  // Form validation
-  const validateForm = (): boolean => {
-    if (!newNote.title.trim()) {
-      setFormError('Title is required');
-      return false;
-    }
-    if (!newNote.module_code.trim()) {
-      setFormError('Module code is required');
-      return false;
-    }
-    if (!newNote.content.trim()) {
-      setFormError('Content is required');
-      return false;
-    }
-    setFormError(null);
-    return true;
-  };
-  
-  // Note form state
-  const [newNote, setNewNote] = useState<NoteFormData>({
-    title: '',
-    module_code: '',
-    chapters: '',
-    detail_level: 'basic',
-    content: ''
-  });
-  
-  const queryClient = useQueryClient();
-  
-  // Fetch sessions
-  const { data: sessionsData, isLoading: sessionsLoading } = useQuery<SessionsApiResponse, Error>(
-    {
-      queryKey: ['sessions'],
-      queryFn: apiService.getSessions,
-      onSuccess: (data) => {
-        if (data?.sessions?.length > 0 && !selectedSession) {
-          setSelectedSession(data.sessions[0].session_id);
-          // Load the diagram data if available
-          const session = data.sessions[0];
-          if (session.diagram_data) {
-            setDiagramData(session.diagram_data);
-          }
-        }
+  // Fetch diagrams for the selected session
+  const { data: diagrams = [] } = useQuery({
+    queryKey: ['diagrams', selectedSession],
+    queryFn: async () => {
+      if (!selectedSession) return [];
+      try {
+        const response = await apiService.getDiagrams(selectedSession);
+        return Array.isArray(response) ? response : [];
+      } catch (error) {
+        console.error('Error fetching diagrams:', error);
+        return [];
       }
-    }
-  );
-  
-  const sessions = sessionsData?.sessions || [];
-  
-  // Create session mutation
-  const createSessionMutation = useMutation({
-    mutationFn: async (data: NoteFormData) => {
-      const response = await apiService.createSession(data);
+    },
+    enabled: !!selectedSession
+  });
+
+  // Save diagram mutation
+  const saveDiagramMutation = useMutation({
+    mutationFn: async ({ sessionId, data }: SaveDiagramParams) => {
+      const response = await apiService.saveDiagram({
+        session_id: sessionId,
+        diagram_data: data,
+        diagram_type: 'freehand'
+      });
       return response.data;
     },
     onSuccess: () => {
-      toast.success('Note created successfully');
-      setShowNewNoteForm(false);
-      setNewNote({
-        title: '',
-        module_code: '',
-        chapters: '',
-        detail_level: 'basic',
-        content: ''
-      });
+      message.success('Diagram saved successfully');
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
     },
     onError: (error: Error) => {
-      console.error('Error creating note:', error);
-      toast.error('Failed to create note');
+      console.error('Failed to save diagram:', error);
+      message.error('Failed to save diagram');
     }
   });
-  
-  // Save diagram mutation
-  const saveDiagramMutation = useMutation({
-    mutationFn: async ({ sessionId, data, diagramType = 'freehand' }: SaveDiagramParams) => {
-      await apiService.saveDiagram(sessionId, data, diagramType);
+
+  // Create session mutation
+  const createSessionMutation = useMutation({
+    mutationFn: async (values: { title: string }) => {
+      const response = await apiService.createSession({
+        ...values,
+        content: '',
+        diagram_data: '',
+        chapters: '',
+        detail_level: 'basic'
+      });
+      return response.data;
     },
     onSuccess: () => {
-      toast.success('Diagram saved successfully');
+      message.success('Session created successfully');
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
     },
     onError: (error: Error) => {
-      console.error('Error saving diagram:', error);
-      toast.error('Failed to save diagram');
+      console.error('Failed to create session:', error);
+      message.error('Failed to create session');
     }
   });
-  
-  // Handle generating video from notes
-  const handleGenerateVideo = useCallback(async (): Promise<void> => {
-    if (!videoState.text.trim()) {
-      toast.error('Please enter some text for the video');
-      return;
-    }
 
+  // Define saveToLocalStorage first
+  const saveToLocalStorage = useCallback((data: string) => {
     try {
-      setVideoState(prev => ({ ...prev, loading: true, error: null }));
-      
-      // Simulate API call with timeout (replace with actual API call when ready)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // In a real app, this would be an actual API call
-      const videoUrl = `https://example.com/generated-video-${Date.now()}.mp4`;
-      
-      setVideoState(prev => ({
-        ...prev,
-        loading: false,
-        url: videoUrl
-      }));
-      
-      toast.success('Video generated successfully!');
-    } catch (error) {
-      console.error('Error generating video:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate video';
-      setVideoState(prev => ({
-        ...prev,
-        loading: false,
-        error: errorMessage
-      }));
-      toast.error(errorMessage);
+      localStorage.setItem('diagramData', data);
+    } catch (err) {
+      console.error('Failed to save to local storage:', err);
+      message.error('Failed to save diagram locally');
     }
-  }, [videoState.text, videoState.voice, videoState.style, diagramData]);
+  }, []);
 
-  // Handle saving diagram to the current note
-  const handleSaveDiagram = useCallback((): void => {
-    if (!selectedSession) {
-      toast.error('Please select a note to save the diagram to');
-      return;
-    }
+  // Initialize window.saveToLocalStorage
+  useEffect(() => {
+    window.saveToLocalStorage = saveToLocalStorage;
+    return () => {
+      delete window.saveToLocalStorage;
+    };
+  }, [saveToLocalStorage]);
+
+  // Handle saving the diagram
+  const handleSaveDiagram = useCallback(async (data: string) => {
+    if (!selectedSession) return;
     
-    if (!diagramData) {
-      toast.error('No diagram data to save');
-      return;
-    }
-    
-    saveDiagramMutation.mutate({
-      sessionId: selectedSession,
-      data: diagramData,
-      diagramType: 'freehand'
-    });
-  }, [selectedSession, diagramData, saveDiagramMutation]);
-  
-  // Handle saving the diagram when drawing
-  const handleSaveDrawing = useCallback((data: string): void => {
-    setDiagramData(data);
-    // Auto-save to the selected session if available
-    if (selectedSession) {
-      saveDiagramMutation.mutate({
+    try {
+      saveToLocalStorage(data);
+      await saveDiagramMutation.mutateAsync({
         sessionId: selectedSession,
-        data,
-        diagramType: 'freehand'
+        data
       });
+      message.success('Diagram saved successfully');
+    } catch (error) {
+      console.error('Error saving diagram:', error);
+      message.error('Failed to save diagram');
     }
-  }, [selectedSession, saveDiagramMutation]);
+  }, [selectedSession, saveDiagramMutation, saveToLocalStorage]);
 
-  // Handle auto-saving the diagram
-  const handleAutoSave = useCallback((data: string): void => {
-    setDiagramData(data);
-  }, []);
-
-  // Handle creating a new note
-  const handleCreateNote = useCallback(async (): Promise<void> => {
-    if (!validateForm()) return;
-    
-    setIsSaving(true);
-    setFormError(null);
+  // Handle exporting the diagram
+  const handleExport = useCallback(async () => {
+    const canvasElement = document.querySelector('canvas');
+    if (!canvasElement) return;
     
     try {
-      await createSessionMutation.mutateAsync({
-        ...newNote,
-        diagram_data: diagramData
-      });
+      setIsExporting(true);
+      
+      // Use html2canvas to capture the canvas
+      const canvas = await html2canvas(canvasElement);
+      const dataUrl = canvas.toDataURL('image/png');
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.download = `diagram-${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      message.success('Diagram exported successfully');
     } catch (error) {
-      console.error('Error creating note:', error);
-      setFormError('Failed to create note. Please try again.');
+      console.error('Error exporting diagram:', error);
+      message.error('Failed to export diagram');
     } finally {
-      setIsSaving(false);
+      setIsExporting(false);
     }
-  }, [newNote, diagramData, createSessionMutation]);
-
-
-  // Handle note input change
-  const handleNoteChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setNewNote(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  }, []);
-  
-  // Video generation handlers
-  const handleVideoTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setVideoState(prev => ({ ...prev, text: e.target.value }));
   }, []);
 
-  const handleVoiceChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setVideoState(prev => ({ ...prev, voice: e.target.value as 'default' | 'male' | 'female' }));
-  }, []);
+  // Handle creating a new session
+  const handleCreateSession = useCallback(async (values: { title: string }) => {
+    try {
+      const newSession = await createSessionMutation.mutateAsync(values);
+      if (newSession?.id) {
+        setSelectedSession(newSession.id);
+        setShowNewNoteForm(false);
+        form.resetFields();
+        message.success('Session created successfully');
+      } else {
+        throw new Error('Failed to create session: Invalid response');
+      }
+    } catch (error) {
+      console.error('Error creating session:', error);
+      message.error('Failed to create session');
+    }
+  }, [createSessionMutation, form]);
 
-  const handleStyleChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setVideoState(prev => ({ ...prev, style: e.target.value as 'default' | 'educational' | 'casual' }));
-  }, []);
+  // Load diagram data when a session is selected
+  useEffect(() => {
+    if (selectedSession && diagrams.length > 0 && canvasRef.current?.loadDiagramData) {
+      const diagram = diagrams[0]; // Get the first diagram
+      if (diagram?.diagram_data) {
+        try {
+          canvasRef.current.loadDiagramData(diagram.diagram_data);
+        } catch (error) {
+          console.error('Error loading diagram data:', error);
+        }
+      }
+    }
+  }, [selectedSession, diagrams]);
 
-  // Loading overlay
-  if (isSaving) {
+  if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white p-6 rounded-lg shadow-xl text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-700">Creating your note...</p>
-        </div>
+      <div className="p-4 text-red-600">
+        <h2>Loading Whiteboard</h2>
+        <p>Please wait...</p>
       </div>
     );
   }
 
-  // Main component render
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4">
-      {/* Error message */}
-      {formError && (
-        <div className="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
-          <p className="font-medium">Error</p>
-          <p>{formError}</p>
-        </div>
-      )}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Whiteboard</h1>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowNewNoteForm(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            New Note
-          </button>
-          <button
-            onClick={() => setShowVideoPanel(!showVideoPanel)}
-            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-          >
-            {showVideoPanel ? 'Hide Video Panel' : 'Generate Video'}
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main whiteboard area */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-4">
-          {/* Temporarily disabled DiagramCanvas
-          <DiagramCanvas 
-            onSave={handleSaveDrawing}
-            onAutoSave={handleAutoSave}
-            initialData={diagramData}
-          />
-          
-          <div className="mt-4 flex flex-wrap gap-3">
+    <div className="flex flex-col h-screen bg-gray-100">
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar */}
+        <div className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Sessions</h2>
             <button
-              onClick={() => setDiagramData('')}
-              className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-md text-sm font-medium transition-colors"
+              onClick={() => setShowNewNoteForm(true)}
+              className="p-1 rounded-full hover:bg-gray-100"
+              title="New Session"
             >
-              Clear Canvas
+              <FiPlus className="h-5 w-5" />
             </button>
           </div>
-          */}
-          <div className="text-center py-12 text-gray-500">
-            Diagram Canvas is temporarily disabled
+          
+          {/* Session List */}
+          <div className="flex-1 overflow-y-auto">
+            {sessions.map((session: Session) => (
+              <div
+                key={session.id}
+                className={`p-2 rounded cursor-pointer hover:bg-gray-100 ${
+                  selectedSession === session.id ? 'bg-blue-50' : ''
+                }`}
+                onClick={() => setSelectedSession(session.id || null)}
+              >
+                <div className="font-medium">{session.title}</div>
+                <div className="text-sm text-gray-500">
+                  {new Date(session.updated_at).toLocaleDateString()}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* Video generation panel */}
-        {showVideoPanel && (
-          <div className="bg-white rounded-lg shadow-md p-4">
-            <h2 className="text-lg font-semibold mb-4">Generate Video</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes for Video
-                </label>
-                <textarea
-                  value={videoState.text}
-                  onChange={handleVideoTextChange}
-                  placeholder="Enter your notes here..."
-                  className="w-full border rounded-md p-2 min-h-[100px] text-sm"
-                  disabled={videoState.loading}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Voice
-                  </label>
-                  <select
-                    value={videoState.voice}
-                    onChange={handleVoiceChange}
-                    className="w-full border rounded-md p-2 text-sm"
-                    disabled={videoState.loading}
-                  >
-                    <option value="default">Default</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Style
-                  </label>
-                  <select
-                    value={videoState.style}
-                    onChange={handleStyleChange}
-                    className="w-full border rounded-md p-2 text-sm"
-                    disabled={videoState.loading}
-                  >
-                    <option value="default">Default</option>
-                    <option value="educational">Educational</option>
-                    <option value="casual">Casual</option>
-                  </select>
-                </div>
-              </div>
-
-              <button
-                onClick={handleGenerateVideo}
-                disabled={videoState.loading || !videoState.text.trim()}
-                className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {videoState.loading ? (
-                  'Generating...'
-                ) : (
-                  <>
-                    <FiVideo size={16} />
-                    <span>Generate Video</span>
-                  </>
-                )}
-              </button>
-
-              {videoState.error && (
-                <div className="text-red-600 text-sm">{videoState.error}</div>
-              )}
-
-              {videoState.url && (
-                <div className="mt-4">
-                  <video
-                    src={videoState.url}
-                    controls
-                    className="w-full rounded-md"
-                  />
-                  <div className="mt-2 flex justify-end">
-                    <a
-                      href={videoState.url}
-                      download="generated-video.mp4"
-                      className="text-sm text-blue-600 hover:underline"
+        
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Toolbar */}
+          <div className="bg-white border-b border-gray-200 p-2 flex items-center space-x-2">
+            <Button
+              onClick={handleExport}
+              disabled={isExporting}
+              icon={<FiDownload />}
+            >
+              Export
+            </Button>
+            <Button
+              onClick={() => handleSaveDiagram(canvasRef.current?.getDiagramData() || '')}
+              disabled={!selectedSession || isExporting}
+              icon={<FiSave />}
+            >
+              Save
+            </Button>
+          </div>
+          
+          {/* Canvas */}
+          <div className="flex-1 overflow-auto bg-white p-4">
+            <div className="w-full h-full">
+              {selectedSession && (
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">
+                    {sessions.find(s => s.id === selectedSession)?.title || 'Untitled'}
+                  </h2>
+                  <div className="space-x-2">
+                    <Button 
+                      type="primary" 
+                      icon={<FiSave />} 
+                      onClick={() => handleSaveDiagram(canvasRef.current?.getDiagramData() || '')}
+                      loading={saveDiagramMutation.isPending}
                     >
-                      Download Video
-                    </a>
+                      Save
+                    </Button>
+                    <Button 
+                      icon={<FiDownload />} 
+                      onClick={handleExport}
+                      loading={isExporting}
+                    >
+                      Export
+                    </Button>
                   </div>
                 </div>
               )}
+
+              <div className="border rounded-lg p-4 bg-white">
+                {selectedSession ? (
+                  <div ref={el => {
+                    if (el) {
+                      // This is a simplified canvas implementation
+                      // In a real app, you would use a proper diagramming library
+                      const canvas = document.createElement('canvas');
+                      canvas.width = 800;
+                      canvas.height = 600;
+                      canvas.style.border = '1px solid #ddd';
+                      el.innerHTML = '';
+                      el.appendChild(canvas);
+                      
+                      // Initialize canvas context and drawing logic would go here
+                      const ctx = canvas.getContext('2d');
+                      if (ctx) {
+                        ctx.font = '16px Arial';
+                        ctx.fillText('Diagram Canvas Placeholder', 10, 30);
+                        ctx.fillText('In a real implementation, this would be an interactive diagram', 10, 60);
+                      }
+                      
+                      // Update ref with mock methods
+                      if (canvasRef.current) {
+                        canvasRef.current.getDiagramData = () => JSON.stringify({ type: 'diagram', version: '1.0' });
+                        canvasRef.current.loadDiagramData = (data: string) => {
+                          console.log('Loading diagram data:', data);
+                        };
+                      }
+                    }
+                  }} />
+                ) : (
+                  <div className="text-center p-8 text-gray-500">
+                    Select a session or create a new one to start drawing
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
-
-      {/* New Note Modal */}
+      
+      {/* New Session Modal */}
       {showNewNoteForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-6 w-96">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Create New Note</h2>
+              <h3 className="text-lg font-semibold">New Session</h3>
               <button
                 onClick={() => setShowNewNoteForm(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
-                <FiX size={24} />
+                <FiX className="h-5 w-5" />
               </button>
             </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Title *
-                </label>
+            
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleCreateSession}
+            >
+              <Form.Item
+                name="title"
+                label="Title"
+                rules={[{ required: true, message: 'Please enter a title' }]}
+              >
                 <input
                   type="text"
-                  name="title"
-                  value={newNote.title}
-                  onChange={handleNoteChange}
-                  className={`w-full border rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    formError && !newNote.title ? 'border-red-500' : ''
-                  }`}
-                  placeholder="Enter note title"
-                  required
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter session title"
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Module Code *
-                  </label>
-                  <input
-                    type="text"
-                    name="module_code"
-                    value={newNote.module_code}
-                    onChange={handleNoteChange}
-                    className={`w-full border rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      formError && !newNote.module_code ? 'border-red-500' : ''
-                    }`}
-                    placeholder="e.g., CS101"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Detail Level
-                  </label>
-                  <select
-                    name="detail_level"
-                    value={newNote.detail_level}
-                    onChange={handleNoteChange}
-                    className="w-full border rounded-md p-2 text-sm"
-                  >
-                    <option value="basic">Basic</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Chapters/Topics
-                </label>
+              </Form.Item>
+              
+              <Form.Item
+                name="module_code"
+                label="Module Code"
+                rules={[{ required: true, message: 'Please enter a module code' }]}
+              >
                 <input
                   type="text"
-                  name="chapters"
-                  value={newNote.chapters}
-                  onChange={handleNoteChange}
-                  className="w-full border rounded-md p-2 text-sm"
-                  placeholder="e.g., Chapter 1, 2, 3"
+                  className="w-full p-2 border rounded"
+                  placeholder="e.g., CS101"
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Content *
-                </label>
-                <textarea
-                  name="content"
-                  value={newNote.content}
-                  onChange={handleNoteChange}
-                  className={`w-full border rounded-md p-2 text-sm min-h-[150px] focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    formError && !newNote.content ? 'border-red-500' : ''
-                  }`}
-                  placeholder="Enter your note content here..."
-                  required
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowNewNoteForm(false)}
-                  className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-gray-50"
-                >
+              </Form.Item>
+              
+              <div className="flex justify-end space-x-2 mt-4">
+                <Button onClick={() => setShowNewNoteForm(false)}>
                   Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCreateNote}
-                  disabled={!newNote.title || !newNote.module_code || !newNote.content || createSessionMutation.isLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 transition-colors duration-200"
-                >
-                  {createSessionMutation.isLoading ? 'Creating...' : (
-                    <>
-                      <FiSave size={16} />
-                      <span>Create Note</span>
-                    </>
-                  )}
-                </button>
+                </Button>
+                <Button type="primary" htmlType="submit">
+                  Create
+                </Button>
               </div>
-            </div>
+            </Form>
           </div>
         </div>
       )}
     </div>
   );
 };
-
-const isSameSession = (a: Session, b: Session) => a.session_id === b.session_id;
 
 export default Whiteboard;

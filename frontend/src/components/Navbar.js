@@ -1,18 +1,43 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   HomeIcon, 
   PlusIcon, 
   FolderIcon,
-  AcademicCapIcon
+  AcademicCapIcon,
+  UserCircleIcon,
+  CogIcon,
+  CreditCardIcon,
+  LogoutIcon,
+  ChevronDownIcon
 } from '@heroicons/react/outline';
 import { 
   LightBulbIcon as BrainIcon,
-  SparklesIcon
+  SparklesIcon,
+  UserIcon as SolidUserIcon
 } from '@heroicons/react/solid';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { currentUser, signOut } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -24,7 +49,17 @@ const Navbar = () => {
     { name: 'Sessions', path: '/sessions', icon: FolderIcon },
     { name: 'Flashcards & Quizzes', path: '/flashcards-quizzes', icon: AcademicCapIcon },
     { name: 'Whiteboard', path: '/whiteboard', icon: SparklesIcon },
+    { name: 'Pricing', path: '/pricing', icon: CreditCardIcon },
   ];
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Failed to sign out', error);
+    }
+  };
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200">
@@ -60,6 +95,82 @@ const Navbar = () => {
                 </Link>
               );
             })}
+          </div>
+
+          {/* User Menu */}
+          <div className="relative ml-3" ref={dropdownRef}>
+            <div>
+              <button
+                type="button"
+                className="flex items-center max-w-xs rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                id="user-menu"
+                aria-expanded="false"
+                aria-haspopup="true"
+                onClick={() => setIsOpen(!isOpen)}
+              >
+                <span className="sr-only">Open user menu</span>
+                <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700">
+                  {currentUser?.photoURL ? (
+                    <img 
+                      className="h-8 w-8 rounded-full" 
+                      src={currentUser.photoURL} 
+                      alt="" 
+                    />
+                  ) : (
+                    <SolidUserIcon className="h-5 w-5" />
+                  )}
+                </div>
+                <ChevronDownIcon className="ml-1 h-4 w-4 text-gray-700" />
+              </button>
+            </div>
+
+            {/* Dropdown menu */}
+            {isOpen && (
+              <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10" role="menu" aria-orientation="vertical" aria-labelledby="user-menu">
+                <div className="py-1" role="none">
+                  <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
+                    <p className="font-medium">{currentUser?.displayName || 'User'}</p>
+                    <p className="text-xs text-gray-500 truncate">{currentUser?.email}</p>
+                  </div>
+                  
+                  <Link
+                    to="/account"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                  >
+                    <UserCircleIcon className="mr-3 h-5 w-5 text-gray-400" />
+                    Your Profile
+                  </Link>
+                  
+                  <Link
+                    to="/subscription"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                  >
+                    <CreditCardIcon className="mr-3 h-5 w-5 text-gray-400" />
+                    Subscription
+                  </Link>
+                  
+                  <Link
+                    to="/settings"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                  >
+                    <CogIcon className="mr-3 h-5 w-5 text-gray-400" />
+                    Settings
+                  </Link>
+                  
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                  >
+                    <LogoutIcon className="mr-3 h-5 w-5 text-gray-400" />
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Mobile menu button */}

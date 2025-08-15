@@ -2,7 +2,7 @@ from enum import Enum
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum as SQLEnum, ForeignKey
 from sqlalchemy.orm import relationship
-from ..database.database import Base
+from .database import Base
 
 class AIProvider(str, Enum):
     OPENAI = "openai"

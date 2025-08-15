@@ -44,6 +44,32 @@ class Settings(BaseSettings):
     # Temporary directory for video processing
     TEMP_DIR: str = str(Path(__file__).parent / "temp")
     
+    # Stripe settings
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    STRIPE_PUBLISHABLE_KEY: str = ""
+    
+    # Cloud Storage Settings (AWS S3)
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_REGION: str = "us-east-1"
+    S3_BUCKET_NAME: str = "notefusion-ai"
+    S3_ENDPOINT_URL: Optional[str] = None  # For S3-compatible storage
+    S3_USE_SSL: bool = True
+    S3_SIGNATURE_VERSION: str = "s3v4"
+    
+    # Stripe price IDs (replace with your actual price IDs from Stripe Dashboard)
+    STRIPE_PRICE_FREE: str = "price_xxxxxxxxxxxxxxxxxxxxxxxx"
+    STRIPE_PRICE_PRO_MONTHLY: str = "price_xxxxxxxxxxxxxxxxxxxxxxxx"
+    STRIPE_PRICE_PRO_YEARLY: str = "price_xxxxxxxxxxxxxxxxxxxxxxxx"
+    STRIPE_PRICE_BUSINESS_MONTHLY: str = "price_xxxxxxxxxxxxxxxxxxxxxxxx"
+    STRIPE_PRICE_BUSINESS_YEARLY: str = "price_xxxxxxxxxxxxxxxxxxxxxxxx"
+    
+    # Frontend URLs
+    FRONTEND_URL: str = "http://localhost:3000"
+    SUCCESS_URL: str = "{FRONTEND_URL}/billing/success"
+    CANCEL_URL: str = "{FRONTEND_URL}/billing/cancel"
+    
     class Config:
         env_file = ".env"
         case_sensitive = True

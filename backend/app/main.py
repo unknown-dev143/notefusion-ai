@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File, WebSocket, HTTPException, Backgro
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.middleware import Middleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
@@ -27,6 +28,7 @@ from .models.user import User
 from .models.ai_models import DBAIModel, UserAIModelSettings, AIProvider, AIModelStatus
 from .models.database import SessionLocal, Base, get_db
 from .schemas.ai_models import UserAIModelSettings as UserAIModelSettingsSchema
+from .middleware.subscription import SubscriptionChecker
 
 # Create FastAPI app
 app = FastAPI(
@@ -78,6 +80,16 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 app.mount("/static", StaticFiles(directory=settings.UPLOAD_FOLDER), name="static")
 
 # Add middleware
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Add subscription middleware
+app.add_middleware(
+    SubscriptionChecker,
+    required_tier=None,  # No tier required by default, check individual routes
+    required_features=[],
+    allow_trial=True
+)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # In production, replace with your frontend URL
@@ -238,13 +250,18 @@ async def update_user_ai_settings(
 # Import and include all API routers
 from .api import routers as api_routers
 from .api.test_video_endpoint import router as test_video_router
+from .api.endpoints import payments as payments_router
+from .api.endpoints import notes as notes_router
 
 # Include all API routers
 for router in api_routers:
     app.include_router(router)
 
-# Include test video endpoints (for development only)
-app.include_router(test_video_router, prefix="/api/v1")
+# Include API routers
+app.include_router(api_routers, prefix=settings.API_V1_STR)
+app.include_router(test_video_router, prefix="/test-video")
+app.include_router(payments_router, prefix="/payments", tags=["payments"])
+app.include_router(notes_router, prefix=settings.API_V1_STR, tags=["notes"])
 
 # CORS middleware
 app.add_middleware(

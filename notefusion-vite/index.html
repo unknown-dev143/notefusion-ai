@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="NoteFusion AI - Your intelligent note-taking assistant" />
+    <title>NoteFusion AI</title>
+    <style>
+      #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #fff;
+        z-index: 9999;
+      }
+      #error {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #fff;
+        color: #ff4d4f;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        z-index: 9999;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="loading">Loading NoteFusion AI...</div>
+    <div id="error"></div>
+    <div id="root"></div>
+    <script>
+      window.addEventListener('error', function(error) {
+        const errorDiv = document.getElementById('error');
+        if (errorDiv) {
+          errorDiv.style.display = 'block';
+          errorDiv.innerHTML = `
+            <h2>An error occurred</h2>
+            <p><strong>${error.message}</strong></p>
+            <p>${error.filename} (line ${error.lineno}:${error.colno})</p>
+            <pre>${error.error?.stack || 'No stack trace available'}</pre>
+          `;
+        }
+        const loading = document.getElementById('loading');
+        if (loading) loading.style.display = 'none';
+      });
+      
+      // Hide loading when app is mounted
+      document.addEventListener('DOMContentLoaded', function() {
+        const loading = document.getElementById('loading');
+        if (loading) loading.style.display = 'none';
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

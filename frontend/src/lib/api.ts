@@ -10,7 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 // Create axios instance with base URL
 const api: AxiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -50,7 +50,7 @@ api.interceptors.response.use(
       try {
         // Try to refresh the token
         const response = await axios.post(
-          `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/auth/refresh`,
+          `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/auth/refresh`,
           {},
           { withCredentials: true }
         );

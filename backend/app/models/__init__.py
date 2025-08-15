@@ -4,6 +4,8 @@ from .database import Base, Session, Transcript, Diagram, NotesVersion, Practice
 from .user import User
 from .ai_models import DBAIModel, UserAIModelSettings, AIProvider, AIModelStatus
 from .task import Task, TaskStatus, TaskType
+from .subscription_models import Subscription, Invoice, SubscriptionTier, SubscriptionStatus
+from .subscription import get_subscription_features
 
 __all__ = [
     'Base',
@@ -19,5 +21,10 @@ __all__ = [
     'AIModelStatus',
     'Task',
     'TaskStatus',
-    'TaskType'
+    'TaskType',
+    'Subscription',
+    'Invoice',
+    'SubscriptionTier',
+    'SubscriptionStatus',
+    'get_subscription_features',
 ]
