@@ -7,6 +7,7 @@ import {
   SettingOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  CloudOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -29,6 +30,12 @@ const AppSider: React.FC = () => {
       icon: <FileTextOutlined />,
       label: 'Notes',
       onClick: () => navigate('/notes'),
+    },
+    {
+      key: '/backups',
+      icon: <CloudOutlined />,
+      label: 'Backups',
+      onClick: () => navigate('/backups'),
     },
     {
       key: '/search',

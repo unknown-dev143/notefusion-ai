@@ -21,6 +21,9 @@ import AISuggestions from './ai/AISuggestions';
 import 'react-quill/dist/quill.snow.css';
 import dynamic from 'react-dynamic';
 
+// Import/Export UI
+import ImportExportMenu from './ImportExportMenu';
+
 // Types
 type SharePermission = 'view' | 'edit';
 
@@ -494,20 +497,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ noteId, onClose }) => {
     />
   );
 
-  const exportMenuItems = [
-    {
-      key: 'pdf',
-      label: 'Export as PDF',
-      icon: <FilePdfOutlined />,
-      onClick: exportAsPDF,
-    },
-    {
-      key: 'markdown',
-      label: 'Export as Markdown',
-      icon: <FileMarkdownOutlined />,
-      onClick: exportAsMarkdown,
-    },
-  ];
+  
 
   return (
     <div className="note-editor">
@@ -541,9 +531,14 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ noteId, onClose }) => {
           <Dropdown overlay={shareMenu} trigger={['click']}>
             <Button icon={<ShareAltOutlined />}>Share</Button>
           </Dropdown>
-          <Dropdown menu={{ items: exportMenuItems }} trigger={['click']}>
-            <Button>Export</Button>
-          </Dropdown>
+          <ImportExportMenu 
+            content={state.content}
+            title={state.title || 'untitled'}
+            onImport={(imported) => setState(prev => ({
+              ...prev,
+              content: prev.content ? `${prev.content}\n\n${imported}` : imported
+            }))}
+          />
           <Button
             type="primary"
             icon={<SaveOutlined />}

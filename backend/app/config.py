@@ -22,6 +22,20 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = "your-jwt-secret"  # Change this in production
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30  # 30 days
+    JWT_VERIFICATION_TOKEN_EXPIRE_HOURS: int = 24  # 24 hours
+    JWT_PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hour
+    
+    # Email settings
+    EMAILS_ENABLED: bool = False
+    SMTP_TLS: bool = True
+    SMTP_PORT: int = 587
+    SMTP_HOST: str = ""
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    CONTACT_EMAIL: str = "noreply@example.com"
+    EMAILS_FROM_EMAIL: str = "noreply@example.com"
+    EMAILS_FROM_NAME: str = "NoteFusion AI"
     
     # OpenAI settings
     OPENAI_API_KEY: str = ""
@@ -77,5 +91,7 @@ class Settings(BaseSettings):
 # Create settings instance
 settings = Settings()
 
-# Create uploads directory if it doesn't exist
+# Create necessary directories if they don't exist
 os.makedirs(settings.UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(settings.VIDEO_OUTPUT_DIR, exist_ok=True)
+os.makedirs(settings.TEMP_DIR, exist_ok=True)

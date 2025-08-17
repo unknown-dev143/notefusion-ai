@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Node.js Check</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const result = document.getElementById('result');
+            try {
+                // Try to use a Node.js specific feature
+                const os = require('os');
+                result.innerHTML = `
+                    <h2>✅ Node.js is installed!</h2>
+                    <p>Version: ${process.version}</p>
+                    <p>Platform: ${process.platform}</p>
+                    <p>Architecture: ${process.arch}</p>
+                `;
+            } catch (e) {
+                result.innerHTML = `
+                    <h2>❌ Node.js is not properly installed or accessible</h2>
+                    <p>Error: ${e.message}</p>
+                    <p>Please install Node.js from <a href="https://nodejs.org/" target="_blank">https://nodejs.org/</a></p>
+                `;
+            }
+        });
+    </script>
+</head>
+<body>
+    <div id="result" style="font-family: Arial, sans-serif; padding: 20px;">
+        <h2>Checking Node.js installation...</h2>
+    </div>
+</body>
+</html>

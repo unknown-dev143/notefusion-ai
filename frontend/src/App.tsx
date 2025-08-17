@@ -1,257 +1,235 @@
-import * as React from 'react';
-const { Suspense, useEffect, lazy } = React;
-import { BrowserRouter, Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { Spin, ConfigProvider } from 'antd';
-import ErrorBoundary from './components/ErrorBoundary';
+import { Spin, ConfigProvider, App as AntdApp, Modal } from 'antd';
+import { register } from './serviceWorkerRegistration';
 import { AuthProvider } from './features/auth/context/AuthContext';
 import { AdminProvider } from './features/admin/context/AdminContext';
 import { SearchProvider } from './contexts/SearchContext';
+import { AIOrganizationProvider } from './features/ai/context/AIOrganizationContext';
 import { RbacProvider } from './features/auth/rbac/RbacContext';
-import { NoteProvider } from './features/notes/context/NoteContext';
+import { NotesPage } from './features/notes';
 import { theme } from './theme';
+import { InstallButton } from './components/InstallButton';
+import { FolderProvider } from './features/folders';
+import BackupManager from './features/backup/components/BackupManager';
+import ErrorBoundary from './components/ErrorBoundary';
+import FeatureFlagsPage from './pages/FeatureFlagsPage';
+import { FeatureFlagProvider } from './features/feature-flags';
 
-// Lazy load layouts
-const PublicLayout = lazy(() => import('./layouts/PublicLayout'));
-const AppLayout = lazy(() => import('./layouts/AppLayout'));
-const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
+// Initialize mock service worker in development
+const initializeMocks = async () => {
+  if (process.env.NODE_ENV === 'development') {
+    try {
+      const { worker } = await import('./mocks/browser');
+      await worker.start({ onUnhandledRequest: 'bypass' });
+    } catch (error) {
+      console.error('Failed to start mock service worker:', error);
+    }
+  }
+};
 
-// Lazy load pages
-const Home = lazy(() => import('./pages/Home'));
-const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
-const SignupPage = lazy(() => import('./pages/auth/SignupPage'));
-const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'));
-const DashboardPage = lazy(() => import('./pages/DashboardPage'));
-const NotesPage = lazy(() => import('./pages/notes/NotesPage'));
-const ProfilePage = lazy(() => import('./pages/ProfilePage'));
-const SettingsPage = lazy(() => import('./pages/SettingsPage'));
-const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
-const UserManagementPage = lazy(() => import('./pages/admin/UserManagementPage'));
-const AnalyticsPage = lazy(() => import('./pages/admin/AnalyticsPage'));
-const PricingManagement = lazy(() => import('./pages/admin/PricingManagement'));
-const SubscriptionPage = lazy(() => import('./pages/subscription/SubscriptionPage'));
+// Initialize mocks immediately
+initializeMocks().catch(console.error);
 
-// Type for route configuration
-interface RouteConfig {
-  path?: string;
-  index?: boolean;
-  element?: React.ReactNode;
-  children?: RouteConfig[];
-  isPrivate?: boolean;
-  roles?: string[];
-  component?: React.ComponentType<any>;
-  layout?: React.ComponentType<{ children: React.ReactNode }>;
-  key?: string;
-}
+// Lazy load auth pages with error boundary and loading state
+const withSuspense = <T extends object>(
+  Component: React.ComponentType<T>,
+  fallback?: React.ReactNode
+) => (props: T) => (
+  <Suspense fallback={fallback || <LoadingFallback />}>
+    <ErrorBoundary>
+      <Component {...props} />
+    </ErrorBoundary>
+  </Suspense>
+);
 
-// Loading component
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <Spin size="large" />
+const LoginPage = withSuspense(lazy(() => import('./features/auth/pages/LoginPage')));
+const SignupPage = withSuspense(lazy(() => import('./features/auth/pages/SignupPage')));
+const ForgotPasswordPage = withSuspense(lazy(() => import('./features/auth/pages/ForgotPasswordPage')));
+const ResetPasswordPage = withSuspense(lazy(() => import('./features/auth/pages/ResetPasswordPage')));
+const VerifyEmailPage = withSuspense(lazy(() => import('./features/auth/pages/VerifyEmailPage')));
+
+// Base path for authentication routes
+const AUTH_PATH = '/auth';
+
+// Layout component for authentication pages
+const AuthLayout = () => (
+  <div className="auth-layout" data-testid="auth-layout">
+    <div className="auth-container">
+      <ErrorBoundary>
+        <Outlet />
+      </ErrorBoundary>
+    </div>
   </div>
 );
 
-// Auth hooks
-const useAuth = () => {
-  const { isAuthenticated, isLoading, user } = React.useContext(AuthContext);
-  return { isAuthenticated, isLoading, user };
-};
 
-const useRbac = () => {
-  return {
-    hasRole: (role: string) => true, // Implement role check logic
-  };
-};
+// Loading fallback component
+const LoadingFallback = ({ message = 'Loading...' }: { message?: string }) => (
+  <div 
+    role="status" 
+    aria-live="polite"
+    aria-busy="true"
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '100vh',
+      backgroundColor: '#f0f2f5',
+      padding: '1rem',
+      textAlign: 'center'
+    }}
+  >
+    <Spin size="large" />
+    <p style={{ marginTop: '1rem', color: '#666' }}>{message}</p>
+  </div>
+);
 
-// Layout component for routes
-const RouteLayout: React.FC<{ route: RouteConfig; children: React.ReactNode }> = ({ route, children }) => {
-  const { isPrivate, roles } = route;
-  const { isAuthenticated, isLoading } = useAuth();
-  const { hasRole } = useRbac();
-  const location = useLocation();
+// (config type is defined in serviceWorkerRegistration.ts)
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
+const useServiceWorker = () => {
+  const [updateAvailable, setUpdateAvailable] = React.useState<boolean>(false);
+  const [registration, setRegistration] = React.useState<ServiceWorkerRegistration | null>(null);
 
-  if (isPrivate && !isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
+  const updateServiceWorker = React.useCallback(() => {
+    if (registration?.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      window.location.reload();
+    }
+  }, [registration]);
 
-  if (roles?.some(role => !hasRole(role))) {
-    return <Navigate to="/unauthorized" replace />;
-  }
+  React.useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') return;
 
-  return <>{children}</>;
-};
-
-// Render routes recursively
-const renderRoutes = (routes: RouteConfig[] = []) => {
-  return routes.map((route, index) => {
-    const Layout = route.layout || React.Fragment;
-    const Element = route.component || (() => null);
-    const key = route.key || route.path || `route-${index}`;
-
-    return (
-      <Route
-        key={key}
-        path={route.path}
-        index={route.index}
-        element={
-          <RouteLayout route={route}>
-            <Layout>
-              <Suspense fallback={<LoadingSpinner />}>
-                {route.element || <Element />}
-              </Suspense>
-            </Layout>
-          </RouteLayout>
-        }
-      >
-        {route.children && renderRoutes(route.children)}
-      </Route>
-    );
-  });
-};
-
-// Route configurations
-const routes: RouteConfig[] = [
-  // Public routes
-  {
-    path: '/',
-    element: <Home />,
-    layout: PublicLayout,
-  },
-  {
-    path: '/login',
-    element: <LoginPage />,
-    layout: PublicLayout,
-  },
-  {
-    path: '/signup',
-    element: <SignupPage />,
-    layout: PublicLayout,
-  },
-  {
-    path: '/forgot-password',
-    element: <ForgotPasswordPage />,
-    layout: PublicLayout,
-  },
-  {
-    path: '/reset-password',
-    element: <ResetPasswordPage />,
-    layout: PublicLayout,
-  },
-  
-  // Authenticated routes
-  {
-    path: '/dashboard',
-    element: <DashboardPage />,
-    isPrivate: true,
-  },
-  {
-    path: '/notes',
-    element: <NotesPage />,
-    isPrivate: true,
-  },
-  {
-    path: '/notes/:noteId',
-    element: <NotesPage />,
-    isPrivate: true,
-  },
-  {
-    path: '/notes/new',
-    element: <NotesPage />,
-    isPrivate: true,
-  },
-  {
-    path: '/profile',
-    element: <ProfilePage />,
-    isPrivate: true,
-  },
-  {
-    path: '/settings',
-    element: <SettingsPage />,
-    layout: AppLayout,
-    isPrivate: true,
-  },
-  {
-    path: '/subscription',
-    element: <SubscriptionPage />,
-    layout: AppLayout,
-    isPrivate: true,
-  },
-  
-  // Admin routes - Using less obvious paths
-  {
-    path: '/sys/console',
-    element: <AdminDashboard />,
-    layout: AdminLayout,
-    isPrivate: true,
-    roles: ['admin'],
-  },
-  {
-    path: '/sys/console/users',
-    element: <UserManagementPage />,
-    layout: AdminLayout,
-    isPrivate: true,
-    roles: ['admin'],
-  },
-  {
-    path: '/sys/console/analytics',
-    element: <AnalyticsPage />,
-    layout: AdminLayout,
-    isPrivate: true,
-    roles: ['admin'],
-  },
-  {
-    path: '/sys/console/pricing',
-    element: <PricingManagement />,
-    layout: AdminLayout,
-    isPrivate: true,
-    roles: ['admin'],
-  },
-];
-
-// Main App component
-const App: React.FC = () => {
-  // Set up global error handler
-  useEffect(() => {
-    const handleGlobalError = (event: ErrorEvent) => {
-      console.error('Global error:', event.error);
-      // You can add error reporting here (e.g., Sentry)
+    const registerSW = async () => {
+      try {
+        await register({
+          onUpdate: (updatedReg: ServiceWorkerRegistration) => {
+            setRegistration(updatedReg);
+            setUpdateAvailable(true);
+          },
+          onSuccess: (successReg: ServiceWorkerRegistration) => {
+            console.log('ServiceWorker registration successful');
+            setRegistration(successReg);
+          }
+        });
+      } catch (error) {
+        console.error('Error during service worker registration:', error);
+      }
     };
 
-    window.addEventListener('error', handleGlobalError);
-    return () => {
-      window.removeEventListener('error', handleGlobalError);
-    };
+    registerSW();
   }, []);
 
+  return { updateAvailable, updateServiceWorker };
+};
+
+// Main App component with proper TypeScript types
+const App: React.FC = () => {
+  const { updateAvailable, updateServiceWorker } = useServiceWorker();
+  
+  // Handle service worker update
+  React.useEffect(() => {
+    if (updateAvailable) {
+      Modal.confirm({
+        title: 'Update Available',
+        content: 'A new version is available. Would you like to update now?',
+        onOk: updateServiceWorker,
+        okText: 'Update',
+        cancelText: 'Later',
+      });
+    }
+  }, [updateAvailable, updateServiceWorker]);
+
   return (
-    <ConfigProvider theme={theme}>
-      <ErrorBoundary>
-        <BrowserRouter>
-          <AuthProvider>
-            <RbacProvider>
-              <AdminProvider>
-                <SearchProvider>
-                  <NoteProvider>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <Toaster position="top-right" />
-                      <Routes>
-                        {renderRoutes(routes)}
-                        <Route path="*" element={<Navigate to="/" replace />} />
+    <ErrorBoundary>
+      <ConfigProvider theme={theme}>
+        <Suspense fallback={<LoadingFallback />}>
+          <AntdApp notification={{ placement: 'topRight' }}>
+            <BrowserRouter>
+              <FeatureFlagProvider>
+                <AuthProvider>
+                <RbacProvider>
+                  <AdminProvider>
+                    <SearchProvider>
+                      <AIOrganizationProvider>
+                        <FolderProvider>
+                        <Routes>
+                        <Route path={AUTH_PATH} element={<AuthLayout />}>
+                          <Route index element={<Navigate to="login" replace />} />
+                          <Route path="login" element={<LoginPage />} />
+                          <Route path="signup" element={<SignupPage />} />
+                          <Route path="verify-email" element={<VerifyEmailPage />} />
+                          <Route path="forgot-password" element={<ForgotPasswordPage />} />
+                          <Route path="reset-password" element={<ResetPasswordPage />} />
+                        </Route>
+                        <Route path="/" element={<Navigate to="/notes" replace />} />
+                        
+                        {/* Notes Routes */}
+                        <Route 
+                          path="/notes/*" 
+                          element={
+                            <ErrorBoundary componentName="NotesPage">
+                              <NotesPage />
+                            </ErrorBoundary>
+                          } 
+                        />
+                        
+                        {/* Backup Routes */}
+                        <Route 
+                          path="/backups" 
+                          element={
+                            <ErrorBoundary componentName="BackupManager">
+                              <BackupManager />
+                            </ErrorBoundary>
+                          } 
+                        />
+
+                        {/* Dev-only: ErrorBoundary test page */}
+                        {process.env.NODE_ENV === 'development' && (
+                          <Route path="/__test/error-boundary" element={
+                            <ErrorBoundary>
+                              <div>Error boundary test page is no longer available. Use the ErrorBoundary component directly in your components.</div>
+                            </ErrorBoundary>
+                          } />
+                        )}
+                        
+                        {/* Feature Flags Page */}
+                        <Route 
+                          path="/feature-flags" 
+                          element={
+                            <ErrorBoundary componentName="FeatureFlagsPage">
+                              <FeatureFlagsPage />
+                            </ErrorBoundary>
+                          } 
+                        />
+
+                        {/* 404 Route */}
+                        <Route path="*" element={
+                          <div style={{ textAlign: 'center', padding: '50px 20px', color: '#666' }}>
+                            <h1>404 - Page Not Found</h1>
+                            <p>The page you are looking for doesn't exist or has been moved.</p>
+                            <div style={{ marginTop: '20px' }}>
+                              <InstallButton />
+                            </div>
+                          </div>
+                        } />
                       </Routes>
-                    </Suspense>
-                  </NoteProvider>
-                </SearchProvider>
-              </AdminProvider>
-            </RbacProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </ErrorBoundary>
-    </ConfigProvider>
+                      </FolderProvider>
+                    </AIOrganizationProvider>
+                  </SearchProvider>
+                </AdminProvider>
+              </RbacProvider>
+                </AuthProvider>
+              </FeatureFlagProvider>
+            </BrowserRouter>
+            <Toaster position="top-right" />
+          </AntdApp>
+        </Suspense>
+      </ConfigProvider>
+    </ErrorBoundary>
   );
 };
 

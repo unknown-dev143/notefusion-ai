@@ -1,10 +1,11 @@
 from enum import Enum
 from datetime import datetime
+from typing import Optional, Dict, Any
 from sqlalchemy import Column, String, Text, Enum as SQLEnum, JSON, DateTime, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
-from .database import Base  # This imports the Base class we defined in database.py
+from .database import Base
 
 # Import the TaskStatus and TaskType enums
 class TaskStatus(str, Enum):
@@ -33,7 +34,7 @@ class Task(Base):
     )
 
     # Primary key
-    id = Column(
+    id: str = Column(
         UUID(as_uuid=True), 
         primary_key=True, 
         default=uuid.uuid4,
@@ -41,7 +42,7 @@ class Task(Base):
     )
     
     # Task identification
-    task_id = Column(
+    task_id: str = Column(
         String(255), 
         unique=True, 
         index=True, 
@@ -50,20 +51,20 @@ class Task(Base):
     )
     
     # User and task metadata
-    user_id = Column(
+    user_id: str = Column(
         String(255), 
         index=True, 
         nullable=False,
         comment='ID of the user who initiated the task'
     )
     
-    task_type = Column(
+    task_type: TaskType = Column(
         SQLEnum(TaskType), 
         nullable=False,
         comment='Type of the task'
     )
     
-    status = Column(
+    status: TaskStatus = Column(
         SQLEnum(TaskStatus), 
         default=TaskStatus.PENDING, 
         nullable=False,
@@ -72,33 +73,33 @@ class Task(Base):
     )
     
     # Task data
-    input_data = Column(
+    input_data: Optional[Dict[str, Any]] = Column(
         JSON, 
         nullable=True,
         comment='Input data for the task'
     )
     
-    result_data = Column(
+    result_data: Optional[Dict[str, Any]] = Column(
         JSON, 
         nullable=True,
         comment='Output/result data from the task'
     )
     
-    error_message = Column(
+    error_message: Optional[str] = Column(
         Text, 
         nullable=True,
         comment='Error message if the task failed'
     )
     
     # Timestamps
-    created_at = Column(
+    created_at: datetime = Column(
         DateTime, 
         default=datetime.utcnow, 
         nullable=False,
         comment='When the task was created'
     )
     
-    updated_at = Column(
+    updated_at: datetime = Column(
         DateTime, 
         default=datetime.utcnow, 
         onupdate=datetime.utcnow, 
@@ -106,19 +107,19 @@ class Task(Base):
         comment='When the task was last updated'
     )
     
-    completed_at = Column(
+    completed_at: Optional[datetime] = Column(
         DateTime, 
         nullable=True,
         comment='When the task was completed (or failed)'
     )
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         """Convert task to dictionary."""
         return {
             "task_id": self.task_id,
             "user_id": self.user_id,
-            "task_type": self.task_type,
-            "status": self.status,
+            "task_type": self.task_type.value if hasattr(self.task_type, 'value') else str(self.task_type),
+            "status": self.status.value if hasattr(self.status, 'value') else str(self.status),
             "input_data": self.input_data,
             "result_data": self.result_data,
             "error_message": self.error_message,

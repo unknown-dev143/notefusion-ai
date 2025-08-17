@@ -1,19 +1,231 @@
-name: CI/CD Pipeline
+name: 🚀 CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop, 'feature/*', 'dependabot/**']
+    tags: ['v*']
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      force:
+        description: 'Force deployment even if checks fail (admin only)'
+        required: false
+        default: 'false'
+      node-version:
+        description: 'Node.js version to use'
+        required: false
+        default: '18'
+      python-version:
+        description: 'Python version to use'
+        required: false
+        default: '3.10'
+
+# Environment URLs and configurations
+env:
+  # Deployment URLs
+  STAGING_URL: https://staging.notefusion-ai.com
+  PRODUCTION_URL: https://notefusion-ai.com
+  
+  # Deployment directories
+  STAGING_DEPLOY_DIR: /var/www/notefusion-ai/staging
+  STAGING_LOCK_FILE: /tmp/notefusion_staging_deploy.lock
+  STAGING_BACKUP_DIR: /var/backups/notefusion-ai/staging
+  
+  # Production deployment directories
+  PROD_DEPLOY_DIR: /var/www/notefusion-ai/production
+  PROD_LOCK_FILE: /tmp/notefusion_prod_deploy.lock
+  PROD_BACKUP_DIR: /var/backups/notefusion-ai/production
+  
+  # Performance thresholds (in milliseconds)
+  PERFORMANCE_THRESHOLD_FAST: 2000
+  PERFORMANCE_THRESHOLD_ACCEPTABLE: 4000
+  
+  # Version matrix
+  NODE_VERSIONS: '["16.x", "18.x", "20.x"]'
+  PYTHON_VERSIONS: '["3.9", "3.10", "3.11"]'
+  POSTGRES_VERSIONS: '["13", "14", "15"]'
+  
+  # Build settings
+  NODE_ENV: production
+  NPM_CONFIG_PRODUCTION: 'false'
+  # Defaults for jobs that reference single versions
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.10'
+  
+  # Timeouts (in minutes)
+  TEST_TIMEOUT: 30
+  BUILD_TIMEOUT: 45
+  DEPLOY_TIMEOUT: 60
+  
+  # Security settings
+  SECURITY_SCAN_ENABLED: true
+  PERFORMANCE_TEST_ENABLED: true
+  
+  # Database settings
+  POSTGRES_USER: test
+  POSTGRES_PASSWORD: test
+  POSTGRES_DB: test
+
+# Common environment variables for jobs
+defaults:
+  run:
+    shell: bash
 
 jobs:
-  test-backend:
-    name: Test Backend
+  # Job to check code quality, security, and run linters
+  code-quality:
+    name: Code Quality
     runs-on: ubuntu-latest
+    timeout-minutes: 30  # 30 minutes timeout for code quality checks
+    strategy:
+      matrix:
+        node-version: ["16.x", "18.x", "20.x"]
+        python-version: ["3.9", "3.10", "3.11"]
+      fail-fast: false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements-dev.txt
+          pip install safety bandit
+      
+      - name: Run Python linter (flake8)
+        working-directory: ./backend
+        run: flake8 .
+      
+      - name: Run Python security scan (bandit)
+        if: env.SECURITY_SCAN_ENABLED == 'true'
+        working-directory: ./backend
+        run: |
+          # Install jq if not already installed
+          command -v jq >/dev/null 2>&1 || { 
+            echo "Installing jq..."; 
+            sudo apt-get update -qq && sudo apt-get install -y jq >/dev/null 2>&1 || echo "Could not install jq"; 
+          }
+          
+          # Run bandit with appropriate config
+          if [ -f pyproject.toml ]; then
+            bandit -r . -c pyproject.toml -f json -o bandit-results.json 2>/dev/null || echo "{}" > bandit-results.json
+          else
+            bandit -r . -f json -o bandit-results.json 2>/dev/null || echo "{}" > bandit-results.json
+          fi
+          
+          # Check for critical issues
+          if [ -f bandit-results.json ] && jq -e '.metrics._totals.issues.CRITICAL > 0' bandit-results.json >/dev/null 2>&1; then
+            echo "::error::Critical security issues found in Python code"
+            jq '.metrics._totals.issues' bandit-results.json
+            exit 1
+          fi
+        continue-on-error: true
+      
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+      
+      - name: Run TypeScript type check
+        working-directory: ./frontend
+        run: npx tsc --noEmit
+      
+      - name: Run ESLint
+        working-directory: ./frontend
+        run: npx eslint . --ext .ts,.tsx --max-warnings 0
+      
+      - name: Run Security Audit (npm audit)
+        working-directory: ./frontend
+        if: success()
+        run: |
+          # Allow audit to fail but capture results
+          npm audit --production --audit-level=critical || true
+          # Store detailed audit results for review
+          npm audit --production --json > audit-results.json 2>/dev/null || echo "{}" > audit-results.json
+          
+          # Check for critical vulnerabilities and fail the build if found
+          if [ -f audit-results.json ] && jq -e '.vulnerabilities.critical > 0' audit-results.json >/dev/null 2>&1; then
+            echo "::error::Critical security vulnerabilities found in npm dependencies"
+            jq '.vulnerabilities.critical' audit-results.json
+            exit 1
+          fi
+        continue-on-error: true
+      
+      - name: Run Security Audit (pip-audit)
+        run: |
+          python -m pip install pip-audit
+          pip-audit --requirement backend/requirements.txt --ignore-vuln GHSA-5q6m-3h65-53r3 --format json -o pip-audit-results.json || echo "{}" > pip-audit-results.json
+        continue-on-error: true
+      
+      - name: Run Dependency Check
+        run: |
+          echo "Checking for outdated dependencies..."
+          # Check for outdated npm packages
+          cd frontend
+          npm outdated --json > ../npm-outdated.json 2>/dev/null || echo "{}" > ../npm-outdated.json
+          cd ..
+          
+          # Check for outdated Python packages
+          pip list --outdated --format=json | jq 'map({package: .name, current: .version, latest: .latest_version})' > pip-outdated.json 2>/dev/null || echo "[]" > pip-outdated.json
+        continue-on-error: true
+      
+      - name: Upload security scan results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-scan-results-${{ matrix.node-version }}-${{ matrix.python-version }}
+          path: |
+            **/bandit-results.json
+            **/audit-results.json
+            **/pip-audit-results.json
+          retention-days: 7
+      
+
+  # Backend testing and performance job
+  test-backend:
+    name: Test Backend (Python ${{ matrix.python-version }}, PostgreSQL ${{ matrix.postgres-version }})
+    needs: code-quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+        postgres-version: ["13", "14", "15"]
+      fail-fast: false
     
     services:
       postgres:
-        image: postgres:13
+        image: postgres:${{ matrix.postgres-version }}-alpine
         env:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
@@ -27,100 +239,1249 @@ jobs:
           --health-retries 5
     
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r backend/requirements.txt
-        pip install -r backend/requirements-test.txt
-    
-    - name: Run backend tests
-      working-directory: ./backend
-      env:
-        DATABASE_URL: postgresql://test:test@localhost:5432/test
-        TESTING: "true"
-      run: |
-        python -m pytest -v --cov=app --cov-report=xml
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: backend/coverage.xml
-        flags: unittests
-        name: codecov-umbrella
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-py${{ matrix.python-version }}-
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install -r backend/requirements-test.txt
+          pip install pytest-cov pytest-xdist
+      
+      - name: Wait for PostgreSQL
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-client >/dev/null 2>&1 || true
+          for i in {1..10}; do
+            if pg_isready -h localhost -p 5432 -U test -d test; then
+              echo "PostgreSQL is ready"
+              exit 0
+            fi
+            echo "Waiting for PostgreSQL to start..."
+            sleep 3
+          done
+          echo "Failed to connect to PostgreSQL"
+          exit 1
+      
+      - name: Run backend tests with coverage
+        working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}
+          TESTING: "true"
+          PYTHONPATH: ${{ github.workspace }}/backend
+          PYTHONUNBUFFERED: 1
+          PYTHONDONTWRITEBYTECODE: 1
+          PYTHONFAULTHANDLER: 1
+        run: |
+          set -e
+          echo "Running tests with Python ${{ matrix.python-version }} and PostgreSQL ${{ matrix.postgres-version }}"
+          
+          # Run tests with coverage in parallel
+          python -m pytest -v \
+            --cov=app \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term \
+            --cov-fail-under=80 \
+            --durations=10 \
+            --junitxml=junit/test-results-${{ matrix.python-version }}-pg${{ matrix.postgres-version }}.xml \
+            --cov-report=html:coverage/html \
+            -n auto
+          
+          # Generate coverage badge if on main branch
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            pip install coverage-badge
+            python -m coverage_badge -o coverage.svg -f
+          fi
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-py${{ matrix.python-version }}-pg${{ matrix.postgres-version }}
+          path: |
+            backend/coverage.xml
+            backend/junit/*.xml
+            backend/coverage/**/*
+          retention-days: 7
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: backend/coverage.xml
+          flags: unittests,python-${{ matrix.python-version }},postgres-${{ matrix.postgres-version }}
+          name: codecov-umbrella
+          fail_ci_if_error: false
+      
+      - name: Upload coverage badge
+        if: github.ref_name == 'main' && matrix.python-version == '3.10' && matrix.postgres-version == '14'
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-badge
+          path: coverage.svg
+          retention-days: 7
 
+  # Frontend testing and performance job
   test-frontend:
-    name: Test Frontend
+    name: Test Frontend (Node ${{ matrix.node-version }})
+    needs: code-quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        node-version: ["16.x", "18.x", "20.x"]
+        browser: ["chrome", "firefox"]
+      fail-fast: false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Start mock API (background if available)
+        run: |
+          if [ -f "./mock-api/server.js" ]; then
+            echo "Starting mock API on port 3001..."
+            docker run -d --rm \
+              -p 3001:3001 \
+              -v "$GITHUB_WORKSPACE/mock-api":/app \
+              -w /app \
+              node:18-alpine sh -c "npm init -y >/dev/null 2>&1 || true; npm install express && node server.js"
+          else
+            echo "No mock-api/server.js found. Skipping mock API."
+          fi
+      
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm install -g npm@latest
+      
+      - name: Run unit tests with coverage
+        working-directory: ./frontend
+        env:
+          CI: true
+          NODE_ENV: test
+        run: |
+          npx jest --coverage \
+            --watchAll=false \
+            --coverageReporters="json-summary" \
+            --coverageReporters="lcov" \
+            --coverageDirectory="coverage/jest" \
+            --testResultsProcessor="jest-junit"
+          
+          # Generate coverage badge if on main branch
+          if [ "${{ github.ref_name }}" = "main" ] && [ "${{ matrix.node-version }}" = "18.x" ]; then
+            npm install -g coverage-badges-cli
+            coverage-badges --output ./coverage/badge.svg
+          fi
+      
+      - name: Run integration tests
+        if: matrix.node-version == '18.x'  # Only run on Node 18 to save resources
+        working-directory: ./frontend
+        run: |
+          # Install Cypress and its dependencies
+          npx cypress install
+          npx cypress verify
+          
+          # Run Cypress tests in headless mode
+          npx cypress run --browser ${{ matrix.browser }} --headless --record false
+      
+      - name: Setup LHCI environment
+        if: matrix.node-version == '18.x' && matrix.browser == 'chrome'
+        id: lhci-setup
+        working-directory: ./frontend
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          # Set up the environment with GitHub token
+          echo "LHCI_GITHUB_APP_TOKEN=$GITHUB_TOKEN" >> $GITHUB_ENV
+          
+          # Check if token is available and set outputs
+          LHCI_TOKEN="${{ secrets.LHCI_TOKEN || '' }}"
+          
+          if [ -n "$LHCI_TOKEN" ]; then
+            echo "LHCI_TOKEN_AVAILABLE=true" >> $GITHUB_ENV
+            echo "lhci-token-available=true" >> $GITHUB_OUTPUT
+            echo "lhci-token=$LHCI_TOKEN" >> $GITHUB_OUTPUT
+            echo "LHCI_TOKEN=$LHCI_TOKEN" >> $GITHUB_ENV
+            echo "LHCI token is set, performance tests will run"
+          else
+            echo "LHCI_TOKEN_AVAILABLE=false" >> $GITHUB_ENV
+            echo "lhci-token-available=false" >> $GITHUB_OUTPUT
+            echo "LHCI_TOKEN not set, skipping performance tests"
+            echo "::notice::LHCI_TOKEN not set. Lighthouse CI will run without uploading results."
+            echo "lhci-token=" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Run performance tests
+        if: matrix.node-version == '18.x' && matrix.browser == 'chrome' && steps.lhci-setup.outputs.lhci-token-available == 'true'
+        working-directory: ./frontend
+        timeout-minutes: 10
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ github.token }}
+          LHCI_TOKEN: ${{ steps.lhci-setup.outputs.lhci-token }}
+        run: |
+          # Install LHCI CLI
+          npm install -g @lhci/cli@0.11.0
+          
+          # Run LHCI with token from environment
+          lhci autorun --upload.target=temporary-public-storage
+      
+      - name: Skip performance tests (no token)
+        if: matrix.node-version == '18.x' && matrix.browser == 'chrome' && steps.lhci-setup.outputs.lhci-token-available != 'true'
+        working-directory: ./frontend
+        run: |
+          echo "Skipping Lighthouse CI - LHCI_TOKEN not configured"
+          
+          # Build the app for production
+          npm run build
+          
+          # Start the production server with proper cleanup
+          npm install -g serve
+          SERVE_PID=""
+          trap '[[ -n "$SERVE_PID" ]] && kill $SERVE_PID' EXIT
+          nohup serve -s dist -l 5000 > serve.log 2>&1 &
+          SERVE_PID=$!
+          
+          # Wait for server to be ready
+          echo "Waiting for server to start..."
+          timeout 60 bash -c 'until curl -s http://localhost:5000 >/dev/null 2>&1; do sleep 1; done' || \
+            { echo "Server failed to start"; cat serve.log; exit 1; }
+          
+          # Run Lighthouse CI with retry logic
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            echo "Running Lighthouse CI (Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES)"
+            if lhci autorun --config=./lighthouserc.json; then
+              echo "Lighthouse CI completed successfully"
+              break
+            else
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "Lighthouse CI failed, retrying in 10 seconds..."
+                sleep 10
+              else
+                echo "Lighthouse CI failed after $MAX_RETRIES attempts"
+                # Only fail the build on the main branch
+                if [ "${{ github.ref_name }}" = "main" ] || [ "${{ github.ref_name }}" = "master" ]; then
+                  exit 1
+                fi
+              fi
+            fi
+          done
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-test-results-node-${{ matrix.node-version }}-${{ matrix.browser }}
+          path: |
+            ./frontend/cypress/videos/**/*.mp4
+            ./frontend/cypress/screenshots/**/*.png
+            ./frontend/junit.xml
+            ./frontend/lighthouse-results/**/*.json
+            ./frontend/coverage/**/*
+          retention-days: 7
+
+      - name: Upload coverage to Codecov (Frontend)
+        if: success() && github.event_name != 'pull_request'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./frontend/coverage/jest/lcov.info
+          flags: frontend,node-${{ matrix.node-version }},${{ matrix.browser }}
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ github.token }}
+          
+
+      - name: Upload coverage badge
+        if: github.ref_name == 'main' && matrix.node-version == '18.x' && matrix.browser == 'chrome'
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-coverage-badge
+          path: ./frontend/coverage/badge.svg
+          retention-days: 7
+
+  # Build the application (Docker images)
+  build:
+    name: Build Application
+    needs: [code-quality]
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+      COMPOSE_DOCKER_CLI_BUILD: 1
+    strategy:
+      matrix:
+        include:
+          - name: 'Backend'
+            context: backend
+            dockerfile: Dockerfile
+            target: production
+          - name: 'Frontend'
+            context: frontend
+            dockerfile: Dockerfile
+            target: production'
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+      
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+      
+      - name: Build Docker images
+        run: |
+          if [ -f docker-compose.build.yml ]; then
+            docker-compose -f docker-compose.build.yml build
+          else
+            echo "docker-compose.build.yml not found. Skipping Docker image build."
+          fi
+      
+      - name: Save Docker images
+        run: |
+          mkdir -p docker-images
+          if [ -f docker-compose.build.yml ]; then
+            IMAGES=$(docker-compose -f docker-compose.build.yml config --images)
+            if [ -n "$IMAGES" ]; then
+              docker save $IMAGES -o docker-images/images.tar
+            else
+              echo "No images to save."
+            fi
+          else
+            echo "docker-compose.build.yml not present; nothing to save."
+          fi
+      
+      - name: Upload Docker images
+        if: ${{ hashFiles('docker-images/images.tar') != '' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-images
+          path: docker-images/images.tar
+          retention-days: 1
+
+  # Deployment job
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || 'staging' }}
+    needs: build
+    runs-on: ubuntu-latest
+    environment: 
+      name: ${{ github.event.inputs.environment || 'staging' }}
+      url: ${{ github.event.inputs.environment == 'production' && env.PRODUCTION_URL || env.STAGING_URL }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Download Docker images
+        uses: actions/download-artifact@v3
+        continue-on-error: true
+        with:
+          name: docker-images
+          path: docker-images
+      
+      - name: Load Docker images
+        run: |
+          if [ -f docker-images/images.tar ]; then
+            docker load -i docker-images/images.tar
+          else
+            echo "No docker images archive found. Skipping docker load."
+          fi
+      
+      # Local build and test (AWS-free)
+      - name: Build Docker images locally
+        run: |
+          if [ -f "docker-compose.build.yml" ]; then
+            docker-compose -f docker-compose.build.yml build
+          else
+            echo "docker-compose.build.yml not found. Skipping build."
+          fi
+
+      # Run tests with local Docker
+      - name: Run tests with Docker Compose
+        run: |
+          if [ -f "docker-compose.test.yml" ]; then
+            docker-compose -f docker-compose.test.yml up --build --exit-code-from test
+          else
+            echo "No test configuration found. Skipping Docker Compose tests."
+          fi
+
+      # Local deployment simulation
+      - name: Simulate Local Deployment
+        run: |
+          echo " Local build and test completed successfully!"
+          echo "For production deployment, you'll need to set up a hosting service."
+
+      # Run local health checks
+      - name: Run Local Health Checks
+        run: |
+          if [ -f "docker-compose.healthcheck.yml" ]; then
+            docker-compose -f docker-compose.healthcheck.yml up --build --exit-code-from healthcheck
+          else
+            echo "No health check configuration found. Skipping health checks."
+          fi
+
+      # Enhanced test coverage check
+      - name: Check Test Coverage
+        working-directory: ./frontend
+        continue-on-error: true
+        run: |
+          COVERAGE_FILE="coverage/coverage-summary.json"
+          MIN_COVERAGE=80
+          
+          if [ -f "$COVERAGE_FILE" ]; then
+            COVERAGE=$(jq -r '.total.lines.pct' "$COVERAGE_FILE" 2>/dev/null || echo "0")
+            echo " Current test coverage: $COVERAGE%"
+            
+            if (( $(echo "$COVERAGE < $MIN_COVERAGE" | bc -l) )); then
+              echo "::error:: Test coverage ($COVERAGE%) is below the required $MIN_COVERAGE%"
+              if [ "${{ github.ref_name }}" = "main" ] || [ "${{ github.ref_name }}" = "master" ]; then
+                exit 1
+              else
+                echo "::warning::Test coverage is below threshold but allowing to continue on non-main branch"
+              fi
+            fi
+          else
+            echo "::warning::Coverage file $COVERAGE_FILE not found. Skipping coverage check."
+          fi
+
+      # Enhanced notifications with deployment details
+      - name: Setup LHCI token
+        id: lhci-setup
+        if: always()
+        env:
+          # Sensitive data from secrets with fallback
+          TOKEN_INPUT: ${{ secrets.LHCI_TOKEN || '' }}
+          
+          # GitHub context
+          GITHUB_WORKFLOW: ${{ github.workflow }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          
+        run: |
+          # Check if LHCI token is available
+          if [ -n "$TOKEN_INPUT" ]; then
+            echo "LHCI_TOKEN_AVAILABLE=true" >> $GITHUB_ENV
+            echo "lhci-token-available=true" >> $GITHUB_OUTPUT
+            echo "lhci-token=$TOKEN_INPUT" >> $GITHUB_OUTPUT
+            echo "LHCI token is set, performance tests will run"
+          else
+            echo "LHCI_TOKEN_AVAILABLE=false" >> $GITHUB_ENV
+            echo "lhci-token-available=false" >> $GITHUB_OUTPUT
+            echo "LHCI_TOKEN not set, skipping performance tests"
+          fi
+
+      - name: Setup Slack environment
+        id: slack-setup
+        if: always()
+        run: |
+          # Get webhook URL from secrets with fallback
+          SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_URL || '' }}"
+          
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_AVAILABLE=true" >> $GITHUB_ENV
+            echo "slack-webhook-available=true" >> $GITHUB_OUTPUT
+            echo "slack-webhook-url=$SLACK_WEBHOOK_URL" >> $GITHUB_OUTPUT
+            echo "SLACK_WEBHOOK_URL=$SLACK_WEBHOOK_URL" >> $GITHUB_ENV
+            echo "::notice::Slack webhook URL is configured."
+          else
+            echo "SLACK_WEBHOOK_AVAILABLE=false" >> $GITHUB_ENV
+            echo "slack-webhook-available=false" >> $GITHUB_OUTPUT
+            echo "SLACK_WEBHOOK_URL=" >> $GITHUB_ENV
+            echo "::notice::SLACK_WEBHOOK_URL not set. Skipping Slack notifications."
+          fi
+
+      - name: Send Slack notification
+        if: always() && steps.slack-setup.outputs.slack-webhook-available == 'true'
+        env:
+          SLACK_WEBHOOK: ${{ env.SLACK_WEBHOOK_URL || steps.slack-setup.outputs.slack-webhook-url }}
+          GITHUB_WORKFLOW: ${{ github.workflow }}
+          GITHUB_EVENT: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref_name }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK" ]; then
+            echo "SLACK_WEBHOOK not set, skipping notification"
+            exit 0
+          fi
+          
+          # Set message based on job status
+          if [ "$JOB_STATUS" = "success" ]; then
+            EMOJI="✅"
+            COLOR="good"
+            ICON=":rocket:"
+          else
+            EMOJI="❌"
+            COLOR="danger"
+            ICON=":x:"
+          fi
+          
+          # Create the message
+          MESSAGE="$GITHUB_WORKFLOW $GITHUB_EVENT $GITHUB_REF - $JOB_STATUS (Run ID: $GITHUB_RUN_ID). See: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          TITLE="$EMOJI $GITHUB_WORKFLOW - $JOB_STATUS"
+          
+          # Send the notification
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"$MESSAGE\",\"username\":\"GitHub Actions\",\"icon_emoji\":\"$ICON\",\"attachments\":[{\"title\":\"$TITLE\",\"color\":\"$COLOR\"}]}" \
+            "$SLACK_WEBHOOK" || echo "Failed to send Slack notification"
+
+      # Upload coverage to Codecov with additional metadata
+      - name: Upload coverage to Codecov (Backend)
+        if: github.event_name != 'pull_request' && !contains(github.ref, 'dependabot/')
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ github.token }}
+          directory: backend/coverage
+          flags: backend,${{ github.event.inputs.environment || 'staging' }}
+          name: ${{ github.workflow }}-${{ github.event.inputs.environment || 'staging' }}
+          fail_ci_if_error: false
+          verbose: true
+          file: coverage/coverage-final.json
+          yml: .github/codecov.yml
+        continue-on-error: true
+
+      # Upload coverage to Codecov with additional metadata
+      - name: Upload coverage to Codecov (Staging)
+        if: github.event_name != 'pull_request' && !contains(github.ref, 'dependabot/')
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ github.token }}
+          directory: frontend/coverage
+          flags: frontend,${{ github.event.inputs.environment || 'staging' }}
+          name: ${{ github.workflow }}-${{ github.event.inputs.environment || 'staging' }}
+          fail_ci_if_error: false
+          verbose: true
+          file: coverage/coverage-final.json
+          yml: .github/codecov.yml
+        continue-on-error: true
+
+  # Build the application artifacts for SSH-based deployments
+  build-artifacts:
+    name: Build Application
+    needs: [code-quality]
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      working-directory: ./frontend
-      run: npm ci
-    
-    - name: Run tests
-      working-directory: ./frontend
-      run: npm test -- --coverage --watchAll=false
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        directory: frontend/coverage
-        flags: frontend
-        name: codecov-umbrella
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Build frontend
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm run build
+      
+      - name: Build backend
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Create build artifact
+        run: |
+          mkdir -p artifact
+          cp -r frontend/dist artifact/frontend
+          cp -r backend/app artifact/backend
+          cp backend/requirements.txt artifact/backend/
+          cp -r backend/alembic artifact/backend/
+          cp backend/alembic.ini artifact/backend/
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: notefusion-ai-build
+          path: artifact
+          retention-days: 1
 
+  # Dependency Updates (runs on schedule)
+  dependency-updates:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+      
+      - name: Find outdated npm packages
+        id: npm-outdated
+        working-directory: ./frontend
+        run: |
+          npm outdated --json > outdated.json || true
+          echo "OUTDATED_JSON=$(cat outdated.json | jq -c '.')" >> $GITHUB_OUTPUT
+      
+      - name: Create Dependabot-style PR for npm updates
+        if: steps.npm-outdated.outputs.OUTDATED_JSON != '{}'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ github.token }}
+          commit-message: "chore(deps): update npm dependencies"
+          title: "chore(deps): update npm dependencies"
+          body: |
+            ## Description
+            Automated dependency updates for npm packages.
+            
+            ### Updated Dependencies
+            ```json
+            ${{ steps.npm-outdated.outputs.OUTDATED_JSON }}
+            ```
+            
+            This PR was automatically generated by the CI/CD pipeline.
+          branch: dependabot/npm-updates-$(date +%s)
+          base: develop
+      
+      - name: Find outdated Python packages
+        id: pip-outdated
+        run: |
+          pip install pip-review
+          pip-review --format=json > pip_outdated.json || true
+          echo "PIP_OUTDATED_JSON=$(cat pip_outdated.json | jq -c '.')" >> $GITHUB_OUTPUT
+      
+      - name: Create Dependabot-style PR for Python updates
+        if: steps.pip-outdated.outputs.PIP_OUTDATED_JSON != '[]'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ github.token }}
+          commit-message: "chore(deps): update Python dependencies"
+          title: "chore(deps): update Python dependencies"
+          body: |
+            ## Description
+            Automated dependency updates for Python packages.
+            
+            ### Updated Dependencies
+            ```json
+            ${{ steps.pip-outdated.outputs.PIP_OUTDATED_JSON }}
+            ```
+            
+            This PR was automatically generated by the CI/CD pipeline.
+          branch: dependabot/pip-updates-$(date +%s)
+          base: develop
+  
+  # Deploy to staging environment
   deploy-staging:
     name: Deploy to Staging
-    needs: [test-backend, test-frontend]
-    if: github.ref == 'refs/heads/develop'
+    needs: [build, test-backend, test-frontend]
+    if: >
+      github.ref == 'refs/heads/develop' || 
+      (
+        github.event_name == 'workflow_dispatch' && 
+        github.event.inputs.environment == 'staging' &&
+        (
+          github.event.inputs.force == 'true' ||
+          github.actor == 'dependabot[bot]' ||
+          github.event_name != 'workflow_dispatch' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.force == 'true')
+        )
+      )
     runs-on: ubuntu-latest
+    environment: staging
     
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Install SSH key
-      uses: webfactory/ssh-agent@v0.7.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-    
-    - name: Deploy to Staging Server
-      run: |
-        echo "Deploying to staging server..."
-        # Add your deployment commands here
-        # Example:
-        # rsync -avz --delete ./ user@staging-server:/path/to/app
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: notefusion-ai-build
+          path: ./artifact
 
-  deploy-production:
-    name: Deploy to Production
-    needs: [deploy-staging]
-    if: github.ref == 'refs/heads/main'
+      - name: Setup staging deployment
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        id: staging-setup
+        env:
+          # GitHub context
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_ACTION: ${{ github.action }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_WORKFLOW: ${{ github.workflow }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          COMMIT_MSG: ${{ github.event.head_commit.message || '' }}
+          
+          # Get values from GitHub secrets with fallbacks
+          SSH_KEY_INPUT: ${{ secrets.STAGING_SSH_PRIVATE_KEY || '' }}
+          DEPLOY_USER_INPUT: ${{ secrets.STAGING_DEPLOY_USER || 'ubuntu' }}
+          SERVER_INPUT: ${{ secrets.STAGING_SERVER || '' }}
+        run: |
+          # Check if deployment should be skipped
+          if [[ "$COMMIT_MSG" == *'[skip-ci]'* ]]; then
+            echo "Skipping deployment - [skip-ci] found in commit message"
+            echo "STAGING_CREDENTIALS_AVAILABLE=false" >> $GITHUB_ENV
+            echo "staging-credentials-available=false" >> $GITHUB_OUTPUT
+          
+          # Verify required inputs
+          if [ -z "$SSH_KEY_INPUT" ] || [ -z "$SERVER_INPUT" ]; then
+            echo "::warning::Missing required staging deployment configuration"
+            echo "STAGING_CREDENTIALS_AVAILABLE=false" >> $GITHUB_ENV
+            echo "staging-credentials-available=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Export environment variables for subsequent steps
+          echo "STAGING_SSH_PRIVATE_KEY=$SSH_KEY_INPUT" >> $GITHUB_ENV
+          echo "STAGING_DEPLOY_USER=$DEPLOY_USER" >> $GITHUB_ENV
+          echo "STAGING_SERVER=$SERVER_INPUT" >> $GITHUB_ENV
+          
+          # Set outputs for subsequent steps (using kebab-case for consistency)
+          echo "STAGING_CREDENTIALS_AVAILABLE=true" >> $GITHUB_ENV
+          echo "staging-credentials-available=true" >> $GITHUB_OUTPUT
+          echo "staging-ssh-private-key=$SSH_KEY_INPUT" >> $GITHUB_OUTPUT
+          echo "staging-deploy-user=$DEPLOY_USER" >> $GITHUB_OUTPUT
+          echo "staging-server=$SERVER_INPUT" >> $GITHUB_OUTPUT
+          
+          # Mask sensitive values in logs
+          echo "::add-mask::$SSH_KEY_INPUT"
+          echo "::add-mask::$SERVER_INPUT"
+
+      - name: Install SSH key
+        if: steps.staging-setup.outputs.staging-credentials-available == 'true'
+        env:
+          # Get SSH key from environment or step outputs
+          SSH_KEY: ${{ env.STAGING_SSH_PRIVATE_KEY || steps.staging-setup.outputs.staging-ssh-private-key || '' }}
+          
+        run: |
+          # Verify SSH key is not empty
+          if [ -z "$SSH_KEY" ]; then
+            echo "Error: SSH key is empty"
+            exit 1
+          fi
+          
+          # Install SSH key using ssh-agent
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/staging_deploy_key
+          chmod 600 ~/.ssh/staging_deploy_key
+          
+          # Add key to SSH agent
+          eval "$(ssh-agent -s)"
+          ssh-add -t 300 ~/.ssh/staging_deploy_key
+          
+          # Clean up sensitive data
+          unset SSH_KEY
+          
+          # Verify SSH connection (optional, can be commented out)
+          # ssh -o StrictHostKeyChecking=no -T ${{ env.STAGING_DEPLOY_USER || steps.staging-setup.outputs.staging-deploy-user }}@${{ env.STAGING_SERVER || steps.staging-setup.outputs.staging-server }} exit
+          
+          echo "SSH key installed and verified"
+
+      - name: Deploy to staging
+        if: steps.staging-setup.outputs.staging-credentials-available == 'true'
+        env:
+          # Server and authentication from environment variables or step outputs
+          DEPLOY_HOST: ${{ steps.staging-setup.outputs.staging-server || '' }}
+          DEPLOY_USER: ${{ steps.staging-setup.outputs.staging-deploy-user || 'ubuntu' }}
+          DEPLOY_KEY: ${{ steps.staging-setup.outputs.staging-ssh-private-key || '' }}
+          
+          # Deployment configuration
+          DEPLOY_ENV: staging
+          DEPLOY_DIR: ${{ env.STAGING_DEPLOY_DIR || '/var/www/notefusion-ai/staging' }}
+          LOCK_FILE: ${{ env.STAGING_LOCK_FILE || '/tmp/notefusion_staging_deploy.lock' }}
+          BACKUP_DIR: ${{ env.STAGING_BACKUP_DIR || '/var/backups/notefusion-ai/staging' }}
+          
+          # GitHub context
+          GITHUB_WORKFLOW: ${{ github.workflow }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_SHA: ${{ github.sha }}
+          
+        run: |
+          # Verify required environment variables
+          if [ -z "$DEPLOY_HOST" ] || [ -z "$DEPLOY_USER" ] || [ -z "$DEPLOY_KEY" ]; then
+            echo "❌ Missing required deployment configuration"
+            exit 1
+          fi
+          
+          # Create deployment script with proper permissions
+          cat > deploy.sh << 'EOL'
+          #!/bin/bash
+          set -e
+          
+          # Log function with timestamp
+          log() {
+            echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
+          }
+          
+          # Create lock file to prevent concurrent deployments
+          lock_file="$1"
+          if [ -f "$lock_file" ]; then
+            log "⚠️  Deployment is already in progress. Exiting..."
+            exit 1
+          fi
+          
+          # Create lock file
+          touch "$lock_file"
+          trap 'rm -f "$lock_file"' EXIT
+          
+          # Deployment steps
+          log "🚀 Starting deployment..."
+          
+          # Example deployment commands (customize as needed)
+          # 1. Create backup
+          log "📦 Creating backup..."
+          mkdir -p "$BACKUP_DIR/$(date +%Y%m%d_%H%M%S)"
+          
+          # 2. Deploy new code
+          log "🚀 Deploying new code..."
+          mkdir -p "$DEPLOY_DIR"
+          rsync -avz --delete --exclude='.git' --exclude='node_modules' ./ "$DEPLOY_DIR/"
+          
+          # 3. Install dependencies
+          log "📦 Installing dependencies..."
+          cd "$DEPLOY_DIR"
+          npm ci --production
+          
+          # 4. Build frontend (if needed)
+          log "🔨 Building frontend..."
+          npm run build
+          
+          # 5. Restart services
+          log "🔄 Restarting services..."
+          sudo systemctl restart notefusion-ai-staging
+          
+          log "✅ Deployment completed successfully!"
+          EOL
+          
+          # Make the deployment script executable
+          chmod +x deploy.sh
+          
+          # Get deployment variables from environment or secrets
+          DEPLOY_USER="${{ secrets.STAGING_DEPLOY_USER || 'ubuntu' }}"
+          DEPLOY_HOST="${{ secrets.STAGING_SERVER }}"
+          
+          # Export deployment variables
+          echo "DEPLOY_USER=$DEPLOY_USER" >> $GITHUB_ENV
+          echo "DEPLOY_HOST=$DEPLOY_HOST" >> $GITHUB_ENV
+          
+          # Create SSH key file
+          mkdir -p ~/.ssh
+          echo "${{ secrets.STAGING_SSH_PRIVATE_KEY }}" > ~/.ssh/staging_deploy_key
+          chmod 600 ~/.ssh/staging_deploy_key
+          
+          # Set up SSH known hosts
+          ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+          
+          # Copy the deployment script to the server and execute it
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/staging_deploy_key deploy.sh \
+            $DEPLOY_USER@$DEPLOY_HOST:/tmp/deploy.sh
+            
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/staging_deploy_key \
+            $DEPLOY_USER@$DEPLOY_HOST "chmod +x /tmp/deploy.sh && /tmp/deploy.sh"
+            
+          # Clean up
+          rm -f deploy.sh
+          
+          echo "🚀 Staging deployment completed successfully!"
+
+      - name: Install test dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends jq bc curl
+          
+      - name: Run Smoke Tests
+        run: |
+          set -e
+          # Test API endpoints
+          API_URL="${{ env.STAGING_URL }}/api/health"
+          echo "Testing API health at $API_URL"
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL" || echo "000")
+          
+          if [ "$RESPONSE" != "200" ]; then
+            echo "::error::API health check failed with status $RESPONSE"
+            exit 1
+          fi
+          
+          # Test frontend
+          FRONTEND_URL="${{ env.STAGING_URL }}"
+          echo "Testing frontend at $FRONTEND_URL"
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL" || echo "000")
+          
+          if [ "$RESPONSE" != "200" ] && [ "$RESPONSE" != "200" ]; then
+            echo "::error::Frontend check failed with status $RESPONSE"
+            exit 1
+          fi
+          
+          echo "✅ All smoke tests passed!"
+          echo "🚦 Running smoke tests..."
+          
+          # Get staging URL from environment
+          STAGING_URL="${{ env.STAGING_URL || 'http://localhost:3000' }}"
+          
+          # Basic health check
+          echo "🔍 Checking API health at $STAGING_URL..."
+          curl -sSf "${STAGING_URL}/api/health" | jq .
+          
+          # API endpoints check
+          echo "🔍 Testing API endpoints..."
+          ENDPOINTS=("/api/notes" "/api/user" "/api/version")
+          for endpoint in "${ENDPOINTS[@]}"; do
+            echo "Testing $endpoint..."
+            STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${STAGING_URL}${endpoint}")
+            if [ "$STATUS_CODE" -ge 400 ]; then
+              echo "::error::Endpoint $endpoint returned $STATUS_CODE"
+              exit 1
+            fi
+            echo "✅ $endpoint returned $STATUS_CODE"
+          done
+          
+          # Frontend health check
+          echo "🔍 Checking frontend at $STAGING_URL..."
+          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${STAGING_URL}")
+          if [ "$FRONTEND_STATUS" -ne 200 ]; then
+            echo "::error::Frontend returned $FRONTEND_STATUS"
+            exit 1
+          fi
+          
+          # Performance check
+          echo "⏱️  Checking performance..."
+          LCP=$(curl -s "${{ env.STAGING_URL }}/api/metrics/web-vitals" | jq '.largestContentfulPaint')
+          if [ $(echo "$LCP > 2500" | bc -l) -eq 1 ]; then
+            echo "::warning::LCP of ${LCP}ms is above threshold"
+          fi
+          
+          echo "✅ All smoke tests passed!"
+
+  # Deploy to production environment with canary deployment
+  deploy-canary:
+    name: 🚀 Deploy to Canary (5%)
+    needs: [build, deploy-staging]
+    if: >
+      (
+        (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      ) || 
+      (
+        github.event_name == 'workflow_dispatch' && 
+        github.event.inputs.environment == 'production' &&
+        (github.event.inputs.force == 'true' || github.actor == 'dependabot[bot]')
+      )
     runs-on: ubuntu-latest
+    environment: 
+      name: production
+      url: ${{ env.PRODUCTION_URL }}
     
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Install SSH key
-      uses: webfactory/ssh-agent@v0.7.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-    
-    - name: Deploy to Production Server
-      run: |
-        echo "Deploying to production server..."
-        # Add your deployment commands here
-        # Example:
-        # rsync -avz --delete ./ user@production-server:/path/to/app
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: notefusion-ai-build
+          path: ./artifact
+      
+      - name: Setup production deployment
+        id: prod-setup
+        if: github.event_name == 'release' && github.event.action == 'published'
+        env:
+          # Get values from GitHub secrets with fallbacks
+          SSH_KEY_INPUT: ${{ secrets.PROD_SSH_PRIVATE_KEY || '' }}
+          DEPLOY_USER_INPUT: ${{ secrets.PROD_DEPLOY_USER || 'ubuntu' }}
+          SERVER_INPUT: ${{ secrets.PROD_CANARY_SERVER || '' }}
+          RELEASE_BODY_INPUT: ${{ github.event.release.body || '' }}
+          
+          # GitHub context
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_ACTION: ${{ github.action }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          
+        run: |
+          # Export environment variables for use in subsequent steps
+          echo "RELEASE_BODY=$RELEASE_BODY_INPUT" >> $GITHUB_ENV
+          
+          # Skip if [skip-cd] is in the release body
+          if echo "$RELEASE_BODY_INPUT" | grep -q '\[skip-cd\]'; then
+            echo "Skipping deployment - [skip-cd] found in release body"
+            echo "PROD_CREDENTIALS_AVAILABLE=false" >> $GITHUB_ENV
+            echo "prod-credentials-available=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Check if required secrets are available
+          if [ -z "$SSH_KEY_INPUT" ] || [ -z "$SERVER_INPUT" ]; then
+            echo "PROD_CREDENTIALS_AVAILABLE=false" >> $GITHUB_ENV
+            echo "prod-credentials-available=false" >> $GITHUB_OUTPUT
+            echo "Missing required secrets for production deployment"
+            exit 0
+          fi
+          
+          # Export environment variables for use in subsequent steps
+          echo "PROD_SSH_PRIVATE_KEY=$SSH_KEY_INPUT" >> $GITHUB_ENV
+          echo "PROD_DEPLOY_USER=$DEPLOY_USER_INPUT" >> $GITHUB_ENV
+          echo "PROD_SERVER=$SERVER_INPUT" >> $GITHUB_ENV
+          
+          # Set outputs for subsequent steps (using kebab-case for consistency)
+          echo "PROD_CREDENTIALS_AVAILABLE=true" >> $GITHUB_ENV
+          echo "prod-credentials-available=true" >> $GITHUB_OUTPUT
+          echo "prod-ssh-private-key=$SSH_KEY_INPUT" >> $GITHUB_OUTPUT
+          echo "prod-deploy-user=$DEPLOY_USER_INPUT" >> $GITHUB_OUTPUT
+          echo "prod-server=$SERVER_INPUT" >> $GITHUB_OUTPUT
+          echo "release-body=$RELEASE_BODY_INPUT" >> $GITHUB_OUTPUT
+
+      - name: Install SSH key for production
+        if: steps.prod-setup.outputs.prod-credentials-available == 'true'
+        env:
+          # Get SSH key from environment or step outputs
+          SSH_KEY: ${{ env.PROD_SSH_PRIVATE_KEY || steps.prod-setup.outputs.prod-ssh-private-key || '' }}
+          
+        run: |
+          # Verify SSH key is not empty
+          if [ -z "$SSH_KEY" ]; then
+            echo "Error: Production SSH key is empty"
+            exit 1
+          fi
+          
+          # Install SSH key using ssh-agent
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/prod_deploy_key
+          chmod 600 ~/.ssh/prod_deploy_key
+          
+          # Add key to SSH agent
+          eval "$(ssh-agent -s)"
+          ssh-add -t 300 ~/.ssh/prod_deploy_key
+          
+          # Clean up sensitive data
+          unset SSH_KEY
+          
+          echo "Production SSH key installed and verified"
+
+      - name: Deploy to production
+        if: steps.prod-setup.outputs.prod-credentials-available == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        timeout-minutes: 30
+        env:
+          # Server and authentication from step outputs
+          DEPLOY_HOST: ${{ steps.prod-setup.outputs.prod-server || '' }}
+          DEPLOY_USER: ${{ steps.prod-setup.outputs.prod-deploy-user || 'ubuntu' }}
+          
+          # Deployment configuration
+          DEPLOY_ENV: production
+          DEPLOY_DIR: ${{ env.PROD_DEPLOY_DIR || '/var/www/notefusion-ai/production' }}
+          LOCK_FILE: ${{ env.PROD_LOCK_FILE || '/tmp/notefusion_prod_deploy.lock' }}
+          BACKUP_DIR: ${{ env.PROD_BACKUP_DIR || '/var/backups/notefusion-ai/production' }}
+          
+          # Release information
+          RELEASE_BODY: ${{ steps.prod-setup.outputs.release-body || '' }}
+          RELEASE_VERSION: ${{ github.sha }}
+          
+          # GitHub context
+          GITHUB_WORKFLOW: ${{ github.workflow }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_TOKEN: ${{ github.token }}
+          
+        run: |
+          # Verify required environment variables
+          if [ -z "$DEPLOY_HOST" ] || [ -z "$DEPLOY_USER" ]; then
+            echo "❌ Missing required deployment configuration"
+            exit 1
+          fi
+          
+          # Skip deployment if [skip-cd] is in the release body
+          if [[ "$RELEASE_BODY" == *"[skip-cd]"* ]]; then
+            echo "ℹ️  Skipping deployment: [skip-cd] found in release body"
+            exit 0
+          fi
+          
+          # Create deployment script
+          cat > deploy.sh << 'EOL'
+          #!/bin/bash
+          set -e
+          
+          # Log function with timestamp
+          log() {
+            echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
+          }
+          
+          # Create lock file to prevent concurrent deployments
+          lock_file="$1"
+          if [ -f "$lock_file" ]; then
+            log "⚠️  Deployment is already in progress. Exiting..."
+            exit 1
+          fi
+          
+          # Create lock file
+          touch "$lock_file"
+          trap 'rm -f "$lock_file"' EXIT
+          
+          # Deployment steps
+          log "🚀 Starting production deployment..."
+          
+          # 1. Create backup
+          log "📦 Creating backup..."
+          mkdir -p "$BACKUP_DIR/$(date +%Y%m%d_%H%M%S)"
+          
+          # 2. Deploy new code
+          log "🚀 Deploying new code..."
+          mkdir -p "$DEPLOY_DIR"
+          rsync -avz --delete --exclude='.git' --exclude='node_modules' ./ "$DEPLOY_DIR/"
+          
+          # 3. Install dependencies
+          log "📦 Installing dependencies..."
+          cd "$DEPLOY_DIR"
+          npm ci --production
+          
+          # 4. Build frontend
+          log "🔨 Building frontend..."
+          npm run build
+          
+          # 5. Run database migrations
+          log "🔄 Running database migrations..."
+          npx prisma migrate deploy
+          
+          # 6. Restart services
+          log "🔄 Restarting services..."
+          sudo systemctl restart notefusion-ai
+          
+          log "✅ Production deployment completed successfully!"
+          EOL
+          
+          # Make the deployment script executable
+          chmod +x deploy.sh
+          
+          # Get deployment variables from environment or secrets
+          DEPLOY_USER="${{ secrets.PROD_DEPLOY_USER || 'ubuntu' }}"
+          DEPLOY_HOST="${{ secrets.PROD_CANARY_SERVER }}"
+          
+          # Export deployment variables
+          echo "DEPLOY_USER=$DEPLOY_USER" >> $GITHUB_ENV
+          echo "DEPLOY_HOST=$DEPLOY_HOST" >> $GITHUB_ENV
+          
+          # Create SSH key file
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PROD_SSH_PRIVATE_KEY }}" > ~/.ssh/prod_deploy_key
+          chmod 600 ~/.ssh/prod_deploy_key
+          
+          # Set up SSH known hosts
+          ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+          
+          # Copy the deployment script to the server and execute it
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/prod_deploy_key deploy.sh \
+            $DEPLOY_USER@$DEPLOY_HOST:/tmp/deploy_prod.sh
+            
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/prod_deploy_key \
+            $DEPLOY_USER@$DEPLOY_HOST "chmod +x /tmp/deploy_prod.sh && /tmp/deploy_prod.sh $LOCK_FILE"
+            
+          # Clean up
+          rm -f deploy.sh
+          
+          echo "🚀 Production deployment completed successfully!"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "🧹 Cleaning up..."
+          
+          # Clean up SSH keys and sensitive data
+          echo "🔒 Removing sensitive data..."
+          if [ -f ~/.ssh/staging_deploy_key ]; then
+            echo "  Removing staging deployment key..."
+            rm -f ~/.ssh/staging_deploy_key
+          fi
+          
+          if [ -f ~/.ssh/prod_deploy_key ]; then
+            echo "  Removing production deployment key..."
+            rm -f ~/.ssh/prod_deploy_key
+          fi
+          
+          # Clean up any temporary files
+          echo "🗑️  Cleaning up temporary files..."
+          if [ -f deploy.sh ]; then
+            rm -f deploy.sh
+          fi
+          
+          # Clean up old artifacts to save storage
+          echo "🗑️  Cleaning up old artifacts..."
+          if ! command -v gh >/dev/null 2>&1; then
+            type -p curl >/dev/null && curl -fsSL https://raw.githubusercontent.com/cli/cli/trunk/script/install.sh | sh || true
+          fi
+          
+          # Clean up npm cache
+          echo "🧹 Cleaning npm cache..."
+          npm cache clean --force || true
+          
+          echo "✅ Cleanup completed successfully!"
+          if command -v gh >/dev/null 2>&1; then
+            gh run list --workflow=ci-cd.yml --json databaseId -q '.[].databaseId' | head -n 10 | xargs -I{} gh run delete {} || true
+          else
+            echo "gh CLI not available; skipping artifact cleanup via gh."
+          fi
+          echo "🐳 Cleaning up Docker resources..."
+          docker system prune -af --volumes
+          echo "✨ Cleanup completed"

@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Row, Col, Button, message, Empty, Space, Typography } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useNotes } from '../../features/notes/context/NoteContext';
+import { Note } from '../../types/note';
 import NotesList from '../../components/notes/NotesList';
 import NoteEditor from '../../components/notes/NoteEditor';
 
 const { Title } = Typography;
+
+// Define the Note type for better type safety
+type NoteWithOptionalId = Omit<Note, 'id'> & { id?: string };
 
 const NotesPage: React.FC = () => {
   const { noteId } = useParams<{ noteId?: string }>();
@@ -23,8 +27,9 @@ const NotesPage: React.FC = () => {
     pinNote,
     searchNotes,
   } = useNotes();
+  
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredNotes, setFilteredNotes] = useState(notes);
+  const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
 
   // Fetch notes on mount
   useEffect(() => {
@@ -51,43 +56,53 @@ const NotesPage: React.FC = () => {
 
   // Load note when noteId changes
   useEffect(() => {
-    if (noteId) {
+    if (noteId && noteId !== 'new') {
       getNote(noteId);
     }
   }, [noteId, getNote]);
 
-  const handleNoteSelect = (note: any) => {
+  const handleNoteSelect = useCallback((note: Note) => {
     navigate(`/notes/${note.id}`);
-  };
+  }, [navigate]);
 
-  const handleCreateNew = () => {
+  const handleCreateNew = useCallback(() => {
     navigate('/notes/new');
-  };
+  }, [navigate]);
 
-  const handleBackToList = () => {
+  const handleBackToList = useCallback(() => {
     navigate('/notes');
-  };
+  }, [navigate]);
 
-  const handleSaveNote = async (noteData: any) => {
+  const handleSaveNote = useCallback(async (noteData: Pick<Note, 'title' | 'content' | 'tags' | 'type'>) => {
     try {
+      const noteUpdate = {
+        title: noteData.title || 'Untitled Note',
+        content: noteData.content || '',
+        tags: noteData.tags || [],
+        type: noteData.type || 'text',
+      };
+
       if (currentNote?.id) {
         // Update existing note
-        await updateNote(currentNote.id, noteData);
+        await updateNote(currentNote.id, noteUpdate);
+        message.success('Note updated successfully');
       } else {
         // Create new note
         const newNote = await createNote({
-          ...noteData,
+          ...noteUpdate,
           type: 'text',
         });
+        message.success('Note created successfully');
         navigate(`/notes/${newNote.id}`);
       }
     } catch (error) {
       console.error('Error saving note:', error);
+      message.error('Failed to save note');
       throw error;
     }
-  };
+  }, [currentNote?.id, updateNote, createNote, navigate]);
 
-  const handleDeleteNote = async (id: string) => {
+  const handleDeleteNote = useCallback(async (id: string) => {
     try {
       await deleteNote(id);
       message.success('Note deleted');
@@ -98,9 +113,9 @@ const NotesPage: React.FC = () => {
       console.error('Error deleting note:', error);
       message.error('Failed to delete note');
     }
-  };
+  }, [deleteNote, currentNote?.id, navigate]);
 
-  const handlePinNote = async (id: string, pinned: boolean) => {
+  const handlePinNote = useCallback(async (id: string, pinned: boolean) => {
     try {
       await pinNote(id, pinned);
       message.success(pinned ? 'Note pinned' : 'Note unpinned');
@@ -108,15 +123,16 @@ const NotesPage: React.FC = () => {
       console.error('Error pinning note:', error);
       message.error('Failed to update note');
     }
-  };
+  }, [pinNote]);
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-  };
+  }, []);
 
   const displayNotes = searchQuery ? filteredNotes : notes;
   const isEditing = Boolean(noteId && noteId !== 'new');
   const isCreating = noteId === 'new';
+  const showEditor = isEditing || isCreating;
 
   return (
     <div className="notes-page">
@@ -149,7 +165,7 @@ const NotesPage: React.FC = () => {
           </div>
         </Col>
         <Col xs={24} md={16} style={{ height: '100%', overflowY: 'auto' }}>
-          {(isEditing || isCreating) ? (
+          {showEditor ? (
             <NoteEditor
               note={isEditing ? currentNote : null}
               onSave={handleSaveNote}
@@ -177,16 +193,14 @@ const NotesPage: React.FC = () => {
                   </span>
                 }
               />
-              {notes.length === 0 && (
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={handleCreateNew}
-                  style={{ marginTop: 16 }}
-                >
-                  Create Your First Note
-                </Button>
-              )}
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleCreateNew}
+                style={{ marginTop: 16 }}
+              >
+                {notes.length === 0 ? 'Create Your First Note' : 'New Note'}
+              </Button>
             </div>
           )}
         </Col>

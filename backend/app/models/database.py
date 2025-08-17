@@ -1,36 +1,18 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker, AsyncAttrs
+from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column
 from sqlalchemy.pool import NullPool
-from typing import AsyncGenerator, Optional, Type, TypeVar
+from sqlalchemy import MetaData, Column, Integer, String, DateTime, JSON, Text, ForeignKey, Boolean
+from typing import AsyncGenerator, Optional, Type, TypeVar, Any, Dict, List
 import os
 import uuid
+import json
 from datetime import datetime
 from contextlib import asynccontextmanager
+from pydantic import BaseModel
 
 from ..config import settings
 
-# Create database engine
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.DEBUG,
-    future=True,
-    pool_pre_ping=True,
-    pool_recycle=3600,
-)
-
-# Create session factory
-async_session_factory = async_sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-    autocommit=False,
-    autoflush=False,
-)
-
-from sqlalchemy import MetaData
-from sqlalchemy.ext.declarative import declarative_base
-
-# Define naming convention for constraints
+# Define naming convention for database constraints
 convention = {
     "ix": 'ix_%(column_0_label)s',
     "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -42,15 +24,67 @@ convention = {
 # Create metadata with naming convention
 metadata = MetaData(naming_convention=convention)
 
-# Create declarative base with the configured metadata
-Base = declarative_base(metadata=metadata)
+class Base(AsyncAttrs, DeclarativeBase):
+    """Base class for all models."""
+    __abstract__ = True
+    metadata = metadata
+    
+    @declared_attr.directive
+    def __tablename__(cls) -> str:
+        return cls.__name__.lower()
+    
+    def as_dict(self) -> Dict[str, Any]:
+        """Convert model to dictionary."""
+        result = {}
+        for column in self.__table__.columns:
+            value = getattr(self, column.name)
+            if isinstance(value, datetime):
+                value = value.isoformat()
+            result[column.name] = value
+        return result
+    
+    def update(self, **kwargs) -> None:
+        """Update model attributes."""
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+
+# Create database engine
+engine = create_async_engine(
+    settings.DATABASE_URL,
+    echo=settings.DEBUG,
+    future=True,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+    connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
+)
+
+# Create session factory
+async_session_factory = async_sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autocommit=False,
+    autoflush=False,
+)
 
 # Import all models to ensure they are registered with SQLAlchemy
 # This must be after Base is defined but before any model is used
-from .task import Task  # noqa: F401
+from .user import User
+from .task import Task
+from .subscription_models import Subscription, Invoice
+from .ai_models import DBAIModel, UserAIModelSettings
 
 # Re-export models for convenience
-__all__ = ['Base', 'Task']
+__all__ = [
+    'Base', 
+    'User',
+    'Task',
+    'Subscription',
+    'Invoice',
+    'DBAIModel',
+    'UserAIModelSettings'
+]
 
 # Dependency to get DB session
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
@@ -90,15 +124,29 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
         finally:
             await session.close()
 
-# Initialize database
-async def init_db():
+async def init_db() -> None:
     """Initialize database tables."""
-    from .task import Task  # Import here to avoid circular imports
-    
     async with engine.begin() as conn:
         # Create all tables
         await conn.run_sync(Base.metadata.create_all)
-        await conn.run_sync(Base.metadata.create_all)
+    
+    # Create default admin user if not exists
+    async with async_session_factory() as session:
+        from .user import User
+        from ..core.security import get_password_hash
+        
+        admin = await session.get(User, 1)  # Check if admin exists
+        if not admin and settings.FIRST_SUPERUSER_EMAIL and settings.FIRST_SUPERUSER_PASSWORD:
+            admin_user = User(
+                email=settings.FIRST_SUPERUSER_EMAIL,
+                hashed_password=get_password_hash(settings.FIRST_SUPERUSER_PASSWORD),
+                is_superuser=True,
+                is_active=True,
+                full_name="Admin User"
+            )
+            session.add(admin_user)
+            await session.commit()
+            print("Created default admin user")
 
 # Drop all tables (for testing)
 async def drop_db():
