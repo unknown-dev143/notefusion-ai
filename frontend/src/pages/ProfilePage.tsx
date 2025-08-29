@@ -1,3 +1,38 @@
+<<<<<<< HEAD
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, Typography } from 'antd';
+import { useAuth } from '@/features/auth/context/AuthContext';
+import { UserProfile } from '@/features/user/components/UserProfile';
+import styles from './ProfilePage.module.css';
+
+// Type definition for CSS modules with exact properties
+type ProfilePageStyles = {
+  readonly [key: string]: string;
+  readonly container: string;
+  readonly card: string;
+  readonly title: string;
+};
+
+const typedStyles = styles as unknown as ProfilePageStyles;
+
+const ProfilePage: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  if (!user) {
+    navigate('/login', { replace: true });
+    return null;
+  }
+
+  return (
+    <div className={typedStyles.container}>
+      <Card className={typedStyles.card}>
+        <Typography.Title level={2} className={typedStyles.title}>
+          User Profile
+        </Typography.Title>
+        <UserProfile />
+=======
 import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, Typography, message, Upload, Avatar, Space, Skeleton } from 'antd';
 import { UserOutlined, UploadOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
@@ -222,6 +257,7 @@ const ProfilePage: React.FC = () => {
             </Button>
           </Form.Item>
         </Form>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       </Card>
     </div>
   );

@@ -1,0 +1,32 @@
+.errorContainer {
+  padding: 40px 20px;
+  text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.errorTitle {
+  color: #ff4d4f;
+  margin-bottom: 16px;
+}
+
+.errorMessage {
+  color: #595959;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.reloadButton {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #1890ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.reloadButton:hover {
+  background: #40a9ff;
+}

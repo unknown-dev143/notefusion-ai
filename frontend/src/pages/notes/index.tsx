@@ -1,8 +1,14 @@
 import React from 'react';
 import { NoteProvider } from '../../contexts/NoteContext';
 import NotesList from '../../components/NotesList';
+<<<<<<< HEAD
+// TODO: Install @ant-design/pro-layout or replace with alternative component
+import { PageContainer } from '@ant-design/pro-layout';
+import styles from './NotesPage.module.css';
+=======
 import { PageContainer } from '@ant-design/pro-layout';
 import { message } from 'antd';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const NotesPage: React.FC = () => {
   return (
@@ -19,6 +25,11 @@ const NotesPage: React.FC = () => {
             ],
           },
         }}
+<<<<<<< HEAD
+        className={styles['notesPage']}
+      >
+        <div className={styles['notesContainer']}>
+=======
         style={{ height: 'calc(100vh - 64px)' }}
       >
         <div style={{ 
@@ -28,6 +39,7 @@ const NotesPage: React.FC = () => {
           height: '100%',
           boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)'
         }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <NotesList />
         </div>
       </PageContainer>

@@ -1,6 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { Button, message, Modal, Upload, Space } from 'antd';
 import { UploadOutlined, PlayCircleOutlined, PictureOutlined, FileOutlined } from '@ant-design/icons';
+<<<<<<< HEAD
+import './MediaEmbed/MediaEmbed.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 type MediaType = 'image' | 'video' | 'audio' | 'file';
 
@@ -51,17 +55,28 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
     
     switch (selectedType) {
       case 'image':
+<<<<<<< HEAD
+        return <img src={embedUrl} alt="Preview" className="media-embed-preview" />;
+      case 'video':
+        return (
+          <video controls className="media-embed-video">
+=======
         return <img src={embedUrl} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />;
       case 'video':
         return (
           <video controls style={{ maxWidth: '100%', maxHeight: '200px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <source src={embedUrl} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         );
       case 'audio':
         return (
+<<<<<<< HEAD
+          <audio controls className="media-embed-audio">
+=======
           <audio controls style={{ width: '100%' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <source src={embedUrl} type="audio/mp3" />
             Your browser does not support the audio element.
           </audio>
@@ -72,8 +87,14 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
   };
 
   return (
+<<<<<<< HEAD
+    <div className="media-embed-container">
+      <Button 
+        className="media-embed-button"
+=======
     <>
       <Button 
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         type="text" 
         icon={<PictureOutlined />} 
         onClick={() => {
@@ -83,6 +104,10 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
         title="Embed Image"
       />
       <Button 
+<<<<<<< HEAD
+        className="media-embed-button"
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         type="text" 
         icon={<PlayCircleOutlined />} 
         onClick={() => {
@@ -98,6 +123,10 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
         disabled={isUploading || uploading}
       >
         <Button 
+<<<<<<< HEAD
+          className="media-embed-button"
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           type="text" 
           icon={<FileOutlined />} 
           loading={isUploading || uploading}
@@ -113,6 +142,24 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
         okText="Embed"
         cancelText="Cancel"
       >
+<<<<<<< HEAD
+        <Space direction="vertical" className="media-embed-modal">
+          <div>
+            <input
+              type="text"
+              className="ant-input media-embed-input"
+              placeholder={`Enter ${selectedType} URL`}
+              value={embedUrl}
+              onChange={(e) => setEmbedUrl(e.target.value)}
+            />
+          </div>
+          
+          <div className="media-preview-container">
+            {renderMediaPreview()}
+          </div>
+          
+          <div className="media-upload-section">
+=======
         <Space direction="vertical" style={{ width: '100%' }}>
           <div>
             <input
@@ -128,6 +175,7 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
           {renderMediaPreview()}
           
           <div style={{ marginTop: '16px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <Upload 
               accept={
                 selectedType === 'image' 

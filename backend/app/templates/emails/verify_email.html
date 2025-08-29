@@ -1,4 +1,16 @@
 <!DOCTYPE html>
+<<<<<<< HEAD
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Verify Your Email</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='emails/email_styles.css') }}">
+</head>
+<body>
+<div class="container">
+=======
 <html>
 <head>
     <meta charset="UTF-8">
@@ -47,24 +59,39 @@
 </head>
 <body>
     <div class="container">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <div class="header">
             <h1>Welcome to {{ app_name }}!</h1>
         </div>
         <div class="content">
             <p>Hello {{ username }},</p>
             <p>Thank you for signing up! Please verify your email address by clicking the button below:</p>
+<<<<<<< HEAD
+            <div class="text-center">
+                <a href="{{ verification_url }}" class="button">Verify Email Address</a>
+            </div>
+=======
             <p style="text-align: center;">
                 <a href="{{ verification_url }}" class="button">Verify Email Address</a>
             </p>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <p>Or copy and paste this link into your browser:</p>
             <p><a href="{{ verification_url }}">{{ verification_url }}</a></p>
             <p>This link will expire in {{ valid_hours }} hours.</p>
             <p>If you didn't create an account, you can safely ignore this email.</p>
         </div>
         <div class="footer">
+<<<<<<< HEAD
+            <p> {{ current_year }} {{ app_name }}. All rights reserved.</p>
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <p>© {{ current_year }} {{ app_name }}. All rights reserved.</p>
             <p>This is an automated message, please do not reply.</p>
         </div>
     </div>
 </body>
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e

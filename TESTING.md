@@ -75,7 +75,11 @@ The CI/CD pipeline runs on every push and pull request to the `main` and `develo
 
 ## Writing Tests
 
+<<<<<<< HEAD
+### Backend Testing Guidelines
+=======
 ### Backend Tests
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 Use pytest for backend tests. Follow these guidelines:
 
@@ -84,7 +88,11 @@ Use pytest for backend tests. Follow these guidelines:
 - Mock external services
 - Keep tests independent and isolated
 
+<<<<<<< HEAD
+### Frontend Testing Guidelines
+=======
 ### Frontend Tests
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 Use React Testing Library for frontend tests. Follow these guidelines:
 
@@ -95,7 +103,11 @@ Use React Testing Library for frontend tests. Follow these guidelines:
 
 ## Debugging Tests
 
+<<<<<<< HEAD
+### Debugging Backend Tests
+=======
 ### Backend
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 To debug a failing test:
 
@@ -107,9 +119,15 @@ pytest tests/test_notes.py -v --pdb
 pytest -v --log-cli-level=DEBUG
 ```
 
+<<<<<<< HEAD
+### Debugging a Failing Frontend Test
+
+To debug a failing test:
+=======
 ### Frontend
 
 To debug frontend tests:
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 ```bash
 # Run tests in debug mode

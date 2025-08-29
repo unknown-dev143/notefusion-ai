@@ -1,6 +1,49 @@
 """Test configuration and fixtures."""
 import pytest
 from datetime import datetime, timedelta
+<<<<<<< HEAD
+from typing import AsyncGenerator, Generator
+from sqlalchemy import create_engine, event
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.engine import Engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
+from fastapi.testclient import TestClient
+
+from app.main import app
+from app.db.base_class import Base
+from app.api.deps import get_db as get_db_dep
+
+from tests.models import User, Subscription, Invoice, SubscriptionTier, SubscriptionStatus
+
+# Async database setup
+TEST_SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+@pytest.fixture(scope="session")
+async def async_db_engine() -> AsyncEngine:
+    """Create an async database engine for testing."""
+    engine = create_async_engine(
+        TEST_SQLALCHEMY_DATABASE_URL,
+        echo=False,
+        future=True,
+        connect_args={"check_same_thread": False}
+    )
+    
+    # Create all tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    yield engine
+    
+    # Clean up
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()
+
+# Sync database setup for existing tests
+@pytest.fixture(scope="session")
+def db_engine() -> Engine:
+    """Create a sync database engine for testing."""
+=======
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import Engine
@@ -10,6 +53,7 @@ from tests.models import Base, User, Subscription, Invoice, SubscriptionTier, Su
 @pytest.fixture(scope="session")
 def db_engine() -> Engine:
     """Create a database engine for testing."""
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     engine = create_engine(
         "sqlite:///:memory:",
         echo=False,
@@ -29,8 +73,56 @@ def db_engine() -> Engine:
     
     return engine
 
+<<<<<<< HEAD
+# Async session fixture
+@pytest.fixture
+def override_get_db(async_db_engine: AsyncEngine):
+    """Override the get_db dependency for testing."""
+    async def _override_get_db() -> AsyncGenerator[AsyncSession, None]:
+        TestingSessionLocal = sessionmaker(
+            autocommit=False,
+            autoflush=False,
+            bind=async_db_engine,
+            class_=AsyncSession,
+            future=True
+        )
+        async with TestingSessionLocal() as session:
+            yield session
+    return _override_get_db
+
+# Test client fixture
+@pytest.fixture
+def client(override_get_db):
+    """Create a test client that uses the override_get_db fixture."""
+    # Override the get_db dependency for testing
+    app.dependency_overrides[get_db_dep] = override_get_db
+    with TestClient(app) as test_client:
+        yield test_client
+    # Clean up after test
+    app.dependency_overrides = {}
+
+# Async database session fixture
+@pytest.fixture
+async def db(async_db_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
+    """Get an async database session for testing."""
+    TestingSessionLocal = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=async_db_engine,
+        class_=AsyncSession,
+        future=True
+    )
+    
+    async with TestingSessionLocal() as session:
+        yield session
+
+# Sync session fixture (for existing tests)
+@pytest.fixture
+def db_session(db_engine: Engine) -> Generator[Session, None, None]:
+=======
 @pytest.fixture
 def db_session(db_engine: Engine) -> Session:
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     """Create a database session for testing."""
     connection = db_engine.connect()
     transaction = connection.begin()

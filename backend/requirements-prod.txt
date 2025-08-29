@@ -1,0 +1,50 @@
+# Core dependencies
+fastapi==0.95.0
+uvicorn[standard]==0.21.1
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-dotenv==1.0.0
+
+# Database
+sqlalchemy[asyncio]==2.0.9
+alembic==1.10.3
+asyncpg==0.27.0
+psycopg2-binary==2.9.5
+
+# AI/ML
+torch==2.0.0
+transformers==4.28.1
+openai-whisper==20230314
+python-Levenshtein==0.20.9
+
+# Audio processing
+librosa==0.10.0
+pydub==0.25.1
+soundfile==0.12.1
+
+# PDF processing
+pypdf2==3.0.1
+python-magic==0.4.27
+
+# Utilities
+python-dateutil==2.8.2
+python-magic==0.4.27
+pydantic[email]==1.10.7
+redis==4.5.4
+aiofiles==23.1.0
+
+# Testing (optional for production)
+pytest-asyncio==0.21.0
+httpx==0.24.0
+
+# Monitoring
+prometheus-fastapi-instrumentator==6.1.0
+
+# CORS
+starlette==0.26.1
+
+# Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6

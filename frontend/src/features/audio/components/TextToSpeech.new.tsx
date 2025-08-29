@@ -1,0 +1,242 @@
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Button, Input, Select, Slider, message, Card, Alert } from 'antd';
+import { PlayCircleOutlined, StopOutlined, DownloadOutlined } from '@ant-design/icons';
+import styles from './TextToSpeech.module.css';
+
+const { TextArea } = Input;
+
+interface Voice {
+  voice_id: string;
+  name: string;
+}
+
+interface TextToSpeechProps {
+  className?: string;
+}
+
+const TextToSpeech: React.FC<TextToSpeechProps> = ({ className = '' }) => {
+  // State for text input and audio
+  const [text, setText] = useState<string>('');
+  const [selectedVoice, setSelectedVoice] = useState<string>('');
+  const [speed, setSpeed] = useState<number>(1.0);
+  const [pitch, setPitch] = useState<number>(1.0);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string>('');
+  const [voices, setVoices] = useState<Voice[]>([]);
+  
+  // Refs
+  const audioRef = useRef<HTMLAudioElement>(null);
+  
+  // Load available voices
+  const fetchVoices = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      // Mock data - replace with actual API call
+      const mockVoices: Voice[] = [
+        { voice_id: 'en-US-Standard-A', name: 'English (US) - Female' },
+        { voice_id: 'en-US-Standard-B', name: 'English (US) - Male' },
+        { voice_id: 'en-GB-Standard-A', name: 'English (UK) - Female' },
+      ];
+      
+      setVoices(mockVoices);
+      if (mockVoices.length > 0) {
+        setSelectedVoice(mockVoices[0].voice_id);
+      }
+    } catch (err) {
+      setError('Failed to load voices');
+      console.error('Error loading voices:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Initialize voices on mount
+  useEffect(() => {
+    fetchVoices();
+  }, [fetchVoices]);
+
+  const handlePlayPause = useCallback(() => {
+    if (!audioUrl) {
+      generateAndPlay();
+    } else {
+      if (isPlaying) {
+        audioRef.current?.pause();
+      } else {
+        audioRef.current?.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  }, [audioUrl, isPlaying]);
+  
+  const generateAndPlay = useCallback(async () => {
+    if (!text.trim()) {
+      message.warning('Please enter some text to convert to speech');
+      return;
+    }
+    
+    try {
+      setIsGenerating(true);
+      setError(null);
+      
+      // TODO: Implement actual TTS API call
+      console.log('Converting to speech:', { 
+        text, 
+        voice: selectedVoice, 
+        speed, 
+        pitch 
+      });
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Set a mock audio URL (in a real app, this would come from the TTS API)
+      setAudioUrl('https://example.com/tts-output.mp3');
+      setIsPlaying(true);
+      
+    } catch (err) {
+      setError('Failed to generate speech');
+      console.error('Error generating speech:', err);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [text, selectedVoice, speed, pitch]);
+  
+  const handleStop = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setIsPlaying(false);
+  }, []);
+  
+  const handleDownload = useCallback(() => {
+    if (!audioUrl) return;
+    
+    const link = document.createElement('a');
+    link.href = audioUrl;
+    link.download = 'speech.mp3';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [audioUrl]);
+  
+  const handleVoiceChange = useCallback((value: string) => {
+    setSelectedVoice(value);
+  }, []);
+  
+  const handleSpeedChange = useCallback((value: number) => {
+    setSpeed(value);
+  }, []);
+  
+  const handlePitchChange = useCallback((value: number) => {
+    setPitch(value);
+  }, []);
+
+  return (
+    <Card 
+      title="Text to Speech" 
+      className={`${styles.container} ${className}`}
+      actions={[
+        <Button
+          key="play"
+          type="primary"
+          icon={isPlaying ? <StopOutlined /> : <PlayCircleOutlined />}
+          onClick={handlePlayPause}
+          loading={isGenerating}
+          disabled={!text.trim()}
+        >
+          {isPlaying ? 'Stop' : 'Play'}
+        </Button>,
+        <Button
+          key="download"
+          icon={<DownloadOutlined />}
+          onClick={handleDownload}
+          disabled={!audioUrl}
+        >
+          Download
+        </Button>
+      ]}
+    >
+      <div className={styles.controlPanel}>
+        <div className={styles.textInput}>
+          <TextArea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Enter text to convert to speech..."
+            rows={6}
+            disabled={isGenerating}
+          />
+        </div>
+        
+        <div className={styles.controls}>
+          <div className={styles.controlGroup}>
+            <label>Voice:</label>
+            <Select
+              value={selectedVoice}
+              onChange={handleVoiceChange}
+              style={{ width: '100%' }}
+              loading={isLoading}
+              disabled={isPlaying || isGenerating}
+            >
+              {voices.map((voice) => (
+                <Select.Option key={voice.voice_id} value={voice.voice_id}>
+                  {voice.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
+          
+          <div className={styles.controlGroup}>
+            <label>Speed: {speed.toFixed(1)}x</label>
+            <Slider
+              min={0.5}
+              max={2}
+              step={0.1}
+              value={speed}
+              onChange={handleSpeedChange}
+              disabled={isPlaying || isGenerating}
+            />
+          </div>
+          
+          <div className={styles.controlGroup}>
+            <label>Pitch: {pitch.toFixed(1)}x</label>
+            <Slider
+              min={0.5}
+              max={2}
+              step={0.1}
+              value={pitch}
+              onChange={handlePitchChange}
+              disabled={isPlaying || isGenerating}
+            />
+          </div>
+        </div>
+        
+        {error && (
+          <Alert
+            message="Error"
+            description={error}
+            type="error"
+            showIcon
+            style={{ marginTop: 16 }}
+          />
+        )}
+        
+        {audioUrl && (
+          <audio
+            ref={audioRef}
+            src={audioUrl}
+            onEnded={() => setIsPlaying(false)}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            style={{ display: 'none' }}
+          />
+        )}
+      </div>
+    </Card>
+  );
+};
+
+export default TextToSpeech;

@@ -1,10 +1,26 @@
 # NoteFusion AI
 
+<<<<<<< HEAD
+An intelligent note-taking and study assistant that transforms lectures, textbooks, and audio recordings into comprehensive, structured study materials using AI. Now with advanced file uploads and AI-powered content generation.
+=======
 An intelligent note-taking and study assistant that transforms lectures and textbooks into comprehensive, structured study materials using AI.
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 ## 🚀 Features
 
 ### Core Functionality
+<<<<<<< HEAD
+- **Multi-file Upload**: Support for PDFs, audio files (MP3, WAV, M4A), and text documents
+- **Live Recording**: Real-time audio recording with automatic transcription
+- **Smart Fusion**: AI-powered combination of lecture and textbook content
+- **Structured Notes**: Organized notes with source tagging ([Lecture] / [Book])
+- **AI-Powered Generation**: Automatically expand, summarize, or reformat notes
+- **Flashcard Generation**: Create study flashcards from your notes
+- **Audio Transcription**: Automatic transcription of audio files with speaker diarization
+
+### Advanced Features
+
+=======
 - **Multi-file Upload**: Support for PDFs, audio/video files, and text documents
 - **Live Recording**: Real-time audio recording with automatic transcription
 - **Smart Fusion**: AI-powered combination of lecture and textbook content
@@ -13,6 +29,7 @@ An intelligent note-taking and study assistant that transforms lectures and text
 - **Study Time Estimation**: Intelligent time estimates based on content complexity
 
 ### Advanced Features
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - **Export Options**: Markdown, PDF, and Anki-style flashcards
 - **Search Functionality**: Full-text search across all content
 - **Version History**: Track changes to notes over time
@@ -21,13 +38,147 @@ An intelligent note-taking and study assistant that transforms lectures and text
 - **Detail Levels**: Concise, Standard, and In-depth note generation
 
 ### Technical Features
+<<<<<<< HEAD
+
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - **Real-time Transcription**: Live audio processing with Whisper
 - **PDF Processing**: Text extraction and structural analysis
 - **WebSocket Support**: Live audio streaming and transcription
 - **Responsive Design**: Modern UI with Tailwind CSS
 - **Database Storage**: SQLite for session and content management
 
+<<<<<<< HEAD
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python 3.9+
+- SQLite (included with Python)
+- OpenAI API key (for AI features)
+- Required Python packages (install with `pip install -r requirements.txt`)
+
+### Environment Setup
+
+1. Create a `.env` file in the backend directory with the following variables:
+
+   ```env
+   # Database
+   DATABASE_URL=sqlite+aiosqlite:///./notefusion.db
+   
+   # Security
+   SECRET_KEY=your-secret-key-here
+   ALGORITHM=HS256
+   ACCESS_TOKEN_EXPIRE_MINUTES=30
+   
+   # OpenAI
+   OPENAI_API_KEY=your-openai-api-key
+   
+   # CORS (adjust as needed for your frontend)
+   FRONTEND_URL=http://localhost:3000
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Initialize the database:
+
+   ```bash
+   alembic upgrade head
+   ```
+
+4. Start the development server:
+
+   ```bash
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+The API will be available at `http://localhost:8000`
+
+## 🛠️ API Documentation
+
+Once the server is running, you can access:
+- Interactive API docs: `http://localhost:8000/docs`
+- Alternative API docs: `http://localhost:8000/redoc`
+
+## 🧪 Testing
+
+Run the test script to verify all endpoints:
+
+```bash
+python test_notes.py
+```
+
+This will test:
+- User authentication
+- Note creation and management
+- File uploads
+- AI content generation
+
+### Quick Start
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/yourusername/notefusion-ai.git
+   cd notefusion-ai
+   ```
+
+2. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+3. Start the services:
+   ```powershell
+   # On Windows
+   .\deploy.ps1
+   
+   # On Linux/macOS
+   chmod +x deploy.sh
+   ./deploy.sh
+   ```
+
+4. Access the application:
+   - API Docs: http://localhost:8000/docs
+   - Frontend: http://localhost:3000
+
+### Configuration
+
+Key environment variables:
+
+```env
+# Database
+POSTGRES_USER=notefusion
+POSTGRES_PASSWORD=your_secure_password
+POSTGRES_DB=notefusion
+
+# Backend
+SECRET_KEY=your_secret_key_here
+JWT_SECRET_KEY=your_jwt_secret_here
+
+# Frontend
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+```
+
+### Production Deployment
+
+For production deployments, consider:
+
+1. Setting up a reverse proxy (Nginx/Apache)
+2. Enabling HTTPS with Let's Encrypt
+3. Setting up proper backups
+4. Configuring monitoring and logging
+5. Using a proper database backup strategy
+
+## 🛠️ Installation (Development)
+=======
 ## 🛠️ Installation
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 ### Prerequisites
 - Python 3.8+
@@ -82,6 +233,10 @@ py start_app.py
    ```
 
 2. **Install dependencies**:
+<<<<<<< HEAD
+
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
    ```bash
    npm install
    ```
@@ -105,22 +260,38 @@ py start_app.py
 ### Features Overview
 
 #### File Upload
+<<<<<<< HEAD
+
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - **PDFs**: Automatically extract text and structure
 - **Audio/Video**: Real-time transcription with Whisper
 - **Text Files**: Direct processing and analysis
 
 #### Live Recording
+<<<<<<< HEAD
+
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - **Real-time Transcription**: See text appear as you speak
 - **Pause/Resume**: Control recording flow
 - **WebSocket Connection**: Seamless audio streaming
 
 #### Smart Fusion
+<<<<<<< HEAD
+
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - **Source Tagging**: Clear indication of content origin
 - **Structured Output**: Organized sections with headings
 - **Practice Questions**: Auto-generated for each section
 - **Study Time Estimates**: Intelligent time calculations
 
 #### Export Options
+<<<<<<< HEAD
+
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - **Markdown**: Clean, formatted text files
 - **PDF**: Professional document export
 - **Flashcards**: Anki-compatible format
@@ -128,6 +299,10 @@ py start_app.py
 ## 🏗️ Architecture
 
 ### Backend (FastAPI)
+<<<<<<< HEAD
+
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 ```
 backend/
 ├── main.py                 # FastAPI application
@@ -144,6 +319,10 @@ backend/
 ```
 
 ### Frontend (React)
+<<<<<<< HEAD
+
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 ```
 frontend/
 ├── package.json           # Node.js dependencies
@@ -159,6 +338,10 @@ frontend/
 ### Environment Variables
 
 Backend (`.env`):
+<<<<<<< HEAD
+
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
 DATABASE_URL=notefusion.db

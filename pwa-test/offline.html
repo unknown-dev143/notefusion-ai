@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Offline - NoteFusion AI</title>
+</head>
+<body>
+<div class="container">
+    <div class="offline-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+    <h1>You're Offline</h1>
+    <p>Don't worry! You can still access previously viewed content while you're offline.</p>
+    <p>We'll automatically try to reconnect you to the internet.</p>
+    <div id="status" class="status offline">Checking connection status...</div>
+    <button id="retry-button">Try Again</button>
+  </div>
+
+  <script>
+    const statusElement = document.getElementById('status');
+    const retryButton = document.getElementById('retry-button');
+    
+    // Check connection status
+    async function checkConnection() {
+      statusElement.textContent = 'Checking connection...';
+      statusElement.className = 'status';
+      retryButton.disabled = true;
+      
+      try {
+        // Try to fetch a small file to check connection
+        const response = await fetch('/test-offline.txt', {
+          method: 'HEAD',
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
+        
+        if (response.ok) {
+          statusElement.textContent = 'Connection restored! Redirecting...';
+          statusElement.className = 'status online';
+          
+          // Wait a moment to show the success message, then redirect
+          setTimeout(() => {
+            window.location.href = '/simple-sw-test.html';
+          }, 1500);
+        } else {
+          throw new Error('Network response was not ok');
+        }
+      } catch (error) {
+        console.error('Connection check failed:', error);
+        statusElement.textContent = 'Still offline. Please check your internet connection.';
+        statusElement.className = 'status offline';
+        retryButton.disabled = false;
+      }
+    }
+    
+    // Add click event to retry button
+    retryButton.addEventListener('click', checkConnection);
+    
+    // Auto-retry every 5 seconds
+    setInterval(checkConnection, 5000);
+    
+    // Initial check
+    checkConnection();
+    
+    // Listen for online/offline events
+    window.addEventListener('online', checkConnection);
+    window.addEventListener('offline', () => {
+      statusElement.textContent = 'You are currently offline.';
+      statusElement.className = 'status offline';
+    });
+    
+    // Check if we're already offline
+    if (!navigator.onLine) {
+      statusElement.textContent = 'You are currently offline.';
+      statusElement.className = 'status offline';
+    }
+  </script>
+</body>
+</html>

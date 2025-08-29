@@ -9,6 +9,11 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
+<<<<<<< HEAD
+  -webkit-user-select: none;
+  user-select: none;
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #f8fafc;

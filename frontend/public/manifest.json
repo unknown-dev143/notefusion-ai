@@ -2,6 +2,34 @@
   "short_name": "NoteFusion AI",
   "name": "NoteFusion AI - Intelligent Note Taking",
   "description": "Transform your notes into knowledge with AI-powered organization and search",
+<<<<<<< HEAD
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "theme_color": "#1976d2",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "scope": "/",
+  "id": "/",
+  "prefer_related_applications": false,
+  "categories": ["productivity", "education", "utilities"],
+  "shortcuts": [
+    {
+      "name": "New Note",
+      "short_name": "New Note",
+      "description": "Create a new note",
+      "url": "/new-note?source=pwa",
+      "icons": [{ "src": "/logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Notes",
+      "short_name": "My Notes",
+      "description": "View all notes",
+      "url": "/notes?source=pwa",
+      "icons": [{ "src": "/logo192.png", "sizes": "192x192" }]
+    }
+  ],
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   "icons": [
     {
       "src": "favicon.ico",
@@ -21,7 +49,11 @@
       "purpose": "any maskable"
     },
     {
+<<<<<<< HEAD
+      "src": "logo512.png",
+=======
       "src": "splash-icon-512x512.png",
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "splash-screen"

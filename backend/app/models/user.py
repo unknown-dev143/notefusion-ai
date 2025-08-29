@@ -1,13 +1,23 @@
 from datetime import datetime, timedelta
 from typing import List, Optional, TYPE_CHECKING, Dict, Any
+<<<<<<< HEAD
+from sqlalchemy import String, Boolean, DateTime, ForeignKey, event, text
+from sqlalchemy.orm import relationship, Mapped, mapped_column, Session, sessionmaker
+from sqlalchemy.sql import func, select
+=======
 from sqlalchemy import String, Boolean, DateTime, ForeignKey, event
 from sqlalchemy.orm import relationship, Mapped, mapped_column, Session
 from sqlalchemy.sql import func
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 from passlib.context import CryptContext
 import secrets
 import string
 
+<<<<<<< HEAD
+from .database import Base, async_session_factory
+=======
 from .database import Base
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 from .subscription_models import Subscription
 
 if TYPE_CHECKING:
@@ -49,6 +59,26 @@ class User(Base):
     openai_api_key: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     # Timestamps
+<<<<<<< HEAD
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
+    
+    # Notification settings
+    fcm_tokens: Mapped[Optional[List[str]]] = mapped_column(JSON, default=list, nullable=True)
+    email_notifications: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    push_notifications: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    
+    # Relationships
+    reminders: Mapped[List["Reminder"]] = relationship(
+        "Reminder", back_populates="user", cascade="all, delete-orphan"
+    )
+    notifications: Mapped[List["Notification"]] = relationship(
+        "Notification", back_populates="user", cascade="all, delete-orphan"
+    )
+    
+    # Timestamps
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
     
@@ -57,14 +87,24 @@ class User(Base):
     refresh_token_expires: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Relationships
+<<<<<<< HEAD
+    notes: Mapped[List["Note"]] = relationship("Note", back_populates="user")
+    flashcards: Mapped[List["Flashcard"]] = relationship("Flashcard", back_populates="user")
+    subscriptions: Mapped[List["Subscription"]] = relationship("Subscription", back_populates="user")
+=======
     notes = relationship("Note", back_populates="owner", cascade="all, delete-orphan")
     tasks = relationship("Task", back_populates="user", cascade="all, delete-orphan")
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     subscription: Mapped[Optional[Subscription]] = relationship(
         "Subscription", 
         back_populates="user", 
         uselist=False,
         cascade="all, delete-orphan"
     )
+<<<<<<< HEAD
+    tasks = relationship("Task", back_populates="user", cascade="all, delete-orphan")
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     invoices = relationship("Invoice", back_populates="user", cascade="all, delete-orphan")
     ai_model_settings = relationship(
         "UserAIModelSettings", 
@@ -73,6 +113,17 @@ class User(Base):
         lazy="selectin"
     )
     
+<<<<<<< HEAD
+    @classmethod
+    async def get_by_email(cls, email: str) -> Optional['User']:
+        async with async_session_factory() as session:
+            result = await session.execute(
+                select(cls).where(cls.email == email)
+            )
+            return result.scalars().first()
+
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     def __repr__(self) -> str:
         return f"<User {self.email}>"
     

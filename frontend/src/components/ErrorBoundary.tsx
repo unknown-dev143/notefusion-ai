@@ -1,8 +1,16 @@
 import React, { Component, ReactNode, ErrorInfo, ReactElement, ComponentType } from 'react';
+<<<<<<< HEAD
+import { Button, Typography } from 'antd';
+import { ReloadOutlined, HomeOutlined } from '@ant-design/icons';
+import styles from './ErrorBoundary.module.css';
+
+const { Text } = Typography;
+=======
 import { Button, Typography, Result } from 'antd';
 import { ReloadOutlined, HomeOutlined } from '@ant-design/icons';
 
 const { Text, Paragraph } = Typography;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -28,12 +36,17 @@ interface ErrorBoundaryState {
   reported: boolean;
   showDetails: boolean;
   lastErrorTime: number | null;
+<<<<<<< HEAD
+=======
   errorCount: number;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   recoveryAttempts: number;
   isRecovering: boolean;
   lastRecoveryAttempt: number | null;
 }
 
+<<<<<<< HEAD
+=======
 // Error rate limiting constants
 const MAX_ERRORS = 5;
 const ERROR_WINDOW_MS = 60000; // 1 minute
@@ -58,6 +71,7 @@ const captureException = (error: Error, context: any): void => {
 const MAX_ERRORS = 5;
 const ERROR_WINDOW_MS = 60000; // 1 minute
 
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 // Mock captureException if not using Sentry
 const captureException = (error: Error, context: any): void => {
   if (process.env.NODE_ENV === 'development') {
@@ -80,6 +94,16 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     error: null,
     errorInfo: null,
     showDetails: this.props.showDetailsInDev ?? false,
+<<<<<<< HEAD
+    reported: false,
+    recoveryAttempts: 0,
+    isRecovering: false,
+    lastRecoveryAttempt: null,
+    lastErrorTime: null
+  };
+
+  public static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+=======
     lastErrorTime: null,
     errorCount: 0,
     recoveryAttempts: 0,
@@ -90,14 +114,24 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   public static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     const now = Date.now();
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     return {
       hasError: true,
       error,
       errorInfo: { componentStack: '' } as ErrorInfo,
+<<<<<<< HEAD
+      reported: false,
+      lastErrorTime: Date.now(),
+      showDetails: process.env.NODE_ENV === 'development',
+      recoveryAttempts: 0,
+      isRecovering: false,
+      lastRecoveryAttempt: null
+=======
       lastErrorTime: now,
       errorCount: 1,
       showDetails: process.env.NODE_ENV === 'development',
       reported: false
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     };
   }
 
@@ -127,7 +161,11 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
       // Report to error tracking service
       if (!this.state.reported && this.props.showReportDialog) {
+<<<<<<< HEAD
+        this.handleReport();
+=======
         this.reportError(error, errorContext);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       }
 
       // Call custom error handler if provided
@@ -143,6 +181,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }
   }
 
+<<<<<<< HEAD
+  private handleReset = (): void => {
+=======
   private reportError = (error: Error, context: any): void => {
     if (this.state.reported) return;
     
@@ -185,11 +226,21 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       this.reportTimeout = null;
     }
     
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     this.setState({
       hasError: false,
       error: null,
       errorInfo: null,
+<<<<<<< HEAD
+      showDetails: this.props.showDetailsInDev ?? false,
+      reported: false,
+      recoveryAttempts: 0,
+      isRecovering: false,
+      lastRecoveryAttempt: null,
+      lastErrorTime: null
+=======
       showDetails: this.props.showDetailsInDev ?? false
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     });
   };
 
@@ -199,6 +250,125 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }));
   };
 
+<<<<<<< HEAD
+  private handleRecovery = async (): Promise<void> => {
+    const { recoveryHandler } = this.props;
+    if (!recoveryHandler) return;
+
+    this.setState({ isRecovering: true });
+    
+    try {
+      const success = await recoveryHandler();
+      if (success) {
+        this.handleReset();
+      }
+    } catch (error) {
+      console.error('Recovery attempt failed:', error);
+      this.setState(prevState => ({
+        recoveryAttempts: prevState.recoveryAttempts + 1,
+        isRecovering: false,
+        lastRecoveryAttempt: Date.now()
+      }));
+    }
+  };
+
+  private handleReport = (): void => {
+    const { error, errorInfo } = this.state;
+    if (!error) return;
+
+    captureException(error, {
+      ...this.props.errorContext,
+      componentStack: errorInfo?.componentStack
+    });
+
+    this.setState({ reported: true });
+  };
+
+  private renderErrorContent(): ReactNode {
+    // Cast styles to any to bypass TypeScript module type issues
+    const style: any = styles;
+    const { error, errorInfo, showDetails } = this.state;
+    const { 
+      componentName, 
+      title = 'Something went wrong', 
+      subtitle = 'An unexpected error occurred. Please try again.',
+      allowRecovery = true,
+      recoveryHandler,
+      maxRecoveryAttempts = 3
+    } = this.props;
+
+    const canRecover = allowRecovery && 
+      recoveryHandler && 
+      this.state.recoveryAttempts < maxRecoveryAttempts &&
+      (!this.state.lastRecoveryAttempt || 
+        Date.now() - this.state.lastRecoveryAttempt > 5000);
+
+    if (!error) {
+      return null;
+    }
+
+    return (
+      <div className={style['errorContainer']}>
+        <div className={style['errorHeader']}>
+          <Text className={style['errorEmoji']}>⚠️</Text>
+          <h1 className={style['errorTitle']}>{title}</h1>
+          {componentName && (
+            <p>Error in component: <strong>{componentName}</strong></p>
+          )}
+          <p className={style['errorSubtitle']}>{subtitle}</p>
+        </div>
+
+        <div className={style['errorActions']}>
+          <Button 
+            type="primary" 
+            icon={<ReloadOutlined />} 
+            onClick={() => window.location.reload()}
+          >
+            Reload Page
+          </Button>
+          
+          {canRecover && (
+            <Button 
+              type="primary" 
+              danger
+              icon={<ReloadOutlined />}
+              onClick={this.handleRecovery}
+              loading={this.state.isRecovering}
+              className={style['recoveryButton']}
+            >
+              Try to Recover
+            </Button>
+          )}
+          
+          <Button 
+            type="link" 
+            icon={<HomeOutlined />} 
+            onClick={() => window.location.href = '/'}
+          >
+            Go to Home
+          </Button>
+        </div>
+
+        {showDetails && error && (
+          <div className={style['errorDetailsContainer']}>
+            <Text strong>Error Details:</Text>
+            <pre className={style['errorDetails']}>
+              {error.toString()}
+              {errorInfo?.componentStack}
+            </pre>
+          </div>
+        )}
+
+        {!showDetails && (
+          <Button 
+            type="link" 
+            onClick={() => this.toggleDetails()}
+            className={style['detailsButton']}
+          >
+            Show Error Details
+          </Button>
+        )}
+=======
   private renderErrorDetails(): ReactNode {
     const { error, errorInfo } = this.state;
     if (!error) return null;
@@ -217,11 +387,16 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
           {error.toString()}
           {errorInfo?.componentStack}
         </pre>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       </div>
     );
   }
 
   public override render(): ReactNode {
+<<<<<<< HEAD
+    const { hasError } = this.state;
+    const { children, fallback } = this.props;
+=======
     const { 
       hasError, 
       showDetails 
@@ -234,6 +409,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       subtitle,
       errorMessage
     } = this.props;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
     if (!hasError) {
       return children;
@@ -243,6 +419,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       return fallback;
     }
 
+<<<<<<< HEAD
+    return this.renderErrorContent();
+=======
     const errorMessageToShow = errorMessage || 'An unexpected error occurred';
 
     return (
@@ -295,6 +474,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         </Result>
       </div>
     );
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   }
 }
 

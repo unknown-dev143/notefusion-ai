@@ -1,0 +1,343 @@
+/* NoteEditorWithDrawing.css */
+
+/* Tag input styles */
+.tag-input {
+  width: 100px;
+}
+
+/* Drawing blot styles */
+.ql-drawing {
+  margin: 1em 0;
+  text-align: center;
+  display: block;
+}
+
+.drawing-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+
+/* Main container */
+.note-editor-with-drawing {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Editor header */
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  z-index: 1;
+}
+
+/* Editor content area */
+.editor-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 16px 16px;
+}
+
+/* Note title input */
+.note-title {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 16px 0;
+  border: none;
+  box-shadow: none !important;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+  border-radius: 0;
+}
+
+.note-title:focus,
+.note-title:hover {
+  border-bottom-color: #1890ff;
+}
+
+.note-title input {
+  font-size: 24px;
+  font-weight: 500;
+  padding: 4px 0;
+  border: none;
+  box-shadow: none !important;
+}
+
+/* Tag section */
+.tag-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.note-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  background: #f0f7ff;
+  border-color: #91d5ff;
+  color: #1890ff;
+  height: 24px;
+  line-height: 22px;
+  padding: 0 8px;
+  border-radius: 4px;
+}
+
+.add-tag {
+  cursor: pointer;
+  background: #f5f5f5;
+  border-style: dashed;
+  color: #8c8c8c;
+  height: 24px;
+  line-height: 22px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.add-tag:hover {
+  color: #1890ff;
+  border-color: #1890ff;
+}
+
+.tag-input {
+  width: 160px;
+}
+
+/* Editor container */
+.editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+}
+
+/* Customize Quill editor */
+.ql-toolbar {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.note-quill-editor {
+  height: 100%;
+}
+
+.quill-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.quill-wrapper .ql-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.quill-wrapper .ql-editor {
+  flex: 1;
+}
+
+.ql-container {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  border: none !important;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.ql-editor {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.ql-editor.ql-blank::before {
+  color: #bfbfbf;
+  font-style: normal;
+  left: 16px;
+  right: 16px;
+}
+
+/* Drawing panel */
+.drawing-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+}
+
+.drawing-area {
+  flex: 1;
+  position: relative;
+  background: #f5f5f5;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  border: 1px dashed #d9d9d9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drawing-canvas {
+  width: 100%;
+  height: 400px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background-color: #fff;
+  margin-bottom: 16px;
+  cursor: crosshair;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drawing-placeholder {
+  text-align: center;
+  color: #999;
+  margin-top: 180px;
+}
+
+.drawing-canvas-element {
+  width: 100%;
+  height: 400px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background-color: #fff;
+  cursor: crosshair;
+}
+
+.drawing-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 0;
+  gap: 8px;
+}
+
+.cancel-button {
+  margin-right: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .editor-header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  
+  .note-title {
+    font-size: 20px;
+  }
+  
+  .note-title input {
+    font-size: 20px;
+  }
+}
+
+/* Dark mode support */
+[data-theme='dark'] .note-editor-with-drawing {
+  background: #141414;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme='dark'] .editor-header {
+  background: #1f1f1f;
+  border-bottom-color: #303030;
+}
+
+[data-theme='dark'] .note-title,
+[data-theme='dark'] .note-title input {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  border-bottom-color: #303030;
+}
+
+[data-theme='dark'] .note-title input::placeholder {
+  color: #595959;
+}
+
+[data-theme='dark'] .editor-container {
+  background: #1f1f1f;
+  border-color: #303030;
+}
+
+[data-theme='dark'] .ql-toolbar {
+  background: #1f1f1f;
+  border-bottom-color: #303030 !important;
+}
+
+[data-theme='dark'] .ql-editor {
+  background: #1f1f1f;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme='dark'] .add-tag {
+  background: #2a2a2a;
+  border-color: #434343;
+  color: #8c8c8c;
+}
+
+[data-theme='dark'] .add-tag:hover {
+  color: #3a9eff;
+  border-color: #3a9eff;
+}
+
+/* Custom scrollbar */
+.ql-editor::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.ql-editor::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.ql-editor::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 4px;
+}
+
+[data-theme='dark'] .ql-editor::-webkit-scrollbar-track {
+  background: #1f1f1f;
+}
+
+[data-theme='dark'] .ql-editor::-webkit-scrollbar-thumb {
+  background: #434343;
+}
+
+/* Hidden element for screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}

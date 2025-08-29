@@ -1,0 +1,203 @@
+/* AudioNoteList.css */
+
+/* Base styles */
+.audio-note-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Virtualized list container */
+.virtualized-list {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  width: 100%;
+}
+
+/* Virtualized row item */
+.virtualized-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  will-change: transform;
+  padding: 8px 16px;
+  box-sizing: border-box;
+}
+
+/* Virtualized row with dynamic positioning */
+.virtualized-row.dynamic {
+  transform: var(--transform, none);
+  height: var(--height, auto);
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+  padding: 8px 16px;
+  box-sizing: border-box;
+}
+
+/* Dynamic transform class */
+.virtualized-row.dynamic-transform {
+  transform: var(--transform, none);
+  height: var(--height, auto);
+}
+
+/* Virtualized row with custom properties */
+.virtualized-row.dynamic {
+  --transform: none;
+  --height: auto;
+  height: var(--height);
+  transform: var(--transform);
+  will-change: transform;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 16px;
+  box-sizing: border-box;
+  /* Add any additional dynamic styles here */
+  transform: var(--transform, none);
+  height: var(--height, auto);
+}
+
+/* Note item styles */
+.note-item {
+  height: 100%;
+  width: 100%;
+}
+
+/* Pagination styles */
+.pagination-container {
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+  margin: 0;
+}
+
+/* Loading state */
+.loading-container {
+  padding: 16px;
+}
+
+.loading-skeleton {
+  margin-bottom: 16px;
+}
+
+.loading-skeleton:last-child {
+  margin-bottom: 0;
+}
+
+/* Pagination styles */
+.audio-note-list .pagination {
+  margin: 0;
+}
+
+/* Note item styles */
+.audio-note-list .note-item {
+  padding: 8px 16px;
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  background: #fff;
+  border-radius: 8px;
+  margin: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.note-card {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 16px;
+  height: 100%;
+  background-color: white;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.note-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.note-card.playing {
+  background-color: #f0f9ff;
+}
+
+.note-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.note-content {
+  flex: 1;
+  min-width: 0;
+  margin-right: 16px;
+}
+
+.note-title {
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note-meta {
+  margin-bottom: 8px;
+}
+
+.note-date {
+  font-size: 12px;
+}
+
+.note-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.transcript {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.transcript-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.transcript-full {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.tags-container {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag {
+  font-size: 12px;
+}

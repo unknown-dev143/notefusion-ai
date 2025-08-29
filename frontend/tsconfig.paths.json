@@ -1,5 +1,10 @@
 {
   "compilerOptions": {
+<<<<<<< HEAD
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],

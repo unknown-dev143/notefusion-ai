@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Push Notifications Test - NoteFusion AI</title>
+</head>
+<body>
+<h1>Push Notifications Test</h1>
+    
+    <div class="test-case">
+        <h2>Notification Permission</h2>
+        <div id="permissionStatus" class="status info">Checking...</div>
+        <button id="requestPermission">Request Permission</button>
+    </div>
+
+    <div class="test-case">
+        <h2>Test Notifications</h2>
+        <button id="testBasic">Send Basic Notification</button>
+        <button id="testActions">Notification with Actions</button>
+        <div id="notificationResult" class="status"></div>
+    </div>
+
+    <div class="test-case">
+        <h2>Service Worker</h2>
+        <div id="swStatus" class="status info">Checking...</div>
+        <button id="registerSW">Register</button>
+        <button id="unregisterSW">Unregister</button>
+    </div>
+
+    <script>
+        // DOM Elements
+        const permissionStatus = document.getElementById('permissionStatus');
+        const requestPermissionBtn = document.getElementById('requestPermission');
+        const swStatus = document.getElementById('swStatus');
+        const registerSWBtn = document.getElementById('registerSW');
+        const unregisterSWBtn = document.getElementById('unregisterSW');
+        const testBasicBtn = document.getElementById('testBasic');
+        const testActionsBtn = document.getElementById('testActions');
+        const notificationResult = document.getElementById('notificationResult');
+
+        // Check notification permission
+        function checkNotificationPermission() {
+            if (!('Notification' in window)) {
+                permissionStatus.textContent = 'Notifications not supported';
+                permissionStatus.className = 'status error';
+                return false;
+            }
+            
+            if (Notification.permission === 'granted') {
+                permissionStatus.textContent = 'Notifications enabled';
+                permissionStatus.className = 'status success';
+                requestPermissionBtn.disabled = true;
+                return true;
+            } else if (Notification.permission === 'denied') {
+                permissionStatus.textContent = 'Notifications blocked';
+                permissionStatus.className = 'status error';
+                requestPermissionBtn.disabled = true;
+                return false;
+            } else {
+                permissionStatus.textContent = 'Notifications not enabled';
+                permissionStatus.className = 'status info';
+                return false;
+            }
+        }
+
+        // Request notification permission
+        requestPermissionBtn.addEventListener('click', () => {
+            Notification.requestPermission().then(permission => {
+                checkNotificationPermission();
+                if (permission === 'granted') {
+                    new Notification('Success!', {
+                        body: 'Notifications enabled for NoteFusion AI',
+                        icon: '/logo192.png'
+                    });
+                }
+            });
+        });
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            swStatus.textContent = 'Service Worker supported';
+            
+            registerSWBtn.addEventListener('click', async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register('/sw.js');
+                    swStatus.textContent = 'Service Worker registered';
+                    swStatus.className = 'status success';
+                } catch (error) {
+                    swStatus.textContent = 'Registration failed';
+                    swStatus.className = 'status error';
+                }
+            });
+
+            unregisterSWBtn.addEventListener('click', async () => {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                    await registration.unregister();
+                    swStatus.textContent = 'Service Worker unregistered';
+                    swStatus.className = 'status info';
+                }
+            });
+        } else {
+            swStatus.textContent = 'Service Worker not supported';
+            swStatus.className = 'status error';
+        }
+
+        // Test basic notification
+        testBasicBtn.addEventListener('click', () => {
+            if (Notification.permission !== 'granted') {
+                notificationResult.textContent = 'Enable notifications first';
+                notificationResult.className = 'status error';
+                return;
+            }
+            
+            try {
+                new Notification('Test Notification', {
+                    body: 'This is a test notification',
+                    icon: '/logo192.png'
+                });
+                notificationResult.textContent = 'Notification sent';
+                notificationResult.className = 'status success';
+            } catch (error) {
+                notificationResult.textContent = 'Error showing notification';
+                notificationResult.className = 'status error';
+            }
+        });
+
+        // Test notification with actions
+        testActionsBtn.addEventListener('click', async () => {
+            if (Notification.permission !== 'granted') {
+                notificationResult.textContent = 'Enable notifications first';
+                notificationResult.className = 'status error';
+                return;
+            }
+            
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                registration.showNotification('Action Required', {
+                    body: 'Please take an action',
+                    icon: '/logo192.png',
+                    actions: [
+                        { action: 'yes', title: 'Yes' },
+                        { action: 'no', title: 'No' }
+                    ]
+                });
+                notificationResult.textContent = 'Action notification sent';
+                notificationResult.className = 'status success';
+            } catch (error) {
+                notificationResult.textContent = 'Error with action notification';
+                notificationResult.className = 'status error';
+            }
+        });
+
+        // Initialize
+        checkNotificationPermission();
+    </script>
+</body>
+</html>

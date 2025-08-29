@@ -1,0 +1,153 @@
+/* Note Item */
+.noteItem {
+  cursor: pointer;
+  padding: 12px 16px;
+  transition: all 0.3s;
+  width: 100%;
+}
+
+.noteItem.selected {
+  background-color: #f0f7ff;
+  border-left: 3px solid #1890ff;
+}
+
+/* Note Header */
+.noteHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.noteTitle {
+  font-size: 15px;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* Note Content */
+.noteContent {
+  font-size: 13px;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  display: block;
+  min-height: 36px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+/* Note Footer */
+.noteFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Tags */
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag {
+  margin: 0;
+  font-size: 11px;
+  padding: 0 6px;
+  border-radius: 2px;
+  background-color: #f0f0f0;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+/* Date */
+.noteDate {
+  font-size: 11px;
+  white-space: nowrap;
+  margin-left: 8px;
+  color: #8c8c8c;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 40px 16px;
+}
+
+/* Loading State */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 300px;
+}
+
+/* Main Container */
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Search Card */
+.searchCard {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.searchCard :global(.ant-card-body) {
+  padding: 12px 16px;
+}
+
+/* List Container */
+.listContainer {
+  flex: 1;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+/* Search Input */
+.searchInputContainer {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.searchInput {
+  flex: 1;
+}
+
+/* New Note Button */
+.newNoteButton {
+  margin-left: 8px;
+}
+
+.searchContainer {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.newNoteButton {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.notesList {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.mainContent {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: #8c8c8c;
+}

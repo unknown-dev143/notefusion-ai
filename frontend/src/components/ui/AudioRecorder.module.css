@@ -1,0 +1,124 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.recordingControls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.controlButton {
+  min-width: 100px;
+}
+
+.recordButton {
+  min-width: 150px;
+}
+
+.progressContainer {
+  margin: 1rem 0;
+  width: 100%;
+}
+
+.timeDisplay {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+}
+
+.timeText {
+  font-size: 0.875rem;
+  color: #8c8c8c;
+}
+
+.audioContainer {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.audioPlayer {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.saveControls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.titleInput {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.saveButton,
+.transcribeButton {
+  flex: 1;
+  min-width: 120px;
+}
+
+.statusContainer {
+  margin-top: 1rem;
+  text-align: center;
+  padding: 0.5rem;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.transcriptionContainer {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  border-left: 3px solid #1890ff;
+}
+
+.transcription {
+  white-space: pre-wrap;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+.recordingIndicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background-color: #ff4d4f;
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
+}

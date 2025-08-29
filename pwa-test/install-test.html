@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        const themeColor = document.createElement('meta');
+        themeColor.name = 'theme-color';
+        themeColor.content = '#4CAF50';
+        document.head.appendChild(themeColor);
+      }
+    </script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>PWA Install Test - NoteFusion AI</title>
+    <link rel="apple-touch-icon" href="/icon-192x192.png">
+    <link rel="stylesheet" href="test-styles.css">
+</head>
+<body>
+<h1>PWA Installation Test</h1>
+    
+    <div class="card">
+        <h2>Installation Status</h2>
+        <div id="install-status">Checking installation status...</div>
+        
+        <div id="install-prompt" class="install-prompt">
+            <h3>Install NoteFusion AI</h3>
+            <p>Install this web app on your device for a better experience.</p>
+            <button id="install-button">Install Now</button>
+            <button id="dismiss-button">Dismiss</button>
+        </div>
+        
+        <div class="button-container">
+            <button id="manual-trigger" disabled>Trigger Install Prompt</button>
+            <button id="check-installable">Check Installability</button>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Test Log</h2>
+        <div id="log">Test started at: <span id="start-time"></span>
+        </div>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const installStatus = document.getElementById('install-status');
+        const installPrompt = document.getElementById('install-prompt');
+        const installButton = document.getElementById('install-button');
+        const dismissButton = document.getElementById('dismiss-button');
+        const manualTrigger = document.getElementById('manual-trigger');
+        const checkButton = document.getElementById('check-installable');
+        const logElement = document.getElementById('log');
+        
+        // Add timestamp
+        document.getElementById('start-time').textContent = new Date().toLocaleString();
+        
+        // Log function
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Check if the app is installed
+        function checkInstalled() {
+            // Check if in standalone mode (iOS)
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                               window.navigator.standalone === true ||
+                               document.referrer.includes('android-app://');
+            
+            if (isStandalone) {
+                installStatus.innerHTML = '✅ App is installed and running in standalone mode.';
+                installStatus.className = 'success';
+                return true;
+            } else {
+                installStatus.innerHTML = 'ℹ️ App is running in browser mode.';
+                installStatus.className = 'info';
+                return false;
+            }
+        }
+        
+        // Check if the app is installable
+        async function checkInstallable() {
+            log('Checking if app is installable...');
+            
+            if (!('BeforeInstallPromptEvent' in window)) {
+                log('Browser does not support installation prompt', 'error');
+                return false;
+            }
+            
+            try {
+                // Check if the app meets the installation criteria
+                const relatedApps = await navigator.getInstalledRelatedApps();
+                if (relatedApps && relatedApps.length > 0) {
+                    log('App is already installed as a PWA', 'success');
+                    return true;
+                }
+                
+                log('App meets installation criteria', 'success');
+                return true;
+            } catch (error) {
+                log(`Error checking installability: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        // Handle the beforeinstallprompt event
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the default prompt
+            e.preventDefault();
+            
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            
+            // Show the custom install prompt
+            installPrompt.style.display = 'block';
+            manualTrigger.disabled = false;
+            
+            log('Install prompt available', 'success');
+            log('Browser: ' + navigator.userAgent);
+            
+            // Log install prompt event details
+            log('Install prompt event received. Platform: ' + 
+                (e.platforms ? e.platforms.join(', ') : 'unknown'));
+            
+            // Update UI to notify the user they can install the PWA
+            installStatus.innerHTML = 'ℹ️ This app can be installed on your device.';
+            installStatus.className = 'info';
+        });
+        
+        // Handle install button click
+        installButton.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                log('No install prompt available', 'error');
+                return;
+            }
+            
+            log('Showing install prompt...');
+            
+            // Show the install prompt
+            deferredPrompt.prompt();
+            
+            // Wait for the user to respond to the prompt
+            const { outcome } = await deferredPrompt.userChoice;
+            
+            // Log the result
+            log(`User ${outcome === 'accepted' ? 'accepted' : 'dismissed'} the install prompt`);
+            
+            // Hide the custom prompt
+            installPrompt.style.display = 'none';
+            
+            // We've used the prompt, and can't use it again
+            deferredPrompt = null;
+        });
+        
+        // Handle dismiss button click
+        dismissButton.addEventListener('click', () => {
+            installPrompt.style.display = 'none';
+            log('Install prompt dismissed');
+        });
+        
+        // Manual trigger for install prompt
+        manualTrigger.addEventListener('click', () => {
+            if (!deferredPrompt) {
+                log('No install prompt available to trigger', 'error');
+                return;
+            }
+            
+            log('Manually triggering install prompt...');
+            deferredPrompt.prompt();
+            
+            // Wait for the user to respond to the prompt
+            deferredPrompt.userChoice.then((choiceResult) => {
+                log(`User ${choiceResult.outcome === 'accepted' ? 'accepted' : 'dismissed'} the install prompt`);
+                deferredPrompt = null;
+            });
+        });
+        
+        // Check installable button
+        checkButton.addEventListener('click', async () => {
+            const isInstallable = await checkInstallable();
+            if (isInstallable) {
+                log('App is installable!', 'success');
+            } else {
+                log('App does not meet installation criteria', 'error');
+            }
+        });
+        
+        // Check if the app is already installed
+        window.addEventListener('appinstalled', (evt) => {
+            log('App was successfully installed!', 'success');
+            installStatus.innerHTML = '✅ App was successfully installed!';
+            installStatus.className = 'success';
+            installPrompt.style.display = 'none';
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Test page loaded');
+            checkInstalled();
+            
+            // Check for updates to the service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/test-sw-new.js')
+                    .then(registration => {
+                        log('Service Worker registered with scope: ' + registration.scope);
+                        
+                        // Check for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            log('New service worker found, installing...');
+                            
+                            newWorker.addEventListener('statechange', () => {
+                                log(`Service Worker state changed to: ${newWorker.state}`);
+                                
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    log('New content is available; please refresh.', 'info');
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        log('Service Worker registration failed: ' + error.message, 'error');
+                    });
+                
+                // Check for controllerchange
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    log('Service Worker controller changed, reloading...');
+                    window.location.reload();
+                });
+            } else {
+                log('Service Workers are not supported in this browser', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

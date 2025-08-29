@@ -3,6 +3,10 @@ import { List, Button, message, Modal, Empty, Input } from 'antd';
 import { StarOutlined, StarFilled, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import type { Note, NoteFilters } from '../types';
 import { useAuth } from '../../../contexts/AuthContext';
+<<<<<<< HEAD
+import styles from './NoteList.module.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { noteService } from '../services/noteService';
 import NoteEditor from './NoteEditor';
 
@@ -239,13 +243,27 @@ const NoteList: React.FC<NoteListProps> = ({
       >
         <List.Item.Meta
           title={
+<<<<<<< HEAD
+            <div className={styles.metaTitle}>
+              {isPinned && <StarFilled className={styles.starIcon} />}
+              <span className={styles.noteTitle}>{note.title || 'Untitled Note'}</span>
+=======
             <div style={{ display: 'flex', alignItems: 'center' }}>
               {isPinned && <StarFilled style={{ color: '#faad14', marginRight: 8 }} />}
               <span style={{ fontWeight: 'bold' }}>{note.title || 'Untitled Note'}</span>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             </div>
           }
           description={
             <div>
+<<<<<<< HEAD
+              <div className={styles.noteContent}>
+                {note.content.substring(0, 100)}{note.content.length > 100 ? '...' : ''}
+              </div>
+              <div className={styles.tagsContainer}>
+                {note.tags?.map(tag => (
+                  <span key={tag} className={styles.tag}>
+=======
               <div style={{ margin: '4px 0' }}>
                 {note.content.substring(0, 100)}{note.content.length > 100 ? '...' : ''}
               </div>
@@ -257,11 +275,16 @@ const NoteList: React.FC<NoteListProps> = ({
                     borderRadius: 10,
                     fontSize: 12,
                   }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                     {tag}
                   </span>
                 ))}
               </div>
+<<<<<<< HEAD
+              <div className={styles.noteDate}>
+=======
               <div style={{ marginTop: 8, fontSize: 12, color: '#8c8c8c' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                 {formatDate(note.updatedAt)}
               </div>
             </div>
@@ -291,10 +314,17 @@ const NoteList: React.FC<NoteListProps> = ({
   );
 
   return (
+<<<<<<< HEAD
+    <div className={styles.container}>
+      {/* Sidebar with note list */}
+      <div className={styles.sidebar}>
+        <div className={styles.searchContainer}>
+=======
     <div style={{ display: 'flex', height: '100%' }}>
       {/* Sidebar with note list */}
       <div style={{ width: 300, borderRight: '1px solid #f0f0f0', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: 16, borderBottom: '1px solid #f0f0f0' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <Input
             placeholder="Search notes..."
             value={searchTerm}
@@ -305,14 +335,22 @@ const NoteList: React.FC<NoteListProps> = ({
             type="primary" 
             icon={<PlusOutlined />} 
             onClick={handleCreateNew}
+<<<<<<< HEAD
+            className={styles.newNoteButton}
+=======
             style={{ width: '100%', marginTop: 16 }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             loading={isSaving}
           >
             New Note
           </Button>
         </div>
         
+<<<<<<< HEAD
+        <div className={styles.notesList}>
+=======
         <div style={{ flex: 1, overflowY: 'auto' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <List
             dataSource={filteredNotes}
             renderItem={renderNoteItem}
@@ -323,7 +361,11 @@ const NoteList: React.FC<NoteListProps> = ({
       </div>
       
       {/* Main content area */}
+<<<<<<< HEAD
+      <div className={styles.mainContent}>
+=======
       <div style={{ flex: 1, padding: 16, overflowY: 'auto' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         {isCreatingNew ? (
           <NoteEditor
             note={null}
@@ -344,10 +386,14 @@ const NoteList: React.FC<NoteListProps> = ({
             isSaving={isSaving}
           />
         ) : (
+<<<<<<< HEAD
+          <div className={styles.emptyState}>
+=======
           <div style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             justifyContent: 'center',
             height: '100%',
             color: '#8c8c8c',
