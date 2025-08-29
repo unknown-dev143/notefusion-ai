@@ -7,7 +7,8 @@ export default defineConfig({
   root: '.',
   publicDir: 'public',
   server: {
-    port: 3001,
+    port: 4000,
+    strictPort: true, // Ensure this port is used and fail if not available
     open: true,
     host: '0.0.0.0',
     proxy: {

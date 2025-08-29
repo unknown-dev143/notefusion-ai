@@ -2,8 +2,8 @@
   "name": "notefusion-ai-frontend",
   "private": true,
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
   },
   "version": "0.1.0",
   "type": "module",
@@ -25,7 +25,6 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "prepare": "husky install",
     "pre-commit": "lint-staged",
-    "postinstall": "npx prisma generate",
     "vercel-build": "npm run build",
     "electron:dev": "concurrently -k \"cross-env NODE_ENV=development vite\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .\"",
     "electron:build": "tsc -p electron.tsconfig.json && vite build",

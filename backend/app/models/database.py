@@ -1,13 +1,14 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker, AsyncAttrs
-from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column
-from sqlalchemy.pool import NullPool
-from sqlalchemy import MetaData, Column, Integer, String, DateTime, JSON, Text, ForeignKey, Boolean
-from typing import AsyncGenerator, Optional, Type, TypeVar, Any, Dict, List
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker, AsyncAttrs, AsyncEngine
+from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column, sessionmaker
+from sqlalchemy.pool import NullPool, AsyncAdaptedQueuePool
+from sqlalchemy import MetaData, Column, Integer, String, DateTime, JSON, Text, ForeignKey, Boolean, select
+from sqlalchemy.ext.asyncio import AsyncSession as _AsyncSession
+from typing import AsyncGenerator, Optional, Type, TypeVar, Any, Dict, List, cast
 import os
 import uuid
 import json
 from datetime import datetime
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, asynccontextmanager
 from pydantic import BaseModel
 
 from ..config import settings
@@ -24,7 +25,7 @@ convention = {
 # Create metadata with naming convention
 metadata = MetaData(naming_convention=convention)
 
-class Base(AsyncAttrs, DeclarativeBase):
+class Base(DeclarativeBase):
     """Base class for all models."""
     __abstract__ = True
     metadata = metadata
@@ -49,36 +50,30 @@ class Base(AsyncAttrs, DeclarativeBase):
             if hasattr(self, key):
                 setattr(self, key, value)
 
-# Create database engine
-# Configure connection pool settings
-pool_config = {
-    'pool_size': settings.DB_POOL_SIZE,
-    'max_overflow': settings.DB_MAX_OVERFLOW,
-    'pool_timeout': settings.DB_POOL_TIMEOUT,
-    'pool_recycle': settings.DB_POOL_RECYCLE,
-    'pool_pre_ping': True,
-    'echo': settings.DEBUG,
-    'future': True,
-}
+# Create database engine with connection pooling
+engine: AsyncEngine = create_async_engine(
+    settings.DATABASE_URL,
+    pool_size=settings.DB_POOL_SIZE,
+    max_overflow=settings.DB_MAX_OVERFLOW,
+    pool_timeout=settings.DB_POOL_TIMEOUT,
+    pool_recycle=settings.DB_POOL_RECYCLE,
+    pool_pre_ping=settings.DB_POOL_PRE_PING,
+    poolclass=AsyncAdaptedQueuePool,
+    echo=settings.SQL_ECHO,
+    future=True
+)
 
-# SQLite specific settings
-if "sqlite" in settings.DATABASE_URL:
-    pool_config.update({
-        'connect_args': {"check_same_thread": False},
-        'poolclass': StaticPool if settings.TESTING else NullPool
-    })
-
-# Create database engine
-engine = create_async_engine(settings.DATABASE_URL, **pool_config)
-
-# Create session factory
+# Create async session factory
 async_session_factory = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
     expire_on_commit=False,
-    autocommit=False,
     autoflush=False,
+    future=True
 )
+
+# For backward compatibility
+SessionLocal = async_session_factory
 
 # Import all models to ensure they are registered with SQLAlchemy
 # This must be after Base is defined but before any model is used
@@ -99,48 +94,33 @@ __all__ = [
 ]
 
 # Dependency to get DB session
+@asynccontextmanager
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Get database session with proper transaction management.
     
     Yields:
         AsyncSession: Database session
-    
+        
     Example:
         async with get_db() as db:
             result = await db.execute(select(User))
             users = result.scalars().all()
     """
-    session = async_session_factory()
-    try:
-        async with session.begin():
+    async with async_session_factory() as session:
+        try:
             yield session
-    except Exception as e:
-        await session.rollback()
-        logger.error(f"Database error: {str(e)}")
-        raise
-    finally:
-        await session.close()
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
+            raise e
+        finally:
+            await session.close()
 
 # For use in FastAPI dependencies
 SessionLocal = async_session_factory
 
-# Helper function to get a database session
-@asynccontextmanager
-async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
-    """Get a database session with automatic cleanup.
-    
-    Yields:
-        AsyncSession: Database session
-    """
-    async with SessionLocal() as session:
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
+# Helper function to get a database session (alias for get_db for backward compatibility)
+get_db_session = get_db
 
 async def init_db() -> None:
     """Initialize database tables."""

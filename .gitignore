@@ -1,53 +1,131 @@
-# Dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# Testing
-/coverage
-
-# Production
-/build
-/dist
-
-# Environment variables
+# ====================================
+# Environment and Secrets
+# ====================================
 .env
 .env.*
 !.env.example
-
-# API keys and secrets
-*key*
-*secret*
-*credential*
-*password*
+secrets.*
+credentials.*
 *.pem
 *.key
 *.crt
 *.cert
+*_key
+*_secret
+*_token
+*_password
+*_credential
 
+# ====================================
+# Dependencies
+# ====================================
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+.venv/
+ENV/
+
+# ====================================
+# Build and Test Artifacts
+# ====================================
+/build/
+/dist/
+/coverage/
+*.log
+.nyc_output/
+.nyc_coverage/
+.coverage
+coverage.xml
+*.lcov
+
+# ====================================
+# IDE and Editor Files
+# ====================================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+
+# ====================================
 # Firebase
+# ====================================
+.firebase/
+.firebase-hosting-*.cache
 firebase-debug.log
 firebase-debug.*.log
 firebase-import-export-*.log
 firestore-debug.log
 firestore-debug.*.log
+ui-debug.log
+ui-debug-*.log
+ui.port
+firebase-debug.log
 
 # Firebase config files
-**/firebase-*.json
-**/firebase.json
-**/.firebaserc
-**/.firebase/
+firebase*.json
+.firebaserc
 
-# Local development
-.firebase/
-.firebase-hosting-*.cache
+# ====================================
+# Database
+# ===================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
 
-# Firebase emulators
-**/firestore-debug.log
-**/ui-debug.log
-**/ui-debug-*.log
-**/ui.port
-**/firebase-debug.log
+# ====================================
+# Local Development
+# ===================================
+.vercel/
+.netlify/
+.cache/
+.temp/
+temp/
+tmp/
+
+# ====================================
+# OS generated files
+# ===================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 **/firestore-debug.log
 **/pubsub-debug.log
 **/database-debug.log

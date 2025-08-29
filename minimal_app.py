@@ -23,15 +23,16 @@ app = FastAPI(
     title="NoteFusion AI API",
     description="Backend API for NoteFusion AI application",
     version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json"
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
 )
 
 # CORS Configuration
 origins = [
     "http://localhost:3000",
     "http://localhost:5000",
+    "http://localhost:8000",
     "https://notefusion-ai.vercel.app"
 ]
 

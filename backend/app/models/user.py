@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta
 from typing import List, Optional, TYPE_CHECKING, Dict, Any
-from sqlalchemy import String, Boolean, DateTime, ForeignKey, event
-from sqlalchemy.orm import relationship, Mapped, mapped_column, Session
-from sqlalchemy.sql import func
+from sqlalchemy import String, Boolean, DateTime, ForeignKey, event, text
+from sqlalchemy.orm import relationship, Mapped, mapped_column, Session, sessionmaker
+from sqlalchemy.sql import func, select
 from passlib.context import CryptContext
 import secrets
 import string
 
-from .database import Base
+from .database import Base, async_session_factory
 from .subscription_models import Subscription
 
 if TYPE_CHECKING:
@@ -47,6 +47,10 @@ class User(Base):
     
     # API key
     openai_api_key: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
     
     # Notification settings
     fcm_tokens: Mapped[Optional[List[str]]] = mapped_column(JSON, default=list, nullable=True)
@@ -88,6 +92,14 @@ class User(Base):
         lazy="selectin"
     )
     
+    @classmethod
+    async def get_by_email(cls, email: str) -> Optional['User']:
+        async with async_session_factory() as session:
+            result = await session.execute(
+                select(cls).where(cls.email == email)
+            )
+            return result.scalars().first()
+
     def __repr__(self) -> str:
         return f"<User {self.email}>"
     

@@ -143,8 +143,11 @@ class APIKeyAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Skip API key check for public endpoints
         if any(request.url.path.startswith(path) for path in [
-            "/api/v1/auth/", 
-            "/api/v1/docs", 
+            "/api/v1/auth/",
+            "/docs",
+            "/redoc",
+            "/openapi.json",
+            "/api/v1/docs",
             "/api/v1/redoc",
             "/api/v1/openapi.json"
         ]):
@@ -271,10 +274,11 @@ async def shutdown_event():
 middleware = [
     Middleware(
         CORSMiddleware,
-        allow_origins=settings.BACKEND_CORS_ORIGINS,
+        allow_origins=["*"],  # Allow all origins for now
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["*"],
     ),
     Middleware(
         TrustedHostMiddleware,
