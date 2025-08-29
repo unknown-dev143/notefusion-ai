@@ -1,0 +1,48 @@
+{
+  "app": {
+    "title": "NoteFusion AI",
+    "description": "Your intelligent note-taking assistant"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "loading": "Loading..."
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password"
+  },
+  "errors": {
+    "generic": "An error occurred. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "auth": "Authentication failed. Please check your credentials."
+  },
+  "audio": {
+    "transcribeAudio": "Transcribe Audio",
+    "startRecording": "Start Recording",
+    "stopRecording": "Stop Recording",
+    "processing": "Processing your audio...",
+    "transcription": "Transcription",
+    "transcriptionComplete": "Audio transcription complete!",
+    "transcriptionFailed": "Failed to transcribe audio. Please try again.",
+    "transcriptionSaved": "Transcription saved successfully!",
+    "microphoneAccessDenied": "Microphone access was denied. Please allow access to use this feature.",
+    "failedToLoadLanguages": "Failed to load supported languages.",
+    "language": "Language",
+    "saveTranscription": "Save Transcription",
+    "audioNotes": "Audio Notes",
+    "noteAdded": "Note added successfully!",
+    "notesSaved": "Notes saved successfully!",
+    "pause": "Pause",
+    "play": "Play",
+    "notes": "Notes",
+    "addNotePlaceholder": "Add a note at the current time...",
+    "noAudioRecorded": "No audio recorded yet. Start recording to add notes.",
+    "recordFirst": "Please record audio first"
+  }
+}

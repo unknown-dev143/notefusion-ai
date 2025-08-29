@@ -1,0 +1,46 @@
+.language-selector {
+  width: 150px;
+  margin-right: 16px;
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+}
+
+.language-native-name {
+  margin-right: 8px;
+}
+
+.language-english-name {
+  color: #999;
+  font-size: 0.9em;
+}
+
+.language-selector .ant-select-selector {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.language-selector .ant-select-arrow {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.language-selector:hover .ant-select-arrow {
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.language-selector .ant-select-selection-item {
+  display: flex;
+  align-items: center;
+  padding-right: 24px !important;
+}
+
+.language-selector .ant-select-item-option {
+  padding: 8px 12px;
+}
+
+.language-selector .ant-select-item-option-active {
+  background-color: #f5f5f5;
+}

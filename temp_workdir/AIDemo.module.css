@@ -1,0 +1,63 @@
+/* AIDemo.module.css */
+
+.container {
+  margin-bottom: 24px;
+}
+
+.textArea {
+  margin-bottom: 16px;
+}
+
+.actionButtons {
+  margin-bottom: 16px;
+}
+
+.generateButton {
+  margin-bottom: 16px;
+}
+
+.loadingContainer {
+  text-align: center;
+  padding: 24px 0;
+}
+
+.loadingText {
+  margin-top: 16px;
+}
+
+.loadingSubtext {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-top: 8px;
+}
+
+.outputContainer {
+  white-space: pre-line;
+  padding: 8px 0;
+}
+
+.emptyState {
+  color: #8c8c8c;
+  text-align: center;
+  padding: 24px 0;
+}
+
+.emptyStateIcon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: #1890ff;
+}
+
+.emptyStateSubtext {
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.tabButton {
+  margin-right: 8px;
+}
+
+.languageSelect {
+  width: 120px;
+  margin-left: 8px;
+}

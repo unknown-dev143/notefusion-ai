@@ -1,19 +1,94 @@
+<<<<<<< HEAD
+"""Application configuration with enhanced security settings."""
+import os
+from typing import Optional, List
+from pydantic import AnyHttpUrl, validator, SecretStr
+=======
 """Application configuration."""
 import os
 from typing import Optional
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 from pydantic_settings import BaseSettings
 from pathlib import Path
 
 class Settings(BaseSettings):
     # Application settings
+<<<<<<< HEAD
+    ENV: str = os.getenv("ENV", "development")
+    DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
+    
+    # Security settings
+    SECRET_KEY: SecretStr = os.getenv("SECRET_KEY", "")
+    SECURITY_PASSWORD_SALT: str = os.getenv("SECURITY_PASSWORD_SALT", "")
+=======
     ENV: str = "development"
     DEBUG: bool = True
     SECRET_KEY: str = "your-secret-key"  # Change this in production
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     
     # API settings
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "NoteFusion AI"
     
+<<<<<<< HEAD
+    # CORS settings
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:8000",
+    ]
+    
+    # Database settings
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./notefusion.db")
+    TEST_DATABASE_URL: str = os.getenv("TEST_DATABASE_URL", "sqlite+aiosqlite:///./test_notefusion.db")
+    
+    # Database connection pool settings
+    DB_POOL_SIZE: int = int(os.getenv("DB_POOL_SIZE", "5"))
+    DB_MAX_OVERFLOW: int = int(os.getenv("DB_MAX_OVERFLOW", "10"))
+    DB_POOL_TIMEOUT: int = int(os.getenv("DB_POOL_TIMEOUT", "30"))
+    DB_POOL_RECYCLE: int = int(os.getenv("DB_POOL_RECYCLE", "3600"))
+    DB_ECHO: bool = os.getenv("DB_ECHO", "false").lower() == "true"
+    
+    # JWT settings
+    JWT_SECRET_KEY: SecretStr = os.getenv("JWT_SECRET_KEY", "")
+    JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24 hours
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "30"))  # 30 days
+    JWT_VERIFICATION_TOKEN_EXPIRE_HOURS: int = 24  # 24 hours
+    JWT_PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hour
+    
+    # Rate limiting
+    RATE_LIMIT: str = os.getenv("RATE_LIMIT", "100/minute")
+    
+    # Email settings
+    EMAILS_ENABLED: bool = os.getenv("EMAILS_ENABLED", "false").lower() == "true"
+    SMTP_TLS: bool = os.getenv("SMTP_TLS", "true").lower() == "true"
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "")
+    SMTP_USER: str = os.getenv("SMTP_USER", "")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+    
+    # Security headers
+    SECURE_HSTS_SECONDS: int = 31536000  # 1 year
+    SECURE_CONTENT_TYPE_NOSNIFF: bool = True
+    SECURE_BROWSER_XSS_FILTER: bool = True
+    SESSION_COOKIE_HTTPONLY: bool = True
+    SESSION_COOKIE_SECURE: bool = not DEBUG
+    CSRF_COOKIE_SECURE: bool = not DEBUG
+    
+    # CORS settings
+    @validator("CORS_ORIGINS", pre=True)
+    def assemble_cors_origins(cls, v):
+        if isinstance(v, str) and not v.startswith("["):
+            return [i.strip() for i in v.split(",")]
+        elif isinstance(v, (list, str)):
+            return v
+        return ["*"]
+    
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = True
+=======
     # Database settings
     DATABASE_URL: str = "sqlite+aiosqlite:///./notefusion.db"
     TEST_DATABASE_URL: str = "sqlite+aiosqlite:///./test_notefusion.db"
@@ -33,6 +108,7 @@ class Settings(BaseSettings):
     SMTP_HOST: str = ""
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     CONTACT_EMAIL: str = "noreply@example.com"
     EMAILS_FROM_EMAIL: str = "noreply@example.com"
     EMAILS_FROM_NAME: str = "NoteFusion AI"
@@ -40,8 +116,19 @@ class Settings(BaseSettings):
     # OpenAI settings
     OPENAI_API_KEY: str = ""
     
+<<<<<<< HEAD
+    # Redis settings (for caching and Celery)
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    REDIS_CACHE_TTL: int = 300  # 5 minutes default cache TTL
+    
+    # CORS settings
+    CORS_ORIGINS: list = ["*"]
+    CORS_METHODS: list = ["*"]
+    CORS_HEADERS: list = ["*"]
+=======
     # Redis settings (for Celery)
     REDIS_URL: str = "redis://localhost:6379/0"
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     
     # File upload settings
     UPLOAD_FOLDER: str = str(Path(__file__).parent / "uploads")

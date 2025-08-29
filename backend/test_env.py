@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+import sys  
+print(sys.executable)  
+=======
 import sys
 import os
 import platform
@@ -42,3 +46,4 @@ try:
     print("✅ moviepy.editor imports successful")
 except ImportError as e:
     print("❌ moviepy.editor import failed:", str(e))
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e

@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Form, Input, Button, Card, Typography, message } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
+<<<<<<< HEAD
+import styles from './ResetPasswordPage.module.css';
+=======
 import { useAuth } from '../context/AuthContext';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const { Title, Text } = Typography;
 
@@ -63,8 +67,13 @@ export const ResetPasswordPage: React.FC = () => {
 
   if (validToken === null) {
     return (
+<<<<<<< HEAD
+      <div className={styles['authPage']}>
+        <Card className={styles['authCard']} loading>
+=======
       <div className="auth-page">
         <Card className="auth-card" loading>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <div style={{ height: '200px' }} />
         </Card>
       </div>
@@ -73,15 +82,25 @@ export const ResetPasswordPage: React.FC = () => {
 
   if (validToken === false) {
     return (
+<<<<<<< HEAD
+      <div className={styles['authPage']}>
+        <Card className={styles['authCard']}>
+          <div className={styles['authHeader']}>
+=======
       <div className="auth-page">
         <Card className="auth-card">
           <div className="auth-header">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <Title level={3}>Invalid Reset Link</Title>
             <Text type="secondary">
               The password reset link is invalid or has expired. Please request a new one.
             </Text>
           </div>
+<<<<<<< HEAD
+          <div className={styles['authFooter']}>
+=======
           <div className="auth-footer">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <Button type="primary" onClick={() => navigate('/forgot-password')} block>
               Request New Link
             </Button>
@@ -95,9 +114,15 @@ export const ResetPasswordPage: React.FC = () => {
   }
 
   return (
+<<<<<<< HEAD
+    <div className={styles['authPage']}>
+      <Card className={styles['authCard']} hoverable>
+        <div className={styles['authHeader']}>
+=======
     <div className="auth-page">
       <Card className="auth-card" hoverable>
         <div className="auth-header">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <Title level={3}>Create New Password</Title>
           <Text type="secondary">Enter your new password below</Text>
         </div>
@@ -106,7 +131,11 @@ export const ResetPasswordPage: React.FC = () => {
           form={form}
           name="reset-password"
           onFinish={onFinish}
+<<<<<<< HEAD
+          className={styles['authForm']}
+=======
           className="auth-form"
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           layout="vertical"
         >
           <Form.Item
@@ -160,7 +189,11 @@ export const ResetPasswordPage: React.FC = () => {
             <Button
               type="primary"
               htmlType="submit"
+<<<<<<< HEAD
+              className={styles['resetButton']}
+=======
               className="reset-button"
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               size="large"
               loading={loading}
               block
@@ -170,15 +203,24 @@ export const ResetPasswordPage: React.FC = () => {
           </Form.Item>
         </Form>
 
+<<<<<<< HEAD
+        <div className={styles['authFooter']}>
+          <Text>
+            Remembered your password?{' '}
+            <a onClick={() => navigate('/login')} className={styles['loginLink']}>
+=======
         <div className="auth-footer">
           <Text>
             Remembered your password?{' '}
             <a onClick={() => navigate('/login')} className="login-link">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               Log in
             </a>
           </Text>
         </div>
       </Card>
+<<<<<<< HEAD
+=======
 
       <style jsx global>{`
         .auth-page {
@@ -221,6 +263,7 @@ export const ResetPasswordPage: React.FC = () => {
           font-weight: 500;
         }
       `}</style>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     </div>
   );
 };

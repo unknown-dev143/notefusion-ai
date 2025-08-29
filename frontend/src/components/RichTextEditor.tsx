@@ -1,8 +1,47 @@
+<<<<<<< HEAD
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+=======
 import * as React from 'react';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { 
   Editor, 
   EditorState, 
   RichUtils, 
+<<<<<<< HEAD
+  getDefaultKeyBinding, 
+  convertToRaw, 
+  convertFromRaw, 
+  ContentState, 
+  DraftStyleMap, 
+  CompositeDecorator, 
+  ContentBlock, 
+  DraftHandleValue, 
+  RawDraftContentState,
+  DraftEditorCommand,
+  DraftBlockType,
+  DraftInlineStyleType,
+  CharacterMetadata,
+  DraftDecorator,
+  CompositeDecoratorProps
+} from 'draft-js';
+
+type DraftDecoratorType = DraftDecorator;
+
+type BlockStyleFn = (block: ContentBlock) => string;
+import 'draft-js/dist/Draft.css';
+import { 
+  FaBold, 
+  FaItalic, 
+  FaUnderline, 
+  FaListUl, 
+  FaListOl, 
+  FaLink,
+  FaAlignLeft,
+  FaAlignCenter,
+  FaAlignRight,
+  FaAlignJustify
+} from 'react-icons/fa';
+=======
   convertToRaw, 
   convertFromRaw, 
   ContentState,
@@ -23,6 +62,7 @@ const {
   useCallback, 
   useEffect 
 } = React;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 // Define interfaces for better type safety
 interface RichTextEditorProps {
@@ -38,6 +78,15 @@ interface LinkProps {
   contentState: ContentState;
   entityKey: string;
   children: React.ReactNode;
+<<<<<<< HEAD
+  decoratedText?: string;
+  offsetKey: string;
+  blockKey: string;
+  dir?: string;
+  end: number;
+  start: number;
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 }
 
 // Define the style map for custom styles
@@ -90,6 +139,8 @@ const styles = {
     cursor: 'pointer',
   },
 } as const;
+<<<<<<< HEAD
+=======
 import 'draft-js/dist/Draft.css';
 import { 
   FaBold, 
@@ -129,6 +180,7 @@ interface LinkProps {
   entityKey: string;
   children: React.ReactNode;
 }
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 // Custom component for links
 const Link: React.FC<LinkProps> = ({ contentState, entityKey, children }) => {
@@ -165,6 +217,17 @@ function findLinkEntities(
   );
 }
 
+<<<<<<< HEAD
+// Create decorator for links
+const createDecorator = () => {
+  return new CompositeDecorator([
+    {
+      strategy: findLinkEntities,
+      component: Link as React.ComponentType<LinkProps>,
+    },
+  ]);
+};
+=======
 // Define styles
 const styles = {
   editor: {
@@ -238,6 +301,7 @@ const createDecorator = () =>
       component: Link,
     },
   ]);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
   content,
@@ -268,6 +332,28 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   }, [onChange]);
 
+<<<<<<< HEAD
+  const handleKeyCommand = (command: DraftEditorCommand | string, editorState: EditorState): DraftHandleValue => {
+    if (typeof command === 'string') {
+      command = command as DraftEditorCommandType;
+    }
+    const newState = RichUtils.handleKeyCommand(editorState, command);
+    if (newState) {
+      setEditorState(newState);
+      return 'handled';
+    }
+    return 'not-handled';
+  };
+
+  // Add other handlers as needed
+  const toggleInlineStyle = (inlineStyle: string) => {
+    setEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle as DraftInlineStyleType));
+  };
+
+  const toggleBlockType = (blockType: string) => {
+    setEditorState(RichUtils.toggleBlockType(editorState, blockType as DraftBlockType));
+  };
+=======
   const handleKeyCommand = React.useCallback((command: string, editorState: EditorState) => {
     const newState = RichUtils.handleKeyCommand(editorState, command);
     if (newState) {
@@ -285,6 +371,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const toggleBlockType = React.useCallback((blockType: string) => {
     handleChange(RichUtils.toggleBlockType(editorState, blockType));
   }, [editorState, handleChange]);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
   // Focus the editor when mounted
   React.useEffect(() => {
@@ -323,7 +410,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [editorState]);
 
   // Check if current block has a specific style
+<<<<<<< HEAD
+  const hasInlineStyle = useCallback((style: DraftInlineStyleType): boolean => {
+=======
   const hasInlineStyle = useCallback((style: string): boolean => {
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     return editorState.getCurrentInlineStyle().has(style);
   }, [editorState]);
 
@@ -395,6 +486,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [editorState, handleChange]);
 
   // Custom block renderer
+<<<<<<< HEAD
+  const blockStyleFn: BlockStyleFn = (contentBlock: ContentBlock): string => {
+    const type = contentBlock.getType();
+    if (type === 'blockquote') {
+      return 'RichEditor-blockquote';
+    }
+    return '';
+=======
   const blockStyleFn = (contentBlock: any) => {
     const type = contentBlock.getType();
     switch (type) {
@@ -405,6 +504,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       default:
         return '';
     }
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   };
 
   return (
@@ -436,8 +536,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             </button>
             <button
               onClick={() => toggleInlineStyle('HIGHLIGHT')}
+<<<<<<< HEAD
+              className={`p-2 rounded hover:bg-gray-100 ${editorState.getCurrentInlineStyle().has('HIGHLIGHT' as any) ? 'bg-gray-200' : ''}`}
+              title="Highlight"
+              onClick={() => toggleInlineStyle('HIGHLIGHT')}
+=======
               className={`p-2 rounded hover:bg-gray-100 ${hasInlineStyle('HIGHLIGHT') ? 'bg-gray-200' : ''}`}
               title="Highlight"
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             >
               <span className="text-yellow-600">H</span>
             </button>
@@ -532,7 +638,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           handleReturn={handleReturn}
           placeholder={placeholder}
           readOnly={readOnly}
+<<<<<<< HEAD
+          customStyleMap={editorStyleMap}
+=======
           customStyleMap={styleMap}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           blockStyleFn={blockStyleFn}
           spellCheck={true}
         />

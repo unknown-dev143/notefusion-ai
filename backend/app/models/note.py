@@ -25,6 +25,10 @@ class Note(Base):
     user = relationship("User", back_populates="notes", foreign_keys=[user_id])
     folder = relationship("Folder", back_populates="notes")
     attachments = relationship("Attachment", back_populates="note", cascade="all, delete-orphan")
+<<<<<<< HEAD
+    flashcards = relationship("Flashcard", back_populates="note", cascade="all, delete-orphan")
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     editor = relationship("User", foreign_keys=[last_edited_by], uselist=False)
     
     def __repr__(self):

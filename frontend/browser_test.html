@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Browser Environment Test</title>
+</head>
+<body>
+<h1>Browser Environment Test</h1>
+    
+    <div class="test" id="js-test">
+        <h3>JavaScript Test</h3>
+        <p>Checking basic JavaScript functionality...</p>
+    </div>
+
+    <div class="test" id="console-test">
+        <h3>Console Test</h3>
+        <p>Check your browser's console for additional information.</p>
+    </div>
+
+    <div class="test" id="localstorage-test">
+        <h3>LocalStorage Test</h3>
+        <p>Testing localStorage functionality...</p>
+    </div>
+
+    <div class="test" id="fetch-test">
+        <h3>Fetch API Test</h3>
+        <p>Testing Fetch API...</p>
+    </div>
+
+    <script>
+        // Test 1: Basic JavaScript
+        try {
+            document.getElementById('js-test').innerHTML += 
+                '<p class="pass">✓ JavaScript is working correctly</p>';
+        } catch (e) {
+            document.getElementById('js-test').innerHTML += 
+                `<p class="fail">✗ JavaScript error: ${e.message}</p>`;
+        }
+
+        // Test 2: Console
+        console.log('Console test: This message should appear in the browser console');
+        document.getElementById('console-test').innerHTML += 
+            '<p class="pass">✓ Console is working (check browser console for message)</p>';
+
+        // Test 3: LocalStorage
+        try {
+            const testKey = 'testKey' + Date.now();
+            localStorage.setItem(testKey, 'testValue');
+            const value = localStorage.getItem(testKey);
+            localStorage.removeItem(testKey);
+            
+            if (value === 'testValue') {
+                document.getElementById('localstorage-test').innerHTML += 
+                    '<p class="pass">✓ localStorage is working correctly</p>';
+            } else {
+                throw new Error('localStorage read/write failed');
+            }
+        } catch (e) {
+            document.getElementById('localstorage-test').innerHTML += 
+                `<p class="warning">⚠️ localStorage test failed: ${e.message}</p>`;
+        }
+
+        // Test 4: Fetch API
+        fetch('https://httpbin.org/get')
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Network response was not ok');
+            })
+            .then(data => {
+                document.getElementById('fetch-test').innerHTML += 
+                    '<p class="pass">✓ Fetch API is working correctly</p>';
+            })
+            .catch(error => {
+                document.getElementById('fetch-test').innerHTML += 
+                    `<p class="warning">⚠️ Fetch API test failed: ${error.message}</p>`;
+            });
+    </script>
+</body>
+</html>

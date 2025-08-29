@@ -1,0 +1,141 @@
+.notificationTrigger {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  position: relative;
+}
+
+.notificationTrigger:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.bellIconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.bellIcon {
+  font-size: 18px;
+  color: rgba(0, 0, 0, 0.65);
+  transition: color 0.2s;
+}
+
+.notificationTrigger:hover .bellIcon {
+  color: #1890ff;
+}
+
+.notificationText {
+  margin-left: 8px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.notificationBadge :global(.ant-badge-count) {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  transform: scale(0.8);
+  transform-origin: 100% 0%;
+  background-color: #ff4d4f;
+  color: white;
+  box-shadow: 0 0 0 1px #fff;
+  font-size: 10px;
+  font-weight: 600;
+  height: 16px;
+  min-width: 16px;
+  line-height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.notificationDropdown {
+  width: 360px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+}
+
+.dropdownHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdownHeader h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.notificationContent {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 400px;
+  min-height: 200px;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.loadingContainer span {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.dropdownFooter {
+  border-top: 1px solid #f0f0f0;
+  padding: 8px 16px;
+  text-align: center;
+  background-color: #fafafa;
+}
+
+/* Animation for new notifications */
+@keyframes bellRing {
+  0% { transform: rotate(0); }
+  10% { transform: rotate(-15deg); }
+  20% { transform: rotate(15deg); }
+  30% { transform: rotate(-10deg); }
+  40% { transform: rotate(10deg); }
+  50% { transform: rotate(-5deg); }
+  60% { transform: rotate(5deg); }
+  70% { transform: rotate(-2deg); }
+  80% { transform: rotate(2deg); }
+  90% { transform: rotate(-1deg); }
+  100% { transform: rotate(0); }
+}
+
+.hasNewNotifications {
+  animation: bellRing 1s ease-in-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .notificationDropdown {
+    width: 300px;
+    right: -100px;
+  }
+  
+  .notificationContent {
+    max-height: 60vh;
+  }
+}

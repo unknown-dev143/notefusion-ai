@@ -350,6 +350,10 @@ const Whiteboard: React.FC = () => {
               <button
                 onClick={() => setShowNewNoteForm(false)}
                 className="text-gray-500 hover:text-gray-700"
+<<<<<<< HEAD
+                aria-label="Close dialog"
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               >
                 <FiX className="h-5 w-5" />
               </button>

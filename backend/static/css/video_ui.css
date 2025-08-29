@@ -1,0 +1,71 @@
+/* Video UI Styles */
+.video-container {
+    max-width: 100%;
+    margin: 20px 0;
+}
+
+.video-preview {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+/* Hide elements utility */
+.hidden {
+    display: none !important;
+}
+
+/* Launch Video UI Specific */
+.launch-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.btn-launch {
+    padding: 10px 24px;
+    font-size: 1.1rem;
+}
+
+/* Test Video UI Simple Specific */
+#text-input {
+    width: 100%;
+    min-height: 100px;
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+#progress-container {
+    margin: 20px 0;
+    display: none;
+}
+
+#progress-bar {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Test Video UI Specific */
+#videoContainer {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .launch-container {
+        margin: 20px 10px;
+        padding: 10px;
+    }
+    
+    .btn-launch {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}

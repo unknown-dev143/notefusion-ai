@@ -1,0 +1,214 @@
+version: '3.8'
+
+# Network for all services to communicate
+networks:
+  app-network:
+    driver: bridge
+  frontend-network:
+    driver: bridge
+
+# Volumes for persistent data
+volumes:
+  postgres_data:
+  redis_data:
+  uploads:
+  node_modules:
+
+services:
+  # Database Service
+  db:
+    image: postgres:13-alpine
+    container_name: notefusion-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-notefusion}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-notefusion123}
+      POSTGRES_DB: ${POSTGRES_DB:-notefusion}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-notefusion} -d ${POSTGRES_DB:-notefusion}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # Redis Service
+  redis:
+    image: redis:7-alpine
+    container_name: notefusion-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-your-redis-password}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=development
+    container_name: notefusion-backend
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # For debugging
+    environment:
+      - ENV=development
+      - DEBUG=true
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-notefusion}:${POSTGRES_PASSWORD:-notefusion123}@db:5432/${POSTGRES_DB:-notefusion}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-your-redis-password}@redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-here}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-jwt-secret-here}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+      - UPLOAD_FOLDER=/app/uploads
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8000
+      - FRONTEND_URL=http://localhost:3000
+    volumes:
+      - ./backend:/app
+      - /app/venv
+      - /app/__pycache__
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+      - frontend-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Service with Vite
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+      args:
+        - NODE_ENV=development
+    container_name: notefusion-frontend
+    ports:
+      - "3000:3000"
+      - "24678:24678"  # For Vite HMR
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:8000/api/v1
+      - VITE_WS_URL=ws://localhost:8000/ws
+      - VITE_ENABLE_DEV_TOOLS=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - frontend-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Development Tools
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@notefusion.ai}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Redis Commander (Web UI for Redis)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-your-redis-password}
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # MailHog for email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Traefik for reverse proxy (optional)
+  # Uncomment if you want to use Traefik
+  # traefik:
+  #   image: traefik:v2.5
+  #   container_name: traefik
+  #   command:
+  #     - --api.insecure=true
+  #     - --providers.docker=true
+  #     - --providers.docker.exposedbydefault=false
+  #     - --entrypoints.web.address=:80
+  #   ports:
+  #     - "80:80"
+  #     - "8080:8080" # Dashboard
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   networks:
+  #     - app-network
+  #     - frontend-network
+  #   restart: unless-stopped
+  #     - app-network
+  #   restart: unless-stopped
+
+  # Traefik Reverse Proxy (optional - for production)
+  # traefik:
+  #   image: traefik:v2.9
+  #   container_name: traefik
+  #   command:
+  #     - "--api.insecure=true"
+  #     - "--providers.docker=true"
+  #     - "--providers.docker.exposedbydefault=false"
+  #     - "--entrypoints.web.address=:80"
+  #     - "--entrypoints.websecure.address=:443"
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #     - "8080:8080" # Dashboard
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   networks:
+  #     - app-network

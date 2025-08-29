@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+<<<<<<< HEAD
+import './Tooltip.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 interface TooltipProps {
   /** The content to show in the tooltip */
@@ -59,6 +63,30 @@ const Tooltip: React.FC<TooltipProps> = ({
     const scrollY = window.scrollY || document.documentElement.scrollTop;
     const scrollX = window.scrollX || document.documentElement.scrollLeft;
 
+<<<<<<< HEAD
+    // Calculate positions based on tooltip position
+    const positions = {
+      top: {
+        top: trigger.top + scrollY - tooltip.height - 8,
+        left: trigger.left + scrollX + (trigger.width - tooltip.width) / 2,
+      },
+      right: {
+        top: trigger.top + scrollY + (trigger.height - tooltip.height) / 2,
+        left: trigger.left + scrollX + trigger.width + 8,
+      },
+      bottom: {
+        top: trigger.bottom + scrollY + 8,
+        left: trigger.left + scrollX + (trigger.width - tooltip.width) / 2,
+      },
+      left: {
+        top: trigger.top + scrollY + (trigger.height - tooltip.height) / 2,
+        left: trigger.left + scrollX - tooltip.width - 8,
+      },
+    };
+
+    const { top: newTop, left: newLeft } = positions[position];
+    
+=======
     let top = 0;
     let left = 0;
 
@@ -81,14 +109,20 @@ const Tooltip: React.FC<TooltipProps> = ({
         break;
     }
 
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     // Ensure tooltip stays within viewport
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     
+<<<<<<< HEAD
+    const left = Math.max(8, Math.min(viewportWidth - tooltip.width - 8, newLeft));
+    const top = Math.max(8, Math.min(viewportHeight - tooltip.height - 8, newTop));
+=======
     if (left < 0) left = 8;
     if (left + tooltip.width > viewportWidth) left = viewportWidth - tooltip.width - 8;
     if (top < 0) top = 8;
     if (top + tooltip.height > viewportHeight) top = viewportHeight - tooltip.height - 8;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
     setCoords({ top, left });
   }, [position]);
@@ -112,9 +146,20 @@ const Tooltip: React.FC<TooltipProps> = ({
 
   // Update position when tooltip is open
   useEffect((): (() => void) | void => {
+<<<<<<< HEAD
+    if (!isOpen || !tooltipRef.current) return;
+    
+    updatePosition();
+    
+    // Set CSS variables for positioning
+    tooltipRef.current.style.setProperty('--tooltip-top', `${coords.top}px`);
+    tooltipRef.current.style.setProperty('--tooltip-left', `${coords.left}px`);
+    
+=======
     if (!isOpen) return;
     
     updatePosition();
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     // Re-position on scroll/resize
     const handleScroll = (): void => updatePosition();
     const handleResize = (): void => updatePosition();
@@ -126,7 +171,11 @@ const Tooltip: React.FC<TooltipProps> = ({
       window.removeEventListener('scroll', handleScroll, true);
       window.removeEventListener('resize', handleResize);
     };
+<<<<<<< HEAD
+  }, [isOpen, updatePosition, coords.top, coords.left]);
+=======
   }, [isOpen, updatePosition]);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
   // Clean up timeouts on unmount
   useEffect((): (() => void) => {
@@ -204,6 +253,14 @@ const Tooltip: React.FC<TooltipProps> = ({
     ? createPortal(
         <div
           ref={tooltipRef}
+<<<<<<< HEAD
+          className={`tooltip ${position} ${className}`}
+          role="tooltip"
+          id="tooltip-content"
+        >
+          {content}
+          {showArrow && <div className="tooltip-arrow" />}
+=======
           id="tooltip-content"
           role="tooltip"
           className={`
@@ -235,6 +292,7 @@ const Tooltip: React.FC<TooltipProps> = ({
               aria-hidden="true"
             />
           )}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         </div>,
         document.body
       )

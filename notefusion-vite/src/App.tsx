@@ -3,6 +3,10 @@ import type { FC, ReactNode } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Toaster } from 'react-hot-toast';
+<<<<<<< HEAD
+import styles from './App.module.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { Layout, Menu, Button, Typography } from 'antd';
 import { 
   HomeOutlined, 
@@ -59,7 +63,11 @@ const AppContent: FC<AppContentProps> = ({ onMount }) => {
 
   if (loading) {
     return (
+<<<<<<< HEAD
+      <div className={styles.loadingContainer}>
+=======
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         Loading...
       </div>
     );

@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Offline Test - NoteFusion AI</title>
+</head>
+<body>
+<h1>Offline Functionality Test</h1>
+    
+    <div class="container">
+        <h2>Connection Status</h2>
+        <div id="status" class="status">Checking connection status...</div>
+        
+        <h2>Service Worker</h2>
+        <div id="swStatus">Checking service worker status...</div>
+        
+        <h2>Cache Test</h2>
+        <button id="testCache">Test Cache</button>
+        <div id="cacheResult"></div>
+        
+        <h2>Offline Test</h2>
+        <p>To test offline functionality:</p>
+        <ol>
+            <li>Click "Go Offline" to simulate being offline</li>
+            <li>Refresh the page - it should still load</li>
+            <li>Click "Go Online" to restore connection</li>
+        </ol>
+        <button id="toggleOffline">Go Offline</button>
+        <button id="testOffline" disabled>Test Offline Page</button>
+    </div>
+
+    <script>
+        // Check online status
+        function updateOnlineStatus() {
+            const status = document.getElementById('status');
+            if (navigator.onLine) {
+                status.textContent = 'You are currently ONLINE';
+                status.className = 'status online';
+                document.getElementById('toggleOffline').textContent = 'Go Offline';
+                document.getElementById('testOffline').disabled = true;
+            } else {
+                status.textContent = 'You are currently OFFLINE';
+                status.className = 'status offline';
+                document.getElementById('toggleOffline').textContent = 'Go Online';
+                document.getElementById('testOffline').disabled = false;
+            }
+        }
+
+        // Check service worker status
+        async function checkServiceWorker() {
+            const status = document.getElementById('swStatus');
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        // Register the service worker if not already registered
+                        if (registration.active) {
+                            status.textContent = 'Service Worker is registered and active';
+                            status.className = 'status online';
+                        } else {
+                            // Try to register the service worker
+                            await navigator.serviceWorker.register('/sw-offline.js');
+                            status.textContent = 'Service Worker registered successfully';
+                            status.className = 'status online';
+                        }
+                    } else {
+                        // No registration found, try to register
+                        try {
+                            await navigator.serviceWorker.register('/sw-offline.js');
+                            status.textContent = 'Service Worker registered successfully';
+                            status.className = 'status online';
+                        } catch (regError) {
+                            status.textContent = 'Failed to register Service Worker: ' + regError.message;
+                            status.className = 'status offline';
+                        }
+                    }
+                } catch (error) {
+                    status.textContent = 'Error checking Service Worker: ' + error.message;
+                    status.className = 'status offline';
+                    
+                    // Try to register the service worker
+                    try {
+                        await navigator.serviceWorker.register('/sw-offline.js');
+                        status.textContent = 'Service Worker registered successfully';
+                        status.className = 'status online';
+                    } catch (regError) {
+                        console.error('Service Worker registration failed:', regError);
+                    }
+                }
+            } else {
+                status.textContent = 'Service Workers are not supported in this browser';
+                status.className = 'status offline';
+            }
+        }
+
+        // Test cache
+        document.getElementById('testCache').addEventListener('click', async () => {
+            const result = document.getElementById('cacheResult');
+            try {
+                const cache = await caches.open('notefusion-offline-v1');
+                const keys = await cache.keys();
+                result.innerHTML = `Found ${keys.length} cached items:<br>`;
+                keys.forEach((request, index) => {
+                    result.innerHTML += `${index + 1}. ${request.url}<br>`;
+                });
+            } catch (error) {
+                result.textContent = 'Error accessing cache: ' + error.message;
+            }
+        });
+
+        // Toggle offline mode
+        document.getElementById('toggleOffline').addEventListener('click', () => {
+            if (navigator.onLine) {
+                // Going offline
+                window.dispatchEvent(new Event('offline'));
+                navigator.serviceWorker.controller.postMessage({ type: 'FORCE_OFFLINE' });
+                updateOnlineStatus();
+            } else {
+                // Going online
+                window.dispatchEvent(new Event('online'));
+                navigator.serviceWorker.controller.postMessage({ type: 'FORCE_ONLINE' });
+                updateOnlineStatus();
+            }
+        });
+
+        // Test offline page
+        document.getElementById('testOffline').addEventListener('click', () => {
+            window.location.href = '/offline.html';
+        });
+
+        // Initialize
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+        checkServiceWorker();
+    </script>
+</body>
+</html>

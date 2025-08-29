@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
+<<<<<<< HEAD
+import { Card, List, Tag, Button, Space, Typography, Spin, message } from 'antd';
+=======
 import { Card, List, Tag, Button, Space, Typography, Spin, message, Divider } from 'antd';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { 
   BulbOutlined, 
   CheckOutlined, 
@@ -11,6 +15,10 @@ import {
   QuestionCircleOutlined
 } from '@ant-design/icons';
 import { noteAIService, AISuggestion } from '../services/noteAIService';
+<<<<<<< HEAD
+import styles from './AISuggestions.module.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const { Text } = Typography;
 
@@ -38,7 +46,10 @@ const SuggestionTitles: Record<string, string> = {
 const AISuggestions: React.FC<AISuggestionsProps> = ({
   noteId,
   content,
+<<<<<<< HEAD
+=======
   currentTags,
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   onApplySuggestion
 }) => {
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
@@ -85,12 +96,20 @@ const AISuggestions: React.FC<AISuggestionsProps> = ({
       case 'tags':
         const tags = Array.isArray(suggestion.content) ? suggestion.content : [];
         return (
+<<<<<<< HEAD
+          <div className={styles.suggestionContent}>
+=======
           <div style={{ marginTop: 8 }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             {tags.map((tag, i) => (
               <Tag 
                 key={i} 
                 color="blue"
+<<<<<<< HEAD
+                className={styles['tag']}
+=======
                 style={{ marginBottom: 4, cursor: 'pointer' }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                 onClick={() => onApplySuggestion('add-tag', tag)}
               >
                 {tag}
@@ -105,9 +124,15 @@ const AISuggestions: React.FC<AISuggestionsProps> = ({
           <List
             size="small"
             dataSource={items}
+<<<<<<< HEAD
+            renderItem={(item: string) => (
+              <List.Item>
+                <Text className={styles['actionItemText']}>{item}</Text>
+=======
             renderItem={(item: string, i) => (
               <List.Item>
                 <Text style={{ fontSize: '0.9rem' }}>{item}</Text>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               </List.Item>
             )}
           />
@@ -119,7 +144,11 @@ const AISuggestions: React.FC<AISuggestionsProps> = ({
           <List
             size="small"
             dataSource={notes}
+<<<<<<< HEAD
+            renderItem={(note: string) => (
+=======
             renderItem={(note: string, i) => (
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               <List.Item>
                 <Text 
                   ellipsis={{ tooltip: note }}
@@ -147,9 +176,14 @@ const AISuggestions: React.FC<AISuggestionsProps> = ({
   if (loading) {
     return (
       <Card size="small" style={{ marginTop: 16 }}>
+<<<<<<< HEAD
+        <div className={styles['loadingContainer']}>
+          <Spin size="small" />
+=======
         <div style={{ textAlign: 'center', padding: '16px 0' }}>
           <Spin size="small" />
           <div style={{ marginTop: 8 }}>Analyzing your note...</div>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         </div>
       </Card>
     );
@@ -198,6 +232,19 @@ const AISuggestions: React.FC<AISuggestionsProps> = ({
               <List.Item.Meta
                 avatar={SuggestionIcons[suggestion.type] || <BulbOutlined />}
                 title={
+<<<<<<< HEAD
+                  <div className={styles['suggestionHeader']}>
+                    <div className={styles['suggestionActions']}>
+                      {SuggestionIcons[suggestion.type]}
+                      <Text strong>{SuggestionTitles[suggestion.type] || 'Suggestion'}</Text>
+                    </div>
+                    {suggestion.confidence && (
+                      <Tag color={suggestion.confidence > 0.7 ? 'green' : 'orange'}>
+                        {Math.round(suggestion.confidence * 100)}% confident
+                      </Tag>
+                    )}
+                  </div>
+=======
                   <Space>
                     <Text strong>{SuggestionTitles[suggestion.type] || 'Suggestion'}</Text>
                     {suggestion.confidence && (
@@ -206,6 +253,7 @@ const AISuggestions: React.FC<AISuggestionsProps> = ({
                       </Tag>
                     )}
                   </Space>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                 }
                 description={renderSuggestionContent(suggestion)}
               />

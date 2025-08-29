@@ -11,6 +11,13 @@
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
+<<<<<<< HEAD
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.1",
+    "@mui/material": "^7.3.1",
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     "@sentry/react": "^10.5.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
@@ -24,12 +31,21 @@
     "workbox-window": "^7.3.0"
   },
   "devDependencies": {
+<<<<<<< HEAD
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest-axe": "^3.5.9",
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     "@types/service_worker_api": "^0.0.9",
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-react": "^7.32.2",
+<<<<<<< HEAD
+    "jest-axe": "^10.0.0",
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     "prettier": "^2.8.7"
   }
 }

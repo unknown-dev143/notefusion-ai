@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Environment test page for NoteFusion AI">
+    <!-- Theme color with dynamic fallback for different browsers -->
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        // Add theme-color meta tags for supported browsers
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1a73e8';
+        lightTheme.media = '(prefers-color-scheme: light)';
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#0d47a1';
+        darkTheme.media = '(prefers-color-scheme: dark)';
+        document.head.appendChild(darkTheme);
+      }
+    </script>
+    
+    <!-- Fallback for all browsers -->
+    <meta name="msapplication-TileColor" content="#1a73e8">
+    <meta name="msapplication-navbutton-color" content="#1a73e8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Environment Test - NoteFusion AI</title>
+    <link rel="stylesheet" href="test-styles.css">
+</head>
+<body>
+    <header>
+        <h1>Environment Test</h1>
+    </header>
+    <main>
+        <div id="results" class="test-results">
+            <div class="test" id="test1">1. Testing JavaScript console...</div>
+            <div class="test" id="test2">2. Detecting browser information...</div>
+            <div class="test" id="test3">3. Checking environment features...</div>
+        </div>
+    </main>
+
+    <script>
+        /**
+         * Helper function to safely update test results
+         */
+        function updateTestResult(testId, passed, message) {
+            const element = document.getElementById(testId);
+            if (!element) return;
+            
+            element.classList.add(passed ? 'pass' : 'fail');
+            const status = passed ? '✓ PASS' : `✗ FAIL: ${message || 'Test failed'}`;
+            element.innerHTML += ` <strong>${status}</strong>`;
+        }
+
+        // Test 1: Basic JavaScript
+        try {
+            console.log('Console is working!');
+            updateTestResult('test1', true);
+        } catch (e) {
+            updateTestResult('test1', false, e.message);
+        }
+
+        // Test 2: Browser Info
+        try {
+            const browserInfo = {
+                'User Agent': navigator.userAgent,
+                'Platform': navigator.platform,
+                'Cookies Enabled': navigator.cookieEnabled,
+                'Languages': navigator.languages ? navigator.languages.join(', ') : 'Not available',
+                'Online Status': navigator.onLine ? 'Online' : 'Offline',
+                'Device Memory': navigator.deviceMemory ? `${navigator.deviceMemory}GB` : 'Not available',
+                'Connection': navigator.connection ? JSON.stringify(navigator.connection, null, 2) : 'Not available'
+            };
+            
+            console.log('Browser Info:', browserInfo);
+            const infoList = Object.entries(browserInfo)
+                .map(([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`)
+                .join('');
+            
+            const test2Element = document.getElementById('test2');
+            if (test2Element) {
+                test2Element.innerHTML += `<ul class="browser-info">${infoList}</ul>`;
+                updateTestResult('test2', true);
+            }
+        } catch (e) {
+            console.error('Browser info test failed:', e);
+            updateTestResult('test2', false, e.message);
+        }
+
+        // Test 3: Feature Detection
+        try {
+            const features = {
+                'Local Storage': 'localStorage' in window,
+                'Session Storage': 'sessionStorage' in window,
+                'Service Worker': 'serviceWorker' in navigator,
+                'Web Workers': 'Worker' in window,
+                'WebGL': (() => {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        return !!(window.WebGLRenderingContext && 
+                               (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+                    } catch (e) { return false; }
+                })(),
+                'Fetch API': 'fetch' in window,
+                'Promises': 'Promise' in window,
+                'WebAssembly': 'WebAssembly' in window,
+                'WebRTC': 'RTCPeerConnection' in window,
+                'WebSocket': 'WebSocket' in window
+            };
+            
+            console.log('Feature Detection:', features);
+            const featuresList = Object.entries(features)
+                .map(([key, value]) => `<li class="feature-item">
+                    <span class="feature-name">${key}:</span>
+                    <span class="feature-status ${value ? 'success' : 'error'}">
+                        ${value ? '✅ Available' : '❌ Not Available'}
+                    </span>
+                </li>`)
+                .join('');
+            
+            const test3Element = document.getElementById('test3');
+            if (test3Element) {
+                test3Element.innerHTML += `<ul class="feature-list">${featuresList}</ul>`;
+                updateTestResult('test3', true);
+            }
+        } catch (e) {
+            console.error('Feature detection test failed:', e);
+            updateTestResult('test3', false, e.message);
+        }
+    </script>
+</body>
+</html>

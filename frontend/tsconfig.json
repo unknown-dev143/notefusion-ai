@@ -1,11 +1,19 @@
+<<<<<<< HEAD
+{
+=======
  {
   "extends": "./tsconfig.paths.json",
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   "compilerOptions": {
     /* Base Options */
     "target": "ES2020",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
+<<<<<<< HEAD
+    "moduleResolution": "bundler",
+=======
     "moduleResolution": "node",
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
@@ -14,6 +22,9 @@
     "skipLibCheck": true,
     "jsx": "react-jsx",
     "jsxImportSource": "react",
+<<<<<<< HEAD
+    "allowJs": true,
+=======
     
     /* Type Checking */
     "typeRoots": [
@@ -28,6 +39,7 @@
     },
     "types": ["node", "react-helmet", "react-helmet-async", "react-i18next", "i18next"],
 
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     
     /* Strict Type-Checking */
     "strict": true,
@@ -42,6 +54,30 @@
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+<<<<<<< HEAD
+    "exactOptionalPropertyTypes": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "alwaysStrict": true,
+    
+    /* Module Resolution */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@tinymce/tinymce-react": ["./src/types/tinymce-react.d.ts"],
+      "react-hotkeys-hook": ["./src/types/react-hotkeys-hook.d.ts"],
+      "lodash/debounce": ["./src/types/lodash.d.ts"],
+      "react-quill": ["./src/types/react-quill.d.ts"]
+    },
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ],
+    "types": ["vite/client", "node", "@testing-library/jest-dom"],
+    
+    /* Output */
+=======
     "alwaysStrict": true,
     
     /* Additional Checks */
@@ -52,6 +88,7 @@
     /* Module Resolution */
     "allowJs": true,
     "checkJs": false,
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     "noEmit": true,
     "incremental": true,
     "composite": false,
@@ -69,11 +106,18 @@
   "exclude": [
     "node_modules",
     "dist",
+<<<<<<< HEAD
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+=======
     "build",
     "**/*.spec.ts",
     "**/*.test.ts",
     "**/*.spec.tsx",
     "**/*.test.tsx"
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   ],
   "references": [
     {

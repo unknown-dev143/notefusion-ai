@@ -1,0 +1,29 @@
+.errorContainer {
+  padding: 20px;
+  font-family: sans-serif;
+  color: #ff4d4f;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.details {
+  white-space: pre-wrap;
+}
+
+.stackTrace {
+  overflow-x: auto;
+}
+
+.reloadButton {
+  margin-top: 20px;
+  padding: 8px 16px;
+  background: #1890ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.reloadButton:hover {
+  background: #40a9ff;
+}

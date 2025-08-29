@@ -257,6 +257,115 @@ class VisualGenerationService:
 
     async def generate_mermaid_diagram(self, content: str, type: str = "flowchart") -> Dict[str, Any]:
         """
+<<<<<<< HEAD
+        Generate a Mermaid.js diagram from text description with enhanced error handling and validation.
+        
+        Args:
+            content: Natural language description of the diagram
+            type: Type of Mermaid diagram (flowchart, sequence, class, er, gantt)
+            
+        Returns:
+            Dict containing the Mermaid code and diagram type, or an error message
+            
+        Example:
+            {
+                "code": "graph TD\n    A[Start] --> B{Is it?}\n    B -->|Yes| C[OK]\n    B -->|No| D[Not OK]",
+                "type": "flowchart"
+            }
+        """
+        # Input validation
+        valid_types = ["flowchart", "sequence", "class", "er", "gantt"]
+        if type not in valid_types:
+            return {
+                "error": f"Invalid diagram type. Must be one of: {', '.join(valid_types)}",
+                "code": "",
+                "type": type
+            }
+            
+        if not content or not isinstance(content, str) or len(content.strip()) < 10:
+            return {
+                "error": "Content must be a non-empty string with at least 10 characters",
+                "code": "",
+                "type": type
+            }
+            
+        try:
+            # Generate system prompt with Mermaid syntax guidelines
+            system_prompt = (
+                f"Convert the following description into a Mermaid.js {type} diagram syntax. "
+                "Follow these rules:\n"
+                "1. Use proper Mermaid syntax for the specified diagram type\n"
+                "2. Keep the diagram simple and focused on the main concepts\n"
+                "3. Use clear, concise labels\n"
+                "4. Ensure the diagram is valid Mermaid syntax\n"
+                "5. Only output the Mermaid code block, no additional text\n"
+                f"Diagram type: {type}"
+            )
+            
+            # Make API call with timeout and retry logic
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    response = await asyncio.wait_for(
+                        openai.ChatCompletion.acreate(
+                            model="gpt-4",
+                            messages=[
+                                {"role": "system", "content": system_prompt},
+                                {"role": "user", "content": content}
+                            ],
+                            temperature=0.3,  # Lower temperature for more deterministic output
+                            max_tokens=1000
+                        ),
+                        timeout=30.0  # 30 second timeout
+                    )
+                    break
+                except asyncio.TimeoutError:
+                    if attempt == max_retries - 1:
+                        raise
+                    await asyncio.sleep(1)  # Wait before retry
+            
+            # Extract and clean the Mermaid code
+            mermaid_code = response.choices[0].message.content.strip()
+            
+            # Remove markdown code block markers if present
+            if mermaid_code.startswith('```mermaid'):
+                mermaid_code = mermaid_code[10:].lstrip()
+            if mermaid_code.startswith('```'):
+                mermaid_code = mermaid_code[3:].lstrip()
+            if mermaid_code.endswith('```'):
+                mermaid_code = mermaid_code[:-3].rstrip()
+            
+            # Basic validation of the generated code
+            if not mermaid_code:
+                raise ValueError("Generated Mermaid code is empty")
+                
+            # Check if it's a valid Mermaid diagram type
+            first_line = mermaid_code.split('\n', 1)[0].strip().lower()
+            if not any(first_line.startswith(t) for t in valid_types):
+                # Try to fix by prepending the diagram type
+                mermaid_code = f"{type} {mermaid_code}"
+            
+            return {
+                "code": mermaid_code,
+                "type": type,
+                "status": "success"
+            }
+            
+        except asyncio.TimeoutError:
+            return {
+                "error": "Request timed out while generating diagram",
+                "code": "",
+                "type": type,
+                "status": "error"
+            }
+        except Exception as e:
+            return {
+                "error": f"Failed to generate diagram: {str(e)}",
+                "code": "",
+                "type": type,
+                "status": "error"
+            }
+=======
         Generate a Mermaid.js diagram from text description
         types: flowchart, sequence, class, er, gantt
         """
@@ -278,3 +387,4 @@ class VisualGenerationService:
             }
         except Exception as e:
             return {"error": str(e)}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e

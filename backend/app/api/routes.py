@@ -4,6 +4,10 @@ from .audio_upload import router as audio_upload_router
 from .audio_to_notes import router as audio_to_notes_router
 from .endpoints.video import router as video_router
 from .endpoints.subscription import router as subscription_router
+<<<<<<< HEAD
+from .endpoints.flashcards import router as flashcards_router
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 from .test_video import router as test_video_router
 from .endpoints.test_subscription import router as test_subscription_router
 from fastapi.responses import FileResponse, JSONResponse
@@ -28,8 +32,14 @@ router.include_router(video_jobs_router)
 router.include_router(audio_upload_router)
 router.include_router(audio_to_notes_router)
 router.include_router(video_router, prefix="/api/v1")
+<<<<<<< HEAD
+router.include_router(subscription_router, prefix="/api/v1")
+router.include_router(flashcards_router, prefix="/api/v1/flashcards", tags=["flashcards"])
+router.include_router(test_subscription_router, prefix="/test-subscription")
+=======
 router.include_router(test_video_router)
 router.include_router(test_subscription_router, prefix="/api/v1")
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 router.include_router(subscription_router, prefix="/api/v1", tags=["subscriptions"])
 
 # Initialize services

@@ -1,4 +1,8 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+<<<<<<< HEAD
+import styles from './ErrorBoundary.module.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 interface Props {
   children: ReactNode;
@@ -29,6 +33,14 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       // You can render any custom fallback UI
       return this.props.fallback || (
+<<<<<<< HEAD
+        <div className={styles.errorContainer}>
+          <h2>Something went wrong</h2>
+          <details className={styles.details}>
+            <summary>Error details</summary>
+            <p>{this.state.error?.message}</p>
+            <pre className={styles.stackTrace}>
+=======
         <div style={{ 
           padding: '20px', 
           fontFamily: 'sans-serif',
@@ -41,11 +53,15 @@ export class ErrorBoundary extends Component<Props, State> {
             <summary>Error details</summary>
             <p>{this.state.error?.message}</p>
             <pre style={{ overflowX: 'auto' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               {this.state.error?.stack}
             </pre>
           </details>
           <button 
             onClick={() => window.location.reload()}
+<<<<<<< HEAD
+            className={styles.reloadButton}
+=======
             style={{
               marginTop: '20px',
               padding: '8px 16px',
@@ -55,6 +71,7 @@ export class ErrorBoundary extends Component<Props, State> {
               borderRadius: '4px',
               cursor: 'pointer',
             }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           >
             Reload Page
           </button>

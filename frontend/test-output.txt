@@ -1,0 +1,4 @@
+=== Test Environment Check ===
+Node.js version: v22.18.0
+Current directory: C:\Users\User\notefusion-ai\notefusion-ai\frontend
+Test failed: require is not defined

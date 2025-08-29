@@ -1,0 +1,70 @@
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.layout {
+  min-height: 100vh;
+}
+
+.sider {
+  border-right: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.siderHeader {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.siderTitle {
+  margin: 0;
+}
+
+.siderContent {
+  flex: 1;
+  overflow: hidden;
+}
+
+.editorContainer {
+  padding: 24px;
+  background: #fff;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.editorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.editorTitle {
+  margin: 0;
+  flex: 1;
+  min-width: 200px;
+}
+
+.editorActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.noNoteSelected {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 16px;
+  text-align: center;
+  padding: 24px;
+}

@@ -10,4 +10,8 @@ export const FIREBASE_CONFIG = {
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.REACT_APP_FIREBASE_APP_ID
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e

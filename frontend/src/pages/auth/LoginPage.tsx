@@ -3,6 +3,10 @@ import { Form, Input, Button, Typography, Card, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useAuth } from '../../features/auth/context/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+<<<<<<< HEAD
+import styles from './LoginPage.module.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const { Title } = Typography;
 
@@ -27,9 +31,15 @@ const LoginPage: React.FC = () => {
   };
 
   return (
+<<<<<<< HEAD
+    <div className={styles['loginContainer']}>
+      <Card className={styles['loginCard']}>
+        <Title level={2} className={styles['loginTitle']}>
+=======
     <div style={{ maxWidth: '400px', margin: '0 auto', padding: '2rem' }}>
       <Card>
         <Title level={2} style={{ textAlign: 'center', marginBottom: '2rem' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           Login to NoteFusion AI
         </Title>
         <Form
@@ -37,6 +47,10 @@ const LoginPage: React.FC = () => {
           initialValues={{ remember: true }}
           onFinish={onFinish}
           layout="vertical"
+<<<<<<< HEAD
+          className={styles['loginForm']}
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         >
           <Form.Item
             name="email"
@@ -46,6 +60,11 @@ const LoginPage: React.FC = () => {
             ]}
           >
             <Input
+<<<<<<< HEAD
+              id="login-email"
+              name="email"
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               prefix={<UserOutlined />}
               placeholder="Email"
               size="large"
@@ -56,13 +75,32 @@ const LoginPage: React.FC = () => {
             rules={[{ required: true, message: 'Please input your password!' }]}
           >
             <Input.Password
+<<<<<<< HEAD
+              id="login-password"
+              name="password"
+              prefix={<LockOutlined />}
+=======
               prefix={<LockOutlined />}
               type="password"
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               placeholder="Password"
               size="large"
             />
           </Form.Item>
           <Form.Item>
+<<<<<<< HEAD
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              loading={loading}
+              className={styles['loginButton']}
+            >
+              Log in
+            </Button>
+            <div className={styles['signupLink']}>
+              Don't have an account? <Link to="/signup">Sign up</Link>
+            </div>
+=======
             <Button
               type="primary"
               htmlType="submit"
@@ -72,6 +110,7 @@ const LoginPage: React.FC = () => {
             >
               Log in
             </Button>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           </Form.Item>
         </Form>
         <div style={{ textAlign: 'center' }}>

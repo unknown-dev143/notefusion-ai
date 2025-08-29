@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
+<<<<<<< HEAD
+import { Card, Button, Typography, Divider, Alert } from 'antd';
+import { BugOutlined, HomeOutlined } from '@ant-design/icons';
+import ErrorBoundary from '../components/ErrorBoundary';
+import styles from './ErrorBoundaryDemo.module.css';
+=======
 import { Card, Button, Space, Typography, Divider, Alert } from 'antd';
 import { BugOutlined, HomeOutlined } from '@ant-design/icons';
 import ErrorBoundary from '../components/ErrorBoundary';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -23,8 +30,13 @@ const ErrorBoundaryDemo = () => {
   };
 
   return (
+<<<<<<< HEAD
+    <div className={styles['demoContainer']}>
+      <Title level={2} className={styles['title']}>Error Boundary Demo</Title>
+=======
     <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
       <Title level={2}>Error Boundary Demo</Title>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       <Paragraph>
         This page demonstrates the ErrorBoundary component in action. The ErrorBoundary catches 
         JavaScript errors in its child component tree and displays a fallback UI.
@@ -32,26 +44,45 @@ const ErrorBoundaryDemo = () => {
 
       <Card 
         title="Error Boundary Example" 
+<<<<<<< HEAD
+        className={styles['card']}
+        extra={
+          <div className={styles['controls']}>
+            <Button 
+              className={`${styles['button']} ${styles['dangerButton']}`}
+=======
         style={{ marginBottom: '24px' }}
         extra={
           <Space>
             <Button 
               type="primary" 
               danger 
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               icon={<BugOutlined />}
               onClick={() => setShouldThrow(true)}
               disabled={shouldThrow}
             >
+<<<<<<< HEAD
+              Throw Error
+            </Button>
+            <Button 
+              className={styles['button']}
+=======
               Trigger Error
             </Button>
             <Button 
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               icon={<HomeOutlined />}
               onClick={() => setShouldThrow(false)}
               disabled={!shouldThrow}
             >
               Reset
             </Button>
+<<<<<<< HEAD
+          </div>
+=======
           </Space>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         }
       >
         <ErrorBoundary 
@@ -85,7 +116,11 @@ const ErrorBoundaryDemo = () => {
       
       <Card>
         <Title level={4}>Basic Usage</Title>
+<<<<<<< HEAD
+        <div className={styles['content']}>
+=======
         <pre style={{ background: '#f5f5f5', padding: '16px', borderRadius: '4px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 {`import ErrorBoundary from './components/ErrorBoundary';
 
 const App = () => (
@@ -93,7 +128,11 @@ const App = () => (
     <YourComponent />
   </ErrorBoundary>
 );`}
+<<<<<<< HEAD
+        </div>
+=======
         </pre>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       </Card>
 
       <Divider />

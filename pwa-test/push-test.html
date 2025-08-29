@@ -1,0 +1,254 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Push Notifications Test - NoteFusion AI</title>
+</head>
+<body>
+<h1>Push Notifications Test</h1>
+    
+    <div>
+        <h2>Push Notification Status: <span id="push-status">Checking...</span></h2>
+        <button id="request-permission" disabled>Request Permission</button>
+        <button id="subscribe" disabled>Subscribe to Push</button>
+        <button id="test-notification" disabled>Test Notification</button>
+    </div>
+    
+    <div>
+        <h3>Subscription Info</h3>
+        <pre id="subscription-info">No active subscription</pre>
+    </div>
+    
+    <div>
+        <h3>Test Log</h3>
+        <div id="log"></div>
+    </div>
+    
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // DOM Elements
+        const pushStatus = document.getElementById('push-status');
+        const requestPermissionBtn = document.getElementById('request-permission');
+        const subscribeBtn = document.getElementById('subscribe');
+        const testNotificationBtn = document.getElementById('test-notification');
+        const subscriptionInfo = document.getElementById('subscription-info');
+        const logElement = document.getElementById('log');
+        const notificationElement = document.getElementById('notification');
+        
+        // VAPID public key - in a real app, this should be stored securely
+        const publicVapidKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
+        
+        // Log function
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Show notification
+        function showNotification(title, options = {}) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.showNotification(title, options);
+                });
+            } else {
+                // Fallback to in-app notification
+                notificationElement.textContent = title;
+                notificationElement.style.display = 'block';
+                notificationElement.style.background = options.data?.color || '#4caf50';
+                
+                setTimeout(() => {
+                    notificationElement.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Check if push is supported
+        function checkPushSupport() {
+            if (!('serviceWorker' in navigator)) {
+                log('Service Workers not supported', 'error');
+                pushStatus.textContent = 'Service Workers not supported';
+                return false;
+            }
+            
+            if (!('PushManager' in window)) {
+                log('Push Notifications not supported', 'error');
+                pushStatus.textContent = 'Push Notifications not supported';
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Request notification permission
+        function requestNotificationPermission() {
+            return new Promise((resolve, reject) => {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        log('Notification permission granted', 'success');
+                        pushStatus.textContent = 'Permission granted';
+                        resolve(true);
+                    } else {
+                        log('Notification permission denied', 'error');
+                        pushStatus.textContent = 'Permission denied';
+                        resolve(false);
+                    }
+                }).catch(error => {
+                    log(`Error requesting permission: ${error.message}`, 'error');
+                    reject(error);
+                });
+            });
+        }
+        
+        // Convert base64 string to Uint8Array
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            
+            return outputArray;
+        }
+        
+        // Subscribe to push notifications
+        async function subscribeToPush() {
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                
+                // Check if already subscribed
+                let subscription = await registration.pushManager.getSubscription();
+                
+                if (subscription) {
+                    log('Already subscribed to push notifications', 'success');
+                    updateSubscriptionInfo(subscription);
+                    return subscription;
+                }
+                
+                // Subscribe to push notifications
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+                });
+                
+                log('Successfully subscribed to push notifications', 'success');
+                updateSubscriptionInfo(subscription);
+                
+                // In a real app, you would send the subscription to your server here
+                // await sendSubscriptionToServer(subscription);
+                
+                return subscription;
+            } catch (error) {
+                log(`Error subscribing to push: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+        
+        // Update subscription info display
+        function updateSubscriptionInfo(subscription) {
+            if (subscription) {
+                const jsonSubscription = subscription.toJSON();
+                subscriptionInfo.textContent = JSON.stringify({
+                    endpoint: jsonSubscription.endpoint,
+                    keys: jsonSubscription.keys
+                }, null, 2);
+                testNotificationBtn.disabled = false;
+            } else {
+                subscriptionInfo.textContent = 'No active subscription';
+                testNotificationBtn.disabled = true;
+            }
+        }
+        
+        // Test notification
+        function testNotification() {
+            showNotification('Test Notification', {
+                body: 'This is a test notification from NoteFusion AI',
+                icon: '/icons/icon-192x192.png',
+                badge: '/icons/icon-192x192.png',
+                vibrate: [200, 100, 200],
+                data: {
+                    url: window.location.href,
+                    color: '#1677ff'
+                }
+            });
+            
+            log('Test notification sent', 'success');
+        }
+        
+        // Initialize
+        if (checkPushSupport()) {
+            log('Push Notifications are supported', 'success');
+            
+            // Check current permission status
+            if (Notification.permission === 'granted') {
+                pushStatus.textContent = 'Permission granted';
+                requestPermissionBtn.disabled = true;
+                subscribeBtn.disabled = false;
+                
+                // Check if already subscribed
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.pushManager.getSubscription().then(subscription => {
+                        if (subscription) {
+                            updateSubscriptionInfo(subscription);
+                        }
+                    });
+                });
+            } else if (Notification.permission === 'denied') {
+                pushStatus.textContent = 'Permission denied';
+                requestPermissionBtn.disabled = false;
+                subscribeBtn.disabled = true;
+            } else {
+                pushStatus.textContent = 'Permission not set';
+                requestPermissionBtn.disabled = false;
+                subscribeBtn.disabled = true;
+            }
+            
+            // Register Service Worker
+            navigator.serviceWorker.register('test-sw-new.js')
+                .then(registration => {
+                    log('Service Worker registered', 'success');
+                    
+                    // Listen for push events
+                    navigator.serviceWorker.addEventListener('message', event => {
+                        if (event.data && event.data.type === 'PUSH_NOTIFICATION_RECEIVED') {
+                            log('Push notification received', 'success');
+                        }
+                    });
+                })
+                .catch(error => {
+                    log(`Service Worker registration failed: ${error.message}`, 'error');
+                });
+            
+            // Event Listeners
+            requestPermissionBtn.addEventListener('click', () => {
+                requestNotificationPermission().then(granted => {
+                    if (granted) {
+                        requestPermissionBtn.disabled = true;
+                        subscribeBtn.disabled = false;
+                    }
+                });
+            });
+            
+            subscribeBtn.addEventListener('click', () => {
+                subscribeToPush().catch(error => {
+                    log(`Subscription error: ${error.message}`, 'error');
+                });
+            });
+            
+            testNotificationBtn.addEventListener('click', testNotification);
+            
+        } else {
+            log('Push Notifications are not supported in this browser', 'error');
+        }
+    </script>
+</body>
+</html>

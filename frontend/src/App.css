@@ -19,6 +19,25 @@
   color: white;
 }
 
+<<<<<<< HEAD
+.loading-fallback {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  padding: 1rem;
+  text-align: center;
+}
+
+.loading-fallback p {
+  margin-top: 1rem;
+  color: #666;
+}
+
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 .App-link {
   color: #61dafb;
 }

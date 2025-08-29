@@ -1,0 +1,2 @@
+Python Environment Test  
+No Python at '"C:\Program Files\Python312\python.exe'

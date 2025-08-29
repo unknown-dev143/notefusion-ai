@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Test page for NoteFusion AI API endpoints">
+    <title>API Test Page - NoteFusion AI</title>
+    <link rel="stylesheet" href="test-page.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>NoteFusion AI - API Test Page</h1>
+            <p>Test the NoteFusion AI API endpoints and verify functionality</p>
+        </header>
+        
+        <main>
+            <section class="test-section" aria-labelledby="api-test-heading">
+                <h2 id="api-test-heading">API Test Endpoints</h2>
+                <div class="button-group" role="group" aria-label="API Test Actions">
+                    <button onclick="testApi('health')" aria-label="Test Health Check Endpoint">
+                        Test Health Check
+                    </button>
+                    <button onclick="testApi('register')" aria-label="Test User Registration">
+                        Test Registration
+                    </button>
+                    <button onclick="testApi('login')" aria-label="Test User Login">
+                        Test Login
+                    </button>
+                </div>
+                <div id="result" role="status" aria-live="polite" aria-atomic="true">
+                    <p>Results will appear here...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:8000/api';
+        
+        // DOM Elements
+        const resultDiv = document.getElementById('result');
+        
+        // Format JSON for display
+        function formatJson(data) {
+            try {
+                if (typeof data === 'string') {
+                    return data; // Already formatted
+                }
+                return JSON.stringify(data, null, 2);
+            } catch (e) {
+                return 'Invalid JSON data';
+            }
+        }
+        
+        // Add a new result message
+        function addResultMessage(message, isError = false) {
+            const timestamp = new Date().toLocaleTimeString();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `result-message ${isError ? 'error' : 'success'}`;
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <strong>${timestamp}</strong> - ${isError ? 'Error' : 'Success'}
+                </div>
+                <div class="message-content">
+                    ${message}
+                </div>
+            `;
+            
+            // Add to the top of results
+            if (resultDiv.firstChild) {
+                resultDiv.insertBefore(messageDiv, resultDiv.firstChild);
+            } else {
+                resultDiv.appendChild(messageDiv);
+            }
+            
+            return messageDiv;
+        }
+        
+        // Test API endpoint
+        async function testApi(endpoint) {
+            const loadingMessage = addResultMessage('Connecting to server...');
+            
+            try {
+                let response, data;
+                const startTime = performance.now();
+                
+                switch(endpoint) {
+                    case 'health':
+                        response = await fetchWithTimeout(`${API_BASE_URL}/health`);
+                        data = await response.json();
+                        showApiResult(loadingMessage, response, data, startTime);
+                        break;
+                        
+                    case 'register':
+                        response = await fetchWithTimeout(`${API_BASE_URL}/auth/register`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                email: 'test@example.com',
+                                password: 'testpassword123',
+                                full_name: 'Test User'
+                            })
+                        });
+                        data = await response.json();
+                        showApiResult(loadingMessage, response, data, startTime);
+                        break;
+                        
+                    case 'login':
+                        response = await fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                username: 'test@example.com',
+                                password: 'testpassword123'
+                            })
+                        });
+                        data = await response.json();
+                        showApiResult(loadingMessage, response, data, startTime);
+                        break;
+                        
+                    default:
+                        throw new Error('Invalid test selected');
+                }
+            } catch (error) {
+                loadingMessage.remove();
+                addResultMessage(`<strong>${error.name}:</strong> ${error.message}`, true);
+                console.error('API Test Error:', error);
+            }
+        }
+        
+        // Show API result with formatted output
+        function showApiResult(loadingElement, response, data, startTime) {
+            const endTime = performance.now();
+            const responseTime = Math.round(endTime - startTime);
+            
+            const statusCode = response.status;
+            const statusText = response.statusText;
+            const isSuccess = response.ok;
+            
+            let resultHtml = `
+                <div class="response-meta">
+                    <div><strong>Status:</strong> ${statusCode} ${statusText}</div>
+                    <div><strong>Time:</strong> ${responseTime}ms</div>
+                    <div><strong>URL:</strong> ${response.url}</div>
+                </div>
+                <details class="response-details" open>
+                    <summary>Response Data</summary>
+                    <pre>${formatJson(data)}</pre>
+                </details>
+            `;
+            
+            // Add headers if available
+            if (response.headers) {
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+                
+                resultHtml += `
+                    <details class="response-details">
+                        <summary>Response Headers</summary>
+                        <pre>${formatJson(headers)}</pre>
+                    </details>
+                `;
+            }
+            
+            loadingElement.remove();
+            addResultMessage(resultHtml, !isSuccess);
+        }
+        
+        // Fetch with timeout
+        async function fetchWithTimeout(resource, options = {}) {
+            const { timeout = 10000 } = options;
+            
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            
+            try {
+                const response = await fetch(resource, {
+                    ...options,
+                    signal: controller.signal  
+                });
+                
+                clearTimeout(id);
+                return response;
+            } catch (error) {
+                clearTimeout(id);
+                if (error.name === 'AbortError') {
+                    throw new Error('Request timed out');
+                }
+                throw error;
+            }
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            addResultMessage('Ready to test API endpoints. Click any button to begin.');
+        });
+    </script>
+</body>
+</html>

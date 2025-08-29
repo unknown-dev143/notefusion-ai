@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -43,6 +44,53 @@ Config.create_directories()
 
 @app.on_event("startup")
 async def startup_event():
+=======
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+import uvicorn
+import os
+import json
+import asyncio
+from typing import List, Optional
+import aiofiles
+import sqlite3
+from datetime import datetime
+import uuid
+
+from app.services.transcription_service import TranscriptionService
+from app.services.fusion_service import FusionService
+from app.services.pdf_service import PDFService
+from app.models.database import init_db, get_db
+from app.api.routes import router
+from config import Config
+
+app = FastAPI(title="NoteFusion AI", version="1.0.0")
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=Config.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include API routes
+app.include_router(router, prefix="/api")
+
+# Initialize services
+transcription_service = TranscriptionService()
+fusion_service = FusionService()
+pdf_service = PDFService()
+
+# Create necessary directories
+Config.create_directories()
+
+@app.on_event("startup")
+async def startup_event():
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     """Initialize database and services on startup"""
     await init_db()
     print("NoteFusion AI Backend Started!")
