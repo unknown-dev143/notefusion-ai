@@ -7,7 +7,10 @@ This module imports and includes all API route modules.
 # Import all route modules here
 from .endpoints import audio_upload, audio_to_notes, video_jobs, ai_models, video
 from .endpoints.ai_settings import router as ai_settings_router
+<<<<<<< HEAD
 from .routes import audio as audio_routes
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 # List of all routers to be included in the main FastAPI app
 routers = [
@@ -17,5 +20,8 @@ routers = [
     ai_models.router,
     ai_settings_router,
     video.router,  # Add video generation endpoints
+<<<<<<< HEAD
     audio_routes.router,  # Add audio processing endpoints
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 ]

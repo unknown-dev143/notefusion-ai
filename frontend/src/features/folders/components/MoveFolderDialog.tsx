@@ -3,7 +3,10 @@ import { Modal, Tree, Button } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { FolderOutlined, FolderOpenOutlined } from '@ant-design/icons';
 import { Folder } from '../types/folder';
+<<<<<<< HEAD
 import styles from './MoveFolderDialog.module.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 interface MoveFolderDialogProps {
   visible: boolean;
@@ -82,10 +85,17 @@ const MoveFolderDialog: React.FC<MoveFolderDialogProps> = ({
       ]}
       width={400}
     >
+<<<<<<< HEAD
       <div className={styles.dialogContent}>
         Select a destination folder or "Root" to move to the top level
       </div>
       <div className={styles.treeContainer}>
+=======
+      <div style={{ marginBottom: 16 }}>
+        Select a destination folder or "Root" to move to the top level
+      </div>
+      <div style={{ maxHeight: 300, overflow: 'auto', border: '1px solid #d9d9d9', borderRadius: 4, padding: 8 }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <Tree
           showIcon
           defaultExpandAll

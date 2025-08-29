@@ -257,6 +257,7 @@ class VisualGenerationService:
 
     async def generate_mermaid_diagram(self, content: str, type: str = "flowchart") -> Dict[str, Any]:
         """
+<<<<<<< HEAD
         Generate a Mermaid.js diagram from text description with enhanced error handling and validation.
         
         Args:
@@ -364,3 +365,26 @@ class VisualGenerationService:
                 "type": type,
                 "status": "error"
             }
+=======
+        Generate a Mermaid.js diagram from text description
+        types: flowchart, sequence, class, er, gantt
+        """
+        try:
+            # Convert natural language to Mermaid syntax using GPT
+            response = await openai.ChatCompletion.acreate(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": f"Convert this description into a Mermaid.js {type} diagram syntax:"},
+                    {"role": "user", "content": content}
+                ]
+            )
+            
+            mermaid_code = response.choices[0].message.content
+            
+            return {
+                "code": mermaid_code,
+                "type": type
+            }
+        except Exception as e:
+            return {"error": str(e)}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e

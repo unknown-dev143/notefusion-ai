@@ -3,12 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Video Generation Test</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/video_ui.css') }}">
 </head>
 <body>
 <div class="container">
+=======
+    <title>Video Generation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+        #video-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #progress-container {
+            margin-top: 10px;
+            display: none;
+        }
+        progress {
+            width: 100%;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <h1>Video Generation Test</h1>
         
         <div>
@@ -27,11 +86,19 @@
         
         <div id="result">
             <h3>Video Generated Successfully!</h3>
+<<<<<<< HEAD
             <div class="video-container">
                 <video id="video-player" controls class="video-preview"></video>
             </div>
             <div class="mt-4">
                 <a id="download-link" href="#" download>
+=======
+            <div id="video-container">
+                <video id="video-player" controls style="max-width: 100%;"></video>
+            </div>
+            <div style="margin-top: 20px;">
+                <a id="download-link" href="#" download>">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                     <button>Download Video</button>
                 </a>
             </div>
@@ -154,4 +221,8 @@
         });
     </script>
 </body>
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e

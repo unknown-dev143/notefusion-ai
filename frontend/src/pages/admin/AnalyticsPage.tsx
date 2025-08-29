@@ -50,7 +50,10 @@ import {
   Legend, 
   Filler
 } from 'chart.js';
+<<<<<<< HEAD
 import './AnalyticsPage.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 // Register ChartJS components
 ChartJS.register(
@@ -219,7 +222,11 @@ const AnalyticsPage: React.FC = () => {
 
   const handleExport = () => {
     // In a real app, this would trigger a data export
+<<<<<<< HEAD
     // message.success('Export started. You will receive an email when ready.');
+=======
+    message.success('Export started. You will receive an email when ready.');
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   };
 
   const chartOptions = {
@@ -241,15 +248,26 @@ const AnalyticsPage: React.FC = () => {
   };
 
   return (
+<<<<<<< HEAD
     <div className="analytics-page">
       <div className="analytics-header">
+=======
+    <div style={{ padding: '24px' }}>
+      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <AntTitle level={3}>Analytics Dashboard</AntTitle>
         <Space>
           <RangePicker 
             onChange={handleDateRangeChange} 
             value={dateRange}
+<<<<<<< HEAD
           />
           <Select value={timeRange} onChange={handleTimeRangeChange} className="analytics-select">
+=======
+            style={{ marginRight: '16px' }}
+          />
+          <Select value={timeRange} onChange={handleTimeRangeChange} style={{ width: '120px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <Option value="24h">Last 24h</Option>
             <Option value="7days">Last 7 days</Option>
             <Option value="30days">Last 30 days</Option>
@@ -274,6 +292,7 @@ const AnalyticsPage: React.FC = () => {
       </div>
 
       <Tabs activeKey={activeTab} onChange={handleTabChange}>
+<<<<<<< HEAD
         <TabPane 
           tab={
             <span>
@@ -351,12 +370,87 @@ const AnalyticsPage: React.FC = () => {
                     <ArrowDownOutlined /> -2% from last month
                   </div>
                 </div>
+=======
+        <TabPane tab={
+          <span>
+            <BarChartOutlined />
+            Overview
+          </span>
+        } key="overview">
+          {/* Stats Cards */}
+          <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+            <Col xs={24} sm={12} md={6}>
+              <Card>
+                <Statistic
+                  title="Total Users"
+                  value={1245}
+                  prefix={<UserOutlined />}
+                  valueStyle={{ color: '#1890ff' }}
+                  suffix={
+                    <span style={{ fontSize: '14px', color: '#52c41a' }}>
+                      +12% <ArrowUpOutlined />
+                    </span>
+                  }
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Card>
+                <Statistic
+                  title="Active Users (30d)"
+                  value={856}
+                  prefix={<UserOutlined style={{ color: '#52c41a' }} />}
+                  valueStyle={{ color: '#52c41a' }}
+                  suffix={
+                    <span style={{ fontSize: '14px', color: '#52c41a' }}>
+                      +8% <ArrowUpOutlined />
+                    </span>
+                  }
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Card>
+                <Statistic
+                  title="Monthly Revenue"
+                  value={12500}
+                  precision={2}
+                  prefix="$"
+                  valueStyle={{ color: '#722ed1' }}
+                  suffix={
+                    <span style={{ fontSize: '14px', color: '#52c41a' }}>
+                      +15% <ArrowUpOutlined />
+                    </span>
+                  }
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Card>
+                <Statistic
+                  title="Avg. Session Duration"
+                  value={8.5}
+                  precision={1}
+                  suffix="min"
+                  valueStyle={{ color: '#faad14' }}
+                  prefix={<ClockCircleOutlined />}
+                  suffix={
+                    <span style={{ fontSize: '14px', color: '#ff4d4f' }}>
+                      -2% <ArrowDownOutlined />
+                    </span>
+                  }
+                />
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               </Card>
             </Col>
           </Row>
 
           {/* Main Charts */}
+<<<<<<< HEAD
           <Row gutter={[16, 16]} className="analytics-row">
+=======
+          <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <Col xs={24} xl={16}>
               <Card title="User Activity" loading={loading}>
                 <Line data={userActivityData} options={chartOptions} />
@@ -370,10 +464,17 @@ const AnalyticsPage: React.FC = () => {
           </Row>
 
           {/* Secondary Charts */}
+<<<<<<< HEAD
           <Row gutter={[16, 16]} className="analytics-row">
             <Col xs={24} md={12}>
               <Card title="Plan Distribution" loading={loading}>
                 <div className="analytics-chart">
+=======
+          <Row gutter={[16, 16]}>
+            <Col xs={24} md={12}>
+              <Card title="Plan Distribution" loading={loading}>
+                <div style={{ height: '300px', display: 'flex', justifyContent: 'center' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Doughnut 
                     data={planDistributionData} 
                     options={{
@@ -391,7 +492,11 @@ const AnalyticsPage: React.FC = () => {
             </Col>
             <Col xs={24} md={12}>
               <Card title="Feature Usage" loading={loading}>
+<<<<<<< HEAD
                 <div className="analytics-chart">
+=======
+                <div style={{ height: '300px', display: 'flex', justifyContent: 'center' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Bar 
                     data={featureUsageData} 
                     options={{
@@ -411,6 +516,7 @@ const AnalyticsPage: React.FC = () => {
           </Row>
         </TabPane>
 
+<<<<<<< HEAD
         <TabPane 
           tab={
             <span>
@@ -421,6 +527,15 @@ const AnalyticsPage: React.FC = () => {
           key="users"
         >
           <Row gutter={[16, 16]} className="analytics-row">
+=======
+        <TabPane tab={
+          <span>
+            <LineChartOutlined />
+            User Analytics
+          </span>
+        } key="users">
+          <Row gutter={[16, 16]}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <Col xs={24} xl={16}>
               <Card title="User Growth" loading={loading}>
                 <Line 
@@ -465,6 +580,7 @@ const AnalyticsPage: React.FC = () => {
           </Row>
         </TabPane>
 
+<<<<<<< HEAD
         <TabPane 
           tab={
             <span>
@@ -475,6 +591,15 @@ const AnalyticsPage: React.FC = () => {
           key="revenue"
         >
           <Row gutter={[16, 16]} className="analytics-row">
+=======
+        <TabPane tab={
+          <span>
+            <DollarOutlined />
+            Revenue
+          </span>
+        } key="revenue">
+          <Row gutter={[16, 16]}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <Col xs={24} xl={16}>
               <Card title="Revenue Over Time" loading={loading}>
                 <Line 
@@ -495,7 +620,11 @@ const AnalyticsPage: React.FC = () => {
             </Col>
             <Col xs={24} xl={8}>
               <Card title="Revenue by Plan" loading={loading}>
+<<<<<<< HEAD
                 <div className="analytics-chart">
+=======
+                <div style={{ height: '300px', display: 'flex', justifyContent: 'center' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Pie 
                     data={{
                       labels: ['Free', 'Pro', 'Business'],
@@ -536,7 +665,11 @@ const AnalyticsPage: React.FC = () => {
                     }}
                   />
                 </div>
+<<<<<<< HEAD
                 <div className="analytics-filters">
+=======
+                <div style={{ marginTop: '16px', textAlign: 'center' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Text strong>Total Revenue: </Text>
                   <Text type="success" strong>$12,500</Text>
                 </div>
@@ -545,6 +678,7 @@ const AnalyticsPage: React.FC = () => {
           </Row>
         </TabPane>
 
+<<<<<<< HEAD
         <TabPane 
           tab={
             <span>
@@ -570,6 +704,30 @@ const AnalyticsPage: React.FC = () => {
                   <Text strong>{systemMetrics.activeSessions}</Text>
                 </div>
                 <div className="analytics-metric">
+=======
+        <TabPane tab={
+          <span>
+            <TableOutlined />
+            System Metrics
+          </span>
+        } key="metrics">
+          <Row gutter={[16, 16]}>
+            <Col xs={24} md={12} lg={8}>
+              <Card title="System Health" loading={loading}>
+                <div style={{ marginBottom: '16px' }}>
+                  <Text>Uptime: </Text>
+                  <Text strong>{systemMetrics.uptime}</Text>
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <Text>Avg. Response Time: </Text>
+                  <Text strong>{systemMetrics.responseTime}</Text>
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <Text>Active Sessions: </Text>
+                  <Text strong>{systemMetrics.activeSessions}</Text>
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Text>Storage Used: </Text>
                   <Text strong>{systemMetrics.storageUsed}</Text>
                   <Progress 
@@ -578,11 +736,19 @@ const AnalyticsPage: React.FC = () => {
                     status={systemMetrics.storagePercentage > 80 ? 'exception' : 'normal'}
                   />
                 </div>
+<<<<<<< HEAD
                 <div className="analytics-metric">
                   <Text>API Calls (24h): </Text>
                   <Text strong>{systemMetrics.apiCalls}</Text>
                 </div>
                 <div className="analytics-metric">
+=======
+                <div style={{ marginBottom: '16px' }}>
+                  <Text>API Calls (24h): </Text>
+                  <Text strong>{systemMetrics.apiCalls}</Text>
+                </div>
+                <div>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Text>Error Rate: </Text>
                   <Text strong type={parseFloat(systemMetrics.errorRate) > 1 ? 'danger' : 'success'}>
                     {systemMetrics.errorRate}
@@ -620,30 +786,54 @@ const AnalyticsPage: React.FC = () => {
             </Col>
             <Col xs={24} lg={8}>
               <Card title="Feature Usage" loading={loading}>
+<<<<<<< HEAD
                 <div className="analytics-metric">
+=======
+                <div style={{ marginBottom: '16px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Text>Notes Created: </Text>
                   <Text strong>1,234</Text>
                   <Progress percent={82} size="small" status="active" />
                 </div>
+<<<<<<< HEAD
                 <div className="analytics-metric">
+=======
+                <div style={{ marginBottom: '16px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Text>AI Summaries Generated: </Text>
                   <Text strong>876</Text>
                   <Progress percent={65} size="small" status="active" />
                 </div>
+<<<<<<< HEAD
                 <div className="analytics-metric">
+=======
+                <div style={{ marginBottom: '16px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Text>Files Uploaded: </Text>
                   <Text strong>543</Text>
                   <Progress percent={45} size="small" status="active" />
                 </div>
+<<<<<<< HEAD
                 <div className="analytics-metric">
+=======
+                <div style={{ marginBottom: '16px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Text>Notes Exported: </Text>
                   <Text strong>321</Text>
                   <Progress percent={28} size="small" status="active" />
                 </div>
+<<<<<<< HEAD
                 <div className="analytics-metric">
                   <Text>API Calls: </Text>
                   <Text strong>12,345</Text>
                   <Progress percent={92} size="small" status="active" />
+=======
+                <div>
+                  <Text>API Calls: </Text>
+                  <Text strong>12,345</Text>
+                  <Progress percent={92} size="small" status="active" />
+                </div>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               </Card>
             </Col>
           </Row>

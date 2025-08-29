@@ -5,7 +5,10 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import { Toaster } from 'react-hot-toast';
 import ErrorBoundary from './components/ErrorBoundary';
+<<<<<<< HEAD
 import styles from './styles/ErrorBoundary.module.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import './index.css';
 import App from './App';
 
@@ -35,6 +38,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary 
       fallback={
+<<<<<<< HEAD
         <div className={styles.errorContainer}>
           <h2 className={styles.errorTitle}>Something went wrong</h2>
           <p className={styles.errorMessage}>
@@ -43,6 +47,26 @@ createRoot(document.getElementById('root')!).render(
           <button 
             onClick={() => window.location.reload()}
             className={styles.reloadButton}
+=======
+        <div style={{ 
+          padding: '40px 20px', 
+          textAlign: 'center',
+          fontFamily: 'sans-serif',
+        }}>
+          <h2>Something went wrong</h2>
+          <p>Please try refreshing the page or contact support if the problem persists.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              background: '#1890ff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           >
             Reload Page
           </button>

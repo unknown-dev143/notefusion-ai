@@ -11,11 +11,17 @@ This guide explains how to set up the admin user and configure cloud storage for
 ## Initial Setup
 
 1. Copy the example environment file and update with your values:
+<<<<<<< HEAD
 
    ```bash
    cp ../.env.example ../.env
    ```
 
+=======
+   ```bash
+   cp ../.env.example ../.env
+   ```
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
    Edit the `.env` file with your actual configuration.
 
 ## Setting Up Cloud Storage (AWS S3)
@@ -23,7 +29,10 @@ This guide explains how to set up the admin user and configure cloud storage for
 1. Create an S3 bucket in your AWS account
 2. Create an IAM user with programmatic access
 3. Attach the following permissions to the IAM user:
+<<<<<<< HEAD
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
    ```json
    {
        "Version": "2012-10-17",
@@ -44,10 +53,15 @@ This guide explains how to set up the admin user and configure cloud storage for
        ]
    }
    ```
+<<<<<<< HEAD
 
 4. Update the following in your `.env` file:
 
    ```env
+=======
+4. Update the following in your `.env` file:
+   ```
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
    AWS_ACCESS_KEY_ID=your-access-key
    AWS_SECRET_ACCESS_KEY=your-secret-key
    AWS_REGION=your-region
@@ -67,7 +81,10 @@ Replace `admin@example.com` with your email and `your-secure-password` with a st
 ## Verifying the Setup
 
 1. Start the application:
+<<<<<<< HEAD
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
    ```bash
    uvicorn app.main:app --reload
    ```
@@ -78,13 +95,19 @@ Replace `admin@example.com` with your email and `your-secure-password` with a st
 ## Troubleshooting
 
 ### Admin User Not Created
+<<<<<<< HEAD
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - Ensure the database is running and accessible
 - Check that the email address is valid and not already in use
 - Verify that the password meets the requirements
 
 ### Cloud Storage Issues
+<<<<<<< HEAD
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - Check that your AWS credentials are correct
 - Verify that the S3 bucket exists and is accessible
 - Ensure the IAM user has the necessary permissions

@@ -541,6 +541,7 @@ const SessionPage = () => {
                         </details>
                       </div>
                     ))}
+<<<<<<< HEAD
                   </div>
                 </div>
               )
@@ -587,6 +588,54 @@ const SessionPage = () => {
   );
 };
 
+=======
+                  </div>
+                </div>
+              )
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'summary' && (
+          <div className="space-y-6">
+            <div className="card">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Session Overview</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">{sections.length}</div>
+                  <div className="text-sm text-gray-600">Sections</div>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">
+                    {sections.reduce((total, section) => total + (section.practice_questions?.length || 0), 0)}
+                  </div>
+                  <div className="text-sm text-gray-600">Practice Questions</div>
+                </div>
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {fusedNotes.total_estimated_study_time_minutes || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Study Time (min)</div>
+                </div>
+              </div>
+            </div>
+            
+            {fusedNotes.summary && (
+              <div className="card">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Content Summary</h3>
+                <div className="prose max-w-none">
+                  <ReactMarkdown>{fusedNotes.summary}</ReactMarkdown>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 // --- Flashcard Flip Card ---
 function Flashcard({ front, back, tags }) {
   const [flipped, setFlipped] = React.useState(false);

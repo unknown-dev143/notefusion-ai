@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Dict, Any, Optional, List
 from pydantic import BaseModel, Field
@@ -11,6 +12,14 @@ from ...services.ai_services import (
     FlashcardDeck,
     AIServiceError
 )
+=======
+from fastapi import APIRouter, Depends, HTTPException
+from typing import Dict, Any, Optional
+from pydantic import BaseModel
+from ...config.ai_models import AIModel, get_available_models, get_default_model
+from ...services.ai_service import AIService, ai_service
+from ...core.security import get_current_active_user
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 router = APIRouter()
 
@@ -25,6 +34,7 @@ class AIConfigUpdate(BaseModel):
     api_key: Optional[str] = None
     default_model: Optional[str] = None
 
+<<<<<<< HEAD
 class FlashcardRequest(BaseModel):
     content: str = Field(..., min_length=100, description="Content to generate flashcards from")
     num_cards: int = Field(5, ge=1, le=20, description="Number of flashcards to generate")
@@ -35,6 +45,8 @@ class FlashcardResponse(FlashcardDeck):
 
 # AI Models Endpoints
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 @router.get("/models", response_model=Dict[str, AIModelInfo])
 async def list_models():
     """List all available AI models and their configurations."""
@@ -85,6 +97,7 @@ async def update_ai_config(
     
     return {"status": "success", "updates": updates}
 
+<<<<<<< HEAD
 @router.get("/config", response_model=Dict[str, Any])
 async def get_current_config(
     current_user: dict = Depends(get_current_active_user)
@@ -184,3 +197,20 @@ async def save_flashcards(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to save flashcards"
         )
+=======
+@router.get("/config/current", response_model=Dict[str, Any])
+async def get_current_config(
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Get the current AI configuration."""
+    if not current_user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    
+    return {
+        "default_model": ai_service.default_model.value,
+        "available_models": {
+            m.value: m.name for m in get_available_models().keys()
+        },
+        "api_key_configured": bool(ai_service.api_key)
+    }
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e

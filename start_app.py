@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #!/usr/bin/env python3
 """
 NoteFusion AI Startup Script
@@ -8,6 +9,18 @@ import subprocess
 import sys
 import os
 import time
+=======
+#!/usr/bin/env python3
+"""
+NoteFusion AI Startup Script
+Starts both backend and frontend servers
+"""
+
+import subprocess
+import sys
+import os
+import time
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import requests
 import webbrowser
 from pathlib import Path

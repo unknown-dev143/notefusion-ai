@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Row, Col, Button, message, Empty, Space, Typography } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+<<<<<<< HEAD
 import { useNotes, Note as NoteType } from '../../features/notes/context/NoteContext';
 import styles from './NotesPage.module.css';
 import NotesList from '../../components/notes/NotesList';
@@ -17,6 +18,18 @@ interface Note extends NoteType {
 
 const { Title } = Typography;
 
+=======
+import { useNotes } from '../../features/notes/context/NoteContext';
+import { Note } from '../../types/note';
+import NotesList from '../../components/notes/NotesList';
+import NoteEditor from '../../components/notes/NoteEditor';
+
+const { Title } = Typography;
+
+// Define the Note type for better type safety
+type NoteWithOptionalId = Omit<Note, 'id'> & { id?: string };
+
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 const NotesPage: React.FC = () => {
   const { noteId } = useParams<{ noteId?: string }>();
   const navigate = useNavigate();
@@ -34,12 +47,37 @@ const NotesPage: React.FC = () => {
   } = useNotes();
   
   const [searchQuery, setSearchQuery] = useState('');
+<<<<<<< HEAD
+=======
+  const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
   // Fetch notes on mount
   useEffect(() => {
     fetchNotes();
   }, [fetchNotes]);
 
+<<<<<<< HEAD
+=======
+  // Update filtered notes when notes or search query changes
+  useEffect(() => {
+    if (searchQuery) {
+      const search = async () => {
+        try {
+          const results = await searchNotes(searchQuery);
+          setFilteredNotes(results);
+        } catch (error) {
+          console.error('Error searching notes:', error);
+          setFilteredNotes(notes);
+        }
+      };
+      search();
+    } else {
+      setFilteredNotes(notes);
+    }
+  }, [searchQuery, notes, searchNotes]);
+
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   // Load note when noteId changes
   useEffect(() => {
     if (noteId && noteId !== 'new') {
@@ -59,6 +97,7 @@ const NotesPage: React.FC = () => {
     navigate('/notes');
   }, [navigate]);
 
+<<<<<<< HEAD
   const handleSaveNote = useCallback(async (noteData: Partial<Note>) => {
     try {
       const noteUpdate: Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'userId'> = {
@@ -69,6 +108,15 @@ const NotesPage: React.FC = () => {
         isArchived: noteData.isArchived || false,
         type: noteData.type || 'text',
         metadata: noteData.metadata || {}
+=======
+  const handleSaveNote = useCallback(async (noteData: Pick<Note, 'title' | 'content' | 'tags' | 'type'>) => {
+    try {
+      const noteUpdate = {
+        title: noteData.title || 'Untitled Note',
+        content: noteData.content || '',
+        tags: noteData.tags || [],
+        type: noteData.type || 'text',
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       };
 
       if (currentNote?.id) {
@@ -76,10 +124,17 @@ const NotesPage: React.FC = () => {
         await updateNote(currentNote.id, noteUpdate);
         message.success('Note updated successfully');
       } else {
+<<<<<<< HEAD
         // Create new note with required fields
         const newNote = await createNote({
           ...noteUpdate,
           type: 'text' as const,
+=======
+        // Create new note
+        const newNote = await createNote({
+          ...noteUpdate,
+          type: 'text',
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         });
         message.success('Note created successfully');
         navigate(`/notes/${newNote.id}`);
@@ -118,6 +173,7 @@ const NotesPage: React.FC = () => {
     setSearchQuery(query);
   }, []);
 
+<<<<<<< HEAD
   // Filter notes based on search query
   const filteredNotes = React.useMemo(() => {
     if (!searchQuery) return notes;
@@ -129,17 +185,29 @@ const NotesPage: React.FC = () => {
       (note.tags?.some(tag => tag.toLowerCase().includes(query)))
     );
   }, [searchQuery, notes]);
+=======
+  const displayNotes = searchQuery ? filteredNotes : notes;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   const isEditing = Boolean(noteId && noteId !== 'new');
   const isCreating = noteId === 'new';
   const showEditor = isEditing || isCreating;
 
   return (
+<<<<<<< HEAD
     <div className={styles['notesPage']}>
       <Row gutter={24} className={styles['notesContainer']}>
         <Col xs={24} md={8} className={styles['notesList']}>
           <div className={styles['notesContainer']}>
             <Space className={styles['notesHeader'] || ''} direction="vertical">
               <Title level={4} className={styles['notesTitle'] || ''}>
+=======
+    <div className="notes-page">
+      <Row gutter={24} style={{ height: '100%' }}>
+        <Col xs={24} md={8} style={{ height: '100%', overflowY: 'auto' }}>
+          <div style={{ padding: '16px 0' }}>
+            <Space style={{ marginBottom: 16, width: '100%' }} direction="vertical">
+              <Title level={4} style={{ margin: 0 }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                 My Notes
               </Title>
               <Button
@@ -147,18 +215,30 @@ const NotesPage: React.FC = () => {
                 icon={<PlusOutlined />}
                 onClick={handleCreateNew}
                 block
+<<<<<<< HEAD
+=======
+                disabled={isCreating}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               >
                 New Note
               </Button>
             </Space>
             <NotesList
+<<<<<<< HEAD
               notes={filteredNotes}
+=======
+              notes={displayNotes}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               loading={loading}
               onEdit={handleNoteSelect}
               onDelete={handleDeleteNote}
               onPin={handlePinNote}
               onSearch={handleSearch}
+<<<<<<< HEAD
               selectedNoteId={currentNote?.id || ''}
+=======
+              selectedNoteId={currentNote?.id}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             />
           </div>
         </Col>
@@ -172,6 +252,7 @@ const NotesPage: React.FC = () => {
               loading={loading}
             />
           ) : (
+<<<<<<< HEAD
             <div className={styles['emptyState']}>
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -195,6 +276,35 @@ const NotesPage: React.FC = () => {
                   </div>
                 }
               />
+=======
+            <div
+              style={{
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column',
+                padding: 24,
+              }}
+            >
+              <Empty
+                description={
+                  <span>
+                    {notes.length === 0
+                      ? 'No notes yet. Create your first note!'
+                      : 'Select a note to view or edit'}
+                  </span>
+                }
+              />
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleCreateNew}
+                style={{ marginTop: 16 }}
+              >
+                {notes.length === 0 ? 'Create Your First Note' : 'New Note'}
+              </Button>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             </div>
           )}
         </Col>

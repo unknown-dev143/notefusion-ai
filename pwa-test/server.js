@@ -1,4 +1,5 @@
 const http = require('http');
+<<<<<<< HEAD
 const fs = require('fs').promises;
 const path = require('path');
 const zlib = require('zlib');
@@ -12,6 +13,14 @@ const COMPRESSIBLE_TYPES = [
   'application/json',
   'application/manifest+json'
 ];
+=======
+const fs = require('fs');
+const path = require('path');
+const url = require('url');
+
+const PORT = 3000;
+
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 const MIME_TYPES = {
   '.html': 'text/html',
   '.js': 'text/javascript',
@@ -19,7 +28,10 @@ const MIME_TYPES = {
   '.json': 'application/json',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
+<<<<<<< HEAD
   '.jpeg': 'image/jpeg',
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
   '.wav': 'audio/wav',
@@ -28,6 +40,7 @@ const MIME_TYPES = {
   '.ttf': 'application/font-ttf',
   '.eot': 'application/vnd.ms-fontobject',
   '.otf': 'application/font-otf',
+<<<<<<< HEAD
   '.wasm': 'application/wasm',
   '.ico': 'image/x-icon',
   '.webmanifest': 'application/manifest+json',
@@ -157,3 +170,49 @@ process.on('SIGINT', () => {
   console.log('\nShutting down server...');
   process.exit(0);
 });
+=======
+  '.wasm': 'application/wasm'
+};
+
+const server = http.createServer((req, res) => {
+  console.log(`${req.method} ${req.url}`);
+  
+  // Parse URL
+  const parsedUrl = url.parse(req.url);
+  
+  // Extract URL path
+  let pathname = `.${parsedUrl.pathname}`;
+  if (pathname === './') {
+    pathname = './index.html';
+  }
+  
+  // Get the file extension
+  const ext = path.parse(pathname).ext;
+  
+  // Read file from file system
+  fs.readFile(pathname, (err, data) => {
+    if (err) {
+      if (err.code === 'ENOENT') {
+        // Page not found
+        fs.readFile('./404.html', (err, content) => {
+          res.writeHead(404, { 'Content-Type': 'text/html' });
+          res.end(content || '404 Not Found');
+        });
+      } else {
+        // Server error
+        res.writeHead(500);
+        res.end(`Server Error: ${err.code}`);
+      }
+    } else {
+      // Success - serve the file
+      res.setHeader('Content-Type', MIME_TYPES[ext] || 'application/octet-stream');
+      res.end(data);
+    }
+  });
+});
+
+server.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}/`);
+  console.log('Press Ctrl+C to stop the server');
+});
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e

@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { Modal, Upload, Button, Typography, Progress, message, Card, List } from 'antd';
 import { InboxOutlined, FileOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd';
+<<<<<<< HEAD
 import styles from './ImportModal.module.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const { Dragger } = Upload;
 const { Text } = Typography;
@@ -95,12 +98,21 @@ export const ImportModal: React.FC<ImportModalProps> = ({
   const renderContent = () => {
     if (importResults) {
       return (
+<<<<<<< HEAD
         <div className={styles['resultContainer']}>
           <div>
             {importResults.success ? (
               <CheckCircleOutlined className={styles['successIcon']} />
             ) : (
               <CloseCircleOutlined className={styles['errorIcon']} />
+=======
+        <div>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            {importResults.success ? (
+              <CheckCircleOutlined style={{ fontSize: 48, color: '#52c41a', marginBottom: 16 }} />
+            ) : (
+              <CloseCircleOutlined style={{ fontSize: 48, color: '#ff4d4f', marginBottom: 16 }} />
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             )}
             <h3>
               {importResults.success
@@ -108,7 +120,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                 : 'Import completed with errors'}
             </h3>
             {importResults.errors.length > 0 && (
+<<<<<<< HEAD
               <div className={styles['errorList']}>
+=======
+              <div style={{ marginTop: 16, maxHeight: 200, overflowY: 'auto' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                 <h4>Errors:</h4>
                 <List
                   size="small"
@@ -134,7 +150,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({
         beforeUpload={handleBeforeUpload}
         onRemove={handleRemove}
         showUploadList={false}
+<<<<<<< HEAD
         disabled={loading}
+=======
+        disabled={isImporting}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         style={{ padding: '24px 16px' }}
       >
         <p className="ant-upload-drag-icon">
@@ -175,7 +195,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({
       destroyOnClose
     >
       {loading && !importResults && (
+<<<<<<< HEAD
         <div className={styles['loadingContainer']}>
+=======
+        <div style={{ marginBottom: 16 }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <Text>Importing files...</Text>
           <Progress percent={progress} status="active" showInfo={false} />
         </div>
@@ -187,7 +211,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({
         <Card 
           size="small" 
           title="Selected Files" 
+<<<<<<< HEAD
           className={styles['fileList']}
+=======
+          style={{ marginTop: 16, maxHeight: 200, overflowY: 'auto' }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         >
           <List
             size="small"
@@ -195,10 +223,17 @@ export const ImportModal: React.FC<ImportModalProps> = ({
             renderItem={(file) => (
               <List.Item>
                 <FileOutlined style={{ marginRight: 8 }} />
+<<<<<<< HEAD
                 <Text ellipsis={{ tooltip: file.name }} className={styles['fileName']}>
                   {file.name}
                 </Text>
                 <Text type="secondary" className={styles['fileSize']}>
+=======
+                <Text ellipsis={{ tooltip: file.name }} style={{ maxWidth: '80%' }}>
+                  {file.name}
+                </Text>
+                <Text type="secondary" style={{ marginLeft: 'auto' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   {(file.size! / 1024).toFixed(1)} KB
                 </Text>
               </List.Item>

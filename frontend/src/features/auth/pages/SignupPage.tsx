@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Form, Input, Button, Typography, Card, message, Modal } from 'antd';
 import { UserOutlined, MailOutlined, LockOutlined, CheckCircleOutlined } from '@ant-design/icons';
+<<<<<<< HEAD
 import styles from './SignupPage.module.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import TermsAndConditions from '../components/TermsAndConditions';
 import { useAuth } from '../context/AuthContext';
 
@@ -165,7 +168,11 @@ export const SignupPage: React.FC = () => {
                 type="checkbox"
                 id="terms-checkbox"
                 onChange={(e) => form.setFieldsValue({ acceptedTerms: e.target.checked })}
+<<<<<<< HEAD
                 className={styles.termsCheckbox}
+=======
+                style={{ marginRight: '8px' }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               />
               <label htmlFor="terms-checkbox">
                 I agree to the{' '}
@@ -189,10 +196,17 @@ export const SignupPage: React.FC = () => {
             </Button>
           </Form.Item>
 
+<<<<<<< HEAD
           <div className={styles.authFooter}>
             <Text>
               Already have an account?{' '}
               <Link to="/login" className={styles.loginLink}>
+=======
+          <div className="auth-footer">
+            <Text>
+              Already have an account?{' '}
+              <Link to="/login" className="login-link">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                 Log in
               </Link>
             </Text>
@@ -206,8 +220,13 @@ export const SignupPage: React.FC = () => {
         footer={null}
         closable={false}
       >
+<<<<<<< HEAD
         <div className={styles.verificationModal}>
           <CheckCircleOutlined className={styles.verificationIcon} />
+=======
+        <div style={{ textAlign: 'center', padding: '20px' }}>
+          <CheckCircleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <h3>Account Created Successfully!</h3>
           <p>We've sent a verification link to <strong>{email}</strong>.</p>
           <p>Please check your email and click the verification link to activate your account.</p>
@@ -217,11 +236,19 @@ export const SignupPage: React.FC = () => {
               setVerificationModalVisible(false);
               navigate('/verify-email', { state: { email } });
             }}
+<<<<<<< HEAD
             className={styles.verificationButton}
           >
             Go to Verification Page
           </Button>
           <div className={styles.verificationLink}>
+=======
+            style={{ marginTop: '16px' }}
+          >
+            Go to Verification Page
+          </Button>
+          <div style={{ marginTop: '16px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <Button 
               type="link" 
               onClick={async () => {

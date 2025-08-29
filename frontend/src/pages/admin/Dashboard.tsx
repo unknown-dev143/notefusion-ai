@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+<<<<<<< HEAD
 import styles from './Dashboard.module.css';
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { 
   Card, 
   Row, 
@@ -104,6 +107,7 @@ const AdminDashboard: React.FC = () => {
   const [dateRange, setDateRange] = useState<any>(null);
   const navigate = useNavigate();
   
+<<<<<<< HEAD
   const getStatusClassName = (status: string) => {
     switch (status.toLowerCase()) {
       case 'active':
@@ -117,6 +121,12 @@ const AdminDashboard: React.FC = () => {
       default:
         return '';
     }
+=======
+  const statusColors: Record<string, string> = {
+    active: 'green',
+    inactive: 'orange',
+    suspended: 'red',
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   };
 
   // Chart data
@@ -184,7 +194,11 @@ const AdminDashboard: React.FC = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+<<<<<<< HEAD
       render: (text: string) => <a>{text}</a>,
+=======
+      render: (text: string) => <a href={`/admin/users/${text.toLowerCase().replace(/\s+/g, '-')}`}>{text}</a>,
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     },
     {
       title: 'Email',
@@ -196,12 +210,19 @@ const AdminDashboard: React.FC = () => {
       dataIndex: 'status',
       key: 'status',
       render: (status: string) => {
+<<<<<<< HEAD
         const statusClass = getStatusClassName(status);
         return (
           <Tag className={`${styles['statusTag']} ${statusClass}`}>
             {status.toUpperCase()}
           </Tag>
         );
+=======
+        let color = 'default';
+        if (status === 'active') color = 'success';
+        if (status === 'suspended') color = 'error';
+        return <Tag color={color}>{status.toUpperCase()}</Tag>;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       },
     },
     {
@@ -216,7 +237,11 @@ const AdminDashboard: React.FC = () => {
       render: (_: any, _record: any) => (
         <Space size="middle">
           <Button size="small">View</Button>
+<<<<<<< HEAD
           <Button type="primary" className={styles['actionButton']}>Edit</Button>
+=======
+          <Button size="small" danger>Suspend</Button>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         </Space>
       ),
     },
@@ -262,22 +287,38 @@ const AdminDashboard: React.FC = () => {
   };
 
   return (
+<<<<<<< HEAD
     <div className={styles['dashboardContainer']}>
       <div className={styles['header']}>
         <div className={styles['titleContainer']}>
           <Title level={3} className={styles['title']}><DashboardOutlined /> Admin Dashboard</Title>
           <Text className={styles['subtitle']}>Welcome back! Here's what's happening with your application.</Text>
+=======
+    <div className="admin-dashboard" style={{ padding: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div>
+          <Title level={3} style={{ margin: 0 }}><DashboardOutlined /> Admin Dashboard</Title>
+          <Text type="secondary">Welcome back! Here's what's happening with your application.</Text>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         </div>
         <Space>
           <RangePicker 
             onChange={handleDateRangeChange}
             value={dateRange}
+<<<<<<< HEAD
             className={styles['rangePicker']}
+=======
+            style={{ width: 250 }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           />
           <Select 
             value={timeRange}
             onChange={handleTimeRangeChange}
+<<<<<<< HEAD
             className={styles['timeRangeSelect']}
+=======
+            style={{ width: 150 }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           >
             <Option value="7days">Last 7 Days</Option>
             <Option value="30days">Last 30 Days</Option>
@@ -288,7 +329,10 @@ const AdminDashboard: React.FC = () => {
             icon={<ReloadOutlined />} 
             onClick={handleRefresh}
             loading={loading}
+<<<<<<< HEAD
             className={styles['refreshButton']}
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           >
             Refresh
           </Button>
@@ -299,17 +343,28 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Stats Overview */}
+<<<<<<< HEAD
       <Row gutter={[16, 16]} className={styles['statsRow']}>
+=======
+      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
               title="Total Users"
               value={subscriptionStats.total}
+<<<<<<< HEAD
               prefix={<TeamOutlined className={styles['iconInfo']} />}
               valueStyle={{ color: '#1890ff' }}
               className={styles['statistic']}
             />
             <div className={styles['statisticFooter']}>
+=======
+              prefix={<TeamOutlined />}
+              valueStyle={{ color: '#1890ff' }}
+            />
+            <div style={{ marginTop: '8px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               <Text type="success">
                 <ArrowUpOutlined /> 12% from last month
               </Text>
@@ -321,11 +376,18 @@ const AdminDashboard: React.FC = () => {
             <Statistic
               title="Active Subscriptions"
               value={subscriptionStats.active}
+<<<<<<< HEAD
               prefix={<CheckCircleOutlined className={styles['iconSuccess']} />}
               valueStyle={{ color: '#52c41a' }}
               className={styles['statistic']}
             />
             <div className={styles['statisticFooter']}>
+=======
+              prefix={<CheckCircleOutlined />}
+              valueStyle={{ color: '#52c41a' }}
+            />
+            <div style={{ marginTop: '8px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               <Text type="success">
                 <ArrowUpOutlined /> 5% from last month
               </Text>
@@ -338,12 +400,19 @@ const AdminDashboard: React.FC = () => {
               title="Monthly Revenue"
               value={subscriptionStats.mrr}
               precision={2}
+<<<<<<< HEAD
               prefix="$"
               valueStyle={{ color: '#722ed1' }}
               className={styles['statistic']}
               prefixCls={styles['statusPurple']}
             />
             <div className={styles['statisticFooter']}>
+=======
+              prefix={<DollarOutlined />}
+              valueStyle={{ color: '#722ed1' }}
+            />
+            <div style={{ marginTop: '8px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               <Text type="success">
                 <ArrowUpOutlined /> 8% from last month
               </Text>
@@ -355,11 +424,18 @@ const AdminDashboard: React.FC = () => {
             <Statistic
               title="Trial Users"
               value={subscriptionStats.trial}
+<<<<<<< HEAD
               prefix={<ClockCircleOutlined className={styles['iconWarning']} />}
               valueStyle={{ color: '#faad14' }}
               className={styles['statistic']}
             />
             <div className={styles['statisticFooter']}>
+=======
+              prefix={<ClockCircleOutlined />}
+              valueStyle={{ color: '#faad14' }}
+            />
+            <div style={{ marginTop: '8px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               <Text type="warning">
                 {subscriptionStats.trial} trials active
               </Text>
@@ -379,9 +455,15 @@ const AdminDashboard: React.FC = () => {
               </Space>
             }
             loading={loading}
+<<<<<<< HEAD
             className={styles['chartCard']}
           >
             <div className={styles['chartContainer']}>
+=======
+            style={{ marginBottom: '16px' }}
+          >
+            <div style={{ height: '300px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               <Line
                 data={{
                   labels: userActivityData.map(item => item.date),
@@ -430,9 +512,15 @@ const AdminDashboard: React.FC = () => {
               </Space>
             }
             loading={loading}
+<<<<<<< HEAD
             className={styles['chartCard']}
           >
             <div className={styles['chartContainer']}>
+=======
+            style={{ height: '100%' }}
+          >
+            <div style={{ height: '250px', display: 'flex', justifyContent: 'center' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               <Pie
                 data={{
                   labels: ['Active', 'Trial', 'Canceled'],
@@ -456,7 +544,11 @@ const AdminDashboard: React.FC = () => {
                       borderWidth: 1,
                     },
                   ],
+<<<<<<< HEAD
                 }} 
+=======
+                }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                 options={{
                   responsive: true,
                   maintainAspectRatio: false,
@@ -473,7 +565,11 @@ const AdminDashboard: React.FC = () => {
       </Row>
 
       {/* Recent Users */}
+<<<<<<< HEAD
       <Row className={styles['sectionRow']}>
+=======
+      <Row style={{ marginTop: '16px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <Col span={24}>
           <Card 
             title={
@@ -492,6 +588,7 @@ const AdminDashboard: React.FC = () => {
               </Button>
             }
             loading={loading}
+<<<<<<< HEAD
             className={styles['tableCard']}
           >
             <div className={styles['tableContainer']}>
@@ -507,21 +604,89 @@ const AdminDashboard: React.FC = () => {
                 })}
               />
             </div>
+=======
+          >
+            <Table 
+              columns={[
+                {
+                  title: 'Name',
+                  dataIndex: 'name',
+                  key: 'name',
+                  render: (text, record) => (
+                    <Space>
+                      <UserOutlined />
+                      <a onClick={() => navigateTo(`/admin/users/${record.id}`)}>{text}</a>
+                    </Space>
+                  ),
+                },
+                {
+                  title: 'Email',
+                  dataIndex: 'email',
+                  key: 'email',
+                },
+                {
+                  title: 'Status',
+                  dataIndex: 'status',
+                  key: 'status',
+                  render: (status: string) => (
+                    <Tag color={statusColors[status]}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </Tag>
+                  ),
+                },
+                {
+                  title: 'Last Active',
+                  dataIndex: 'lastActive',
+                  key: 'lastActive',
+                  render: (date: string) => new Date(date).toLocaleString(),
+                },
+                {
+                  title: 'Actions',
+                  key: 'actions',
+                  render: (_, record) => (
+                    <Space size="middle">
+                      <Button size="small" onClick={() => navigateTo(`/admin/users/${record.id}`)}>
+                        View
+                      </Button>
+                      <Button size="small" danger>
+                        {record.status === 'suspended' ? 'Unsuspend' : 'Suspend'}
+                      </Button>
+                    </Space>
+                  ),
+                },
+              ]}
+              dataSource={recentUsers}
+              rowKey="id"
+              pagination={{
+                pageSize: 5,
+                showSizeChanger: false,
+              }}
+            />
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           </Card>
         </Col>
       </Row>
 
       {/* Stats Cards */}
+<<<<<<< HEAD
       <Row gutter={[16, 16]} className={styles['statsRow']}>
+=======
+      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <Col xs={24} sm={12} md={6}>
           <Card 
             hoverable
             onClick={() => navigateTo('/admin/users')}
+<<<<<<< HEAD
             className={styles['statsCard']}
+=======
+            style={{ cursor: 'pointer' }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           >
             <Statistic
               title="Total Users"
               value={subscriptionStats.total}
+<<<<<<< HEAD
               prefix={<UserOutlined className={styles['iconInfo']} />}
               valueStyle={{ color: '#1890ff' }}
               suffix={
@@ -534,6 +699,19 @@ const AdminDashboard: React.FC = () => {
             <div className={styles['statisticFooter']}>
               <Text type="secondary">
                 <CheckCircleOutlined className={`${styles['iconSuccess']} ${styles['iconMargin']}`} />
+=======
+              prefix={<UserOutlined style={{ color: '#1890ff' }} />}
+              valueStyle={{ color: '#1890ff' }}
+              suffix={
+                <span style={{ fontSize: '14px', color: '#52c41a' }}>
+                  +12% <ArrowUpOutlined />
+                </span>
+              }
+            />
+            <div style={{ marginTop: '8px' }}>
+              <Text type="secondary">
+                <CheckCircleOutlined style={{ color: '#52c41a', marginRight: '4px' }} />
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                 {subscriptionStats.active} active
               </Text>
             </div>
@@ -543,15 +721,23 @@ const AdminDashboard: React.FC = () => {
           <Card 
             hoverable
             onClick={() => navigateTo('/admin/analytics')}
+<<<<<<< HEAD
             className={styles['statsCard']}
           >
             <Statistic
               title="MRR"
+=======
+            style={{ cursor: 'pointer' }}
+          >
+            <Statistic
+              title="Monthly Revenue"
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               value={subscriptionStats.mrr}
               precision={2}
               prefix="$"
               valueStyle={{ color: '#722ed1' }}
               suffix={
+<<<<<<< HEAD
                 <span className={styles['statisticSuffix']}>
                   +15% <ArrowUpOutlined />
                 </span>
@@ -561,12 +747,23 @@ const AdminDashboard: React.FC = () => {
             <div className={styles['statisticFooter']}>
               <Text type="secondary">
                 <DollarOutlined className={`${styles['iconPurple']} ${styles['iconMargin']}`} />
+=======
+                <span style={{ fontSize: '14px', color: '#52c41a' }}>
+                  +15% <ArrowUpOutlined />
+                </span>
+              }
+            />
+            <div style={{ marginTop: '8px' }}>
+              <Text type="secondary">
+                <DollarOutlined style={{ color: '#722ed1', marginRight: '4px' }} />
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                 ${subscriptionStats.arr.toLocaleString()} ARR
               </Text>
             </div>
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
+<<<<<<< HEAD
           <Card 
             className={styles['statsCard']}
           >
@@ -585,27 +782,56 @@ const AdminDashboard: React.FC = () => {
             <div className={styles['statisticFooter']}>
               <Text type="secondary">
                 <WarningOutlined className={`${styles['iconWarning']} ${styles['iconMargin']}`} />
+=======
+          <Card>
+            <Statistic
+              title="Active Subscriptions"
+              value={subscriptionStats.active}
+              prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
+              valueStyle={{ color: '#52c41a' }}
+              suffix={
+                <span style={{ fontSize: '14px', color: '#52c41a' }}>
+                  +8% <ArrowUpOutlined />
+                </span>
+              }
+            />
+            <div style={{ marginTop: '8px' }}>
+              <Text type="secondary">
+                <WarningOutlined style={{ color: '#faad14', marginRight: '4px' }} />
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                 {subscriptionStats.trial} trials
               </Text>
             </div>
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
+<<<<<<< HEAD
           <Card 
             className={styles['statsCard']}
           >
+=======
+          <Card>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <Statistic
               title="Churn Rate"
               value={5.2}
               precision={1}
               suffix="%"
               valueStyle={{ color: '#ff4d4f' }}
+<<<<<<< HEAD
               prefix={<StopOutlined className={styles['iconError']} />}
               className={styles['statistic']}
             />
             <div className={styles['statisticFooter']}>
               <Text type="secondary">
                 <span className={styles['statusError']}>{subscriptionStats.canceled} canceled</span>
+=======
+              prefix={<StopOutlined style={{ color: '#ff4d4f' }} />}
+            />
+            <div style={{ marginTop: '8px' }}>
+              <Text type="secondary">
+                <span style={{ color: '#ff4d4f' }}>{subscriptionStats.canceled} canceled</span>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               </Text>
             </div>
           </Card>
@@ -613,12 +839,20 @@ const AdminDashboard: React.FC = () => {
       </Row>
 
       {/* Charts */}
+<<<<<<< HEAD
       <Tabs defaultActiveKey="overview" className={styles['tabs']}>
+=======
+      <Tabs defaultActiveKey="overview">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <Tabs.TabPane tab={
           <span><DashboardOutlined /> Overview</span>
         } key="overview">
           {/* Main Content */}
+<<<<<<< HEAD
           <Row gutter={[16, 16]} className={styles['contentRow']}>
+=======
+          <Row gutter={[16, 16]}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <Col xs={24} xl={16}>
               <Card 
                 title={
@@ -633,7 +867,10 @@ const AdminDashboard: React.FC = () => {
                     View Details
                   </Button>
                 }
+<<<<<<< HEAD
                 className={styles['chartCard']}
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               >
                 <Line data={activityChartData} options={chartOptions} />
               </Card>
@@ -652,10 +889,16 @@ const AdminDashboard: React.FC = () => {
                     View Details
                   </Button>
                 }
+<<<<<<< HEAD
                 className={styles['chartCard']}
               >
                 <Line data={subscriptionChartData} options={chartOptions} />
                 <div className={styles['chartFooter']}>
+=======
+              >
+                <Line data={subscriptionChartData} options={chartOptions} />
+                <div style={{ marginTop: '16px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Row gutter={16}>
                     <Col span={12}>
                       <Statistic 
@@ -679,7 +922,11 @@ const AdminDashboard: React.FC = () => {
             </Col>
           </Row>
 
+<<<<<<< HEAD
           <Row gutter={[16, 16]} className={styles['sectionRow']}>
+=======
+          <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <Col xs={24} xl={12}>
               <Card 
                 title={
@@ -694,6 +941,7 @@ const AdminDashboard: React.FC = () => {
                     View All
                   </Button>
                 }
+<<<<<<< HEAD
                 className={styles['tableCard']}
               >
                 <div className={styles['tableContainer']}>
@@ -709,6 +957,20 @@ const AdminDashboard: React.FC = () => {
                     })}
                   />
                 </div>
+=======
+              >
+                <Table 
+                  columns={columns} 
+                  dataSource={recentUsers} 
+                  rowKey="id"
+                  pagination={{ pageSize: 5 }}
+                  size="small"
+                  onRow={(userRecord) => ({
+                    onClick: () => navigateTo(`/admin/users/${userRecord.id}`),
+                    style: { cursor: 'pointer' }
+                  })}
+                />
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               </Card>
             </Col>
             <Col xs={24} xl={12}>
@@ -721,7 +983,11 @@ const AdminDashboard: React.FC = () => {
                 }
                 loading={loading}
               >
+<<<<<<< HEAD
                 <div className={styles['chartWrapper']}>
+=======
+                <div style={{ height: '300px', display: 'flex', justifyContent: 'center' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Pie 
                     data={{
                       labels: ['Free', 'Pro', 'Business'],
@@ -761,7 +1027,11 @@ const AdminDashboard: React.FC = () => {
           <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
               <Card title="User Management">
+<<<<<<< HEAD
                 <Space direction="vertical" className={styles['fullWidthContainer']}>
+=======
+                <Space direction="vertical" style={{ width: '100%' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Button 
                     block 
                     type="primary" 
@@ -797,7 +1067,11 @@ const AdminDashboard: React.FC = () => {
             </Col>
             <Col xs={24} md={12}>
               <Card title="Analytics & Reports">
+<<<<<<< HEAD
                 <Space direction="vertical" className={styles['fullWidthContainer']}>
+=======
+                <Space direction="vertical" style={{ width: '100%' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   <Button 
                     block 
                     onClick={() => navigateTo('/admin/analytics')}

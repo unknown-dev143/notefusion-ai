@@ -1,6 +1,7 @@
 {
   "name": "NoteFusion AI",
   "short_name": "NoteFusion",
+<<<<<<< HEAD
   "description": "NoteFusion AI - Intelligent Note Taking Application with PWA Support",
   "start_url": "/index.html",
   "display": "standalone",
@@ -14,11 +15,22 @@
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
+=======
+  "description": "Your intelligent note-taking assistant",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1677ff",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
+<<<<<<< HEAD
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
@@ -114,5 +126,12 @@
         }
       ]
     }
+=======
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   ]
 }

@@ -9,9 +9,13 @@ import {
   CogIcon,
   CreditCardIcon,
   LogoutIcon,
+<<<<<<< HEAD
   ChevronDownIcon,
   VolumeUpIcon,
   ClipboardListIcon
+=======
+  ChevronDownIcon
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 } from '@heroicons/react/outline';
 import { 
   LightBulbIcon as BrainIcon,
@@ -47,11 +51,17 @@ const Navbar = () => {
 
   const navItems = [
     { name: 'Dashboard', path: '/', icon: HomeIcon },
+<<<<<<< HEAD
     { name: 'Tasks', path: '/tasks', icon: ClipboardListIcon },
     { name: 'New Session', path: '/new', icon: PlusIcon },
     { name: 'Sessions', path: '/sessions', icon: FolderIcon },
     { name: 'Flashcards & Quizzes', path: '/flashcards-quizzes', icon: AcademicCapIcon },
     { name: 'Audio Tools', path: '/audio-tools', icon: VolumeUpIcon },
+=======
+    { name: 'New Session', path: '/new', icon: PlusIcon },
+    { name: 'Sessions', path: '/sessions', icon: FolderIcon },
+    { name: 'Flashcards & Quizzes', path: '/flashcards-quizzes', icon: AcademicCapIcon },
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     { name: 'Whiteboard', path: '/whiteboard', icon: SparklesIcon },
     { name: 'Pricing', path: '/pricing', icon: CreditCardIcon },
   ];

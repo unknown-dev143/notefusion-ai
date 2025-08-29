@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import os
 import logging
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status, BackgroundTasks
@@ -16,6 +17,17 @@ from ...services.ai import AIService
 
 # Configure logging
 logger = logging.getLogger(__name__)
+=======
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from fastapi.responses import JSONResponse
+from typing import List, Optional
+from sqlalchemy.orm import Session
+from ... import models, schemas, crud
+from ...database import get_db
+from ...services import cloud_storage
+from ...core.security import get_current_user
+from ...models.user import User
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
@@ -97,6 +109,7 @@ async def upload_attachment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+<<<<<<< HEAD
     """
     Upload an attachment to a note.
     
@@ -105,6 +118,9 @@ async def upload_attachment(
     - Documents: .pdf, .doc, .docx, .txt
     - Audio: .mp3, .wav, .m4a
     """
+=======
+    """Upload an attachment to a note"""
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     # Verify note exists and user has permission
     db_note = crud.get_note(db, note_id=note_id)
     if not db_note:
@@ -113,6 +129,7 @@ async def upload_attachment(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
     try:
+<<<<<<< HEAD
         # Save the uploaded file
         file_info = await file_upload_service.save_upload_file(file)
         
@@ -145,10 +162,33 @@ async def upload_attachment(
         
     except Exception as e:
         logger.error(f"Error uploading file: {str(e)}", exc_info=True)
+=======
+        # Upload to cloud storage
+        file_path = f"notes/{note_id}/{file.filename}"
+        file_url = await cloud_storage.upload_file(
+            file.file, 
+            file_path,
+            content_type=file.content_type
+        )
+        
+        # Save attachment record
+        attachment = schemas.AttachmentCreate(
+            filename=file.filename,
+            file_path=file_path,
+            file_url=file_url,
+            file_type=file.content_type or "application/octet-stream",
+            file_size=file.size,
+            note_id=note_id
+        )
+        
+        return crud.create_attachment(db=db, attachment=attachment)
+    except Exception as e:
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         raise HTTPException(
             status_code=500, 
             detail=f"Error uploading file: {str(e)}"
         )
+<<<<<<< HEAD
             detail=f"Error uploading file: {str(e)}"
         )
 
@@ -170,6 +210,17 @@ async def generate_note_content(
     - Format notes
     """
     # Verify note exists and user has permission
+=======
+
+@router.post("/{note_id}/generate", response_model=schemas.Note)
+async def generate_note_content(
+    note_id: int,
+    prompt: schemas.NoteGenerationPrompt,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Generate note content using AI"""
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     db_note = crud.get_note(db, note_id=note_id)
     if not db_note:
         raise HTTPException(status_code=404, detail="Note not found")
@@ -177,6 +228,7 @@ async def generate_note_content(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
     try:
+<<<<<<< HEAD
         # Get user's AI settings
         ai_settings = get_user_ai_settings(db, current_user.id)
         
@@ -218,6 +270,8 @@ async def generate_note_content(
             detail=f"Error generating content: {str(e)}"
         )
     try:
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         # Call AI service to generate content
         # This is a placeholder - implement based on your AI service
         generated_content = "Generated content based on prompt"

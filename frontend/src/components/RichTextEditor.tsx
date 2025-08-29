@@ -1,8 +1,13 @@
+<<<<<<< HEAD
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+=======
+import * as React from 'react';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { 
   Editor, 
   EditorState, 
   RichUtils, 
+<<<<<<< HEAD
   getDefaultKeyBinding, 
   convertToRaw, 
   convertFromRaw, 
@@ -36,6 +41,28 @@ import {
   FaAlignRight,
   FaAlignJustify
 } from 'react-icons/fa';
+=======
+  convertToRaw, 
+  convertFromRaw, 
+  ContentState,
+  DraftStyleMap,
+  CompositeDecorator,
+  ContentBlock,
+  DraftInlineStyle,
+  CharacterMetadata,
+  DraftHandleValue,
+  RawDraftContentState,
+  EntityInstance
+} from 'draft-js';
+
+// Import React hooks explicitly to avoid TypeScript errors
+const { 
+  useRef, 
+  useState, 
+  useCallback, 
+  useEffect 
+} = React;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 // Define interfaces for better type safety
 interface RichTextEditorProps {
@@ -51,12 +78,15 @@ interface LinkProps {
   contentState: ContentState;
   entityKey: string;
   children: React.ReactNode;
+<<<<<<< HEAD
   decoratedText?: string;
   offsetKey: string;
   blockKey: string;
   dir?: string;
   end: number;
   start: number;
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 }
 
 // Define the style map for custom styles
@@ -109,6 +139,48 @@ const styles = {
     cursor: 'pointer',
   },
 } as const;
+<<<<<<< HEAD
+=======
+import 'draft-js/dist/Draft.css';
+import { 
+  FaBold, 
+  FaItalic, 
+  FaUnderline, 
+  FaListUl, 
+  FaListOl, 
+  FaLink,
+  FaAlignLeft,
+  FaAlignCenter,
+  FaAlignRight,
+  FaAlignJustify
+} from 'react-icons/fa';
+
+// Define the style map for custom styles
+const styleMap: DraftStyleMap = {
+  'HIGHLIGHT': {
+    backgroundColor: '#faed27',
+    padding: '0 2px',
+    borderRadius: '2px',
+  },
+};
+
+// Define props for the RichTextEditor component
+interface RichTextEditorProps {
+  content?: string;
+  onChange: (content: string) => void;
+  placeholder?: string;
+  readOnly?: boolean;
+  style?: React.CSSProperties;
+  className?: string;
+}
+
+// Define props for the Link component
+interface LinkProps {
+  contentState: ContentState;
+  entityKey: string;
+  children: React.ReactNode;
+}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 // Custom component for links
 const Link: React.FC<LinkProps> = ({ contentState, entityKey, children }) => {
@@ -145,6 +217,7 @@ function findLinkEntities(
   );
 }
 
+<<<<<<< HEAD
 // Create decorator for links
 const createDecorator = () => {
   return new CompositeDecorator([
@@ -154,6 +227,81 @@ const createDecorator = () => {
     },
   ]);
 };
+=======
+// Define styles
+const styles = {
+  editor: {
+    border: '1px solid #ddd',
+    minHeight: '200px',
+    padding: '10px',
+    borderRadius: '4px',
+    backgroundColor: '#fff',
+  },
+  link: {
+    color: '#3b5998',
+    textDecoration: 'underline',
+  },
+  toolbar: {
+    marginBottom: '10px',
+    display: 'flex',
+    gap: '4px',
+    flexWrap: 'wrap',
+  },
+  button: {
+    backgroundColor: '#f5f5f5',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    padding: '4px 8px',
+    cursor: 'pointer',
+    fontSize: '14px',
+  },
+  activeButton: {
+    backgroundColor: '#e0e0e0',
+  },
+} as const;
+
+// Custom Link component for links in the editor
+const Link: React.FC<LinkProps> = ({ contentState, entityKey, children }) => {
+  const { url } = contentState.getEntity(entityKey).getData();
+  return (
+    <a
+      href={url}
+      style={styles.link}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {children}
+    </a>
+  );
+};
+
+// Find link entities in the content
+const findLinkEntities = (
+  contentBlock: ContentBlock,
+  callback: (start: number, end: number) => void,
+  contentState: ContentState
+) => {
+  contentBlock.findEntityRanges(
+    (character) => {
+      const entityKey = character.getEntity();
+      return (
+        entityKey !== null &&
+        contentState.getEntity(entityKey).getType() === 'LINK'
+      );
+    },
+    callback
+  );
+};
+
+// Create decorator for links
+const createDecorator = () =>
+  new CompositeDecorator([
+    {
+      strategy: findLinkEntities,
+      component: Link,
+    },
+  ]);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
   content,
@@ -184,6 +332,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   }, [onChange]);
 
+<<<<<<< HEAD
   const handleKeyCommand = (command: DraftEditorCommand | string, editorState: EditorState): DraftHandleValue => {
     if (typeof command === 'string') {
       command = command as DraftEditorCommandType;
@@ -204,6 +353,25 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const toggleBlockType = (blockType: string) => {
     setEditorState(RichUtils.toggleBlockType(editorState, blockType as DraftBlockType));
   };
+=======
+  const handleKeyCommand = React.useCallback((command: string, editorState: EditorState) => {
+    const newState = RichUtils.handleKeyCommand(editorState, command);
+    if (newState) {
+      handleChange(newState);
+      return 'handled' as const;
+    }
+    return 'not-handled' as const;
+  }, [handleChange]);
+
+  // Add other handlers as needed
+  const toggleInlineStyle = React.useCallback((style: string) => {
+    handleChange(RichUtils.toggleInlineStyle(editorState, style));
+  }, [editorState, handleChange]);
+
+  const toggleBlockType = React.useCallback((blockType: string) => {
+    handleChange(RichUtils.toggleBlockType(editorState, blockType));
+  }, [editorState, handleChange]);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
   // Focus the editor when mounted
   React.useEffect(() => {
@@ -242,7 +410,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [editorState]);
 
   // Check if current block has a specific style
+<<<<<<< HEAD
   const hasInlineStyle = useCallback((style: DraftInlineStyleType): boolean => {
+=======
+  const hasInlineStyle = useCallback((style: string): boolean => {
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     return editorState.getCurrentInlineStyle().has(style);
   }, [editorState]);
 
@@ -314,12 +486,25 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [editorState, handleChange]);
 
   // Custom block renderer
+<<<<<<< HEAD
   const blockStyleFn: BlockStyleFn = (contentBlock: ContentBlock): string => {
     const type = contentBlock.getType();
     if (type === 'blockquote') {
       return 'RichEditor-blockquote';
     }
     return '';
+=======
+  const blockStyleFn = (contentBlock: any) => {
+    const type = contentBlock.getType();
+    switch (type) {
+      case 'blockquote':
+        return 'border-l-4 border-gray-300 pl-4 my-2 text-gray-600';
+      case 'code-block':
+        return 'bg-gray-100 p-4 rounded font-mono text-sm my-2';
+      default:
+        return '';
+    }
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   };
 
   return (
@@ -351,9 +536,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             </button>
             <button
               onClick={() => toggleInlineStyle('HIGHLIGHT')}
+<<<<<<< HEAD
               className={`p-2 rounded hover:bg-gray-100 ${editorState.getCurrentInlineStyle().has('HIGHLIGHT' as any) ? 'bg-gray-200' : ''}`}
               title="Highlight"
               onClick={() => toggleInlineStyle('HIGHLIGHT')}
+=======
+              className={`p-2 rounded hover:bg-gray-100 ${hasInlineStyle('HIGHLIGHT') ? 'bg-gray-200' : ''}`}
+              title="Highlight"
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             >
               <span className="text-yellow-600">H</span>
             </button>
@@ -448,7 +638,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           handleReturn={handleReturn}
           placeholder={placeholder}
           readOnly={readOnly}
+<<<<<<< HEAD
           customStyleMap={editorStyleMap}
+=======
+          customStyleMap={styleMap}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           blockStyleFn={blockStyleFn}
           spellCheck={true}
         />

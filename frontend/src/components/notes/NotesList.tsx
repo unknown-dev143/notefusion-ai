@@ -1,8 +1,14 @@
 import React from 'react';
+<<<<<<< HEAD
 import { List, Tag, Button, Space, Typography, Input } from 'antd';
 import { EditOutlined, DeleteOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
 import { Note } from '../../features/notes/context/NoteContext';
 import styles from './NotesList.module.css';
+=======
+import { List, Card, Tag, Button, Space, Typography, Input } from 'antd';
+import { EditOutlined, DeleteOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
+import { Note } from '../../features/notes/context/NoteContext';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const { Text } = Typography;
 const { Search } = Input;
@@ -27,13 +33,22 @@ const NotesList: React.FC<NotesListProps> = ({
   selectedNoteId,
 }) => {
   return (
+<<<<<<< HEAD
     <div className={styles['notesList']}>
       <div className={styles['notesSearch']}>
+=======
+    <div className="notes-list">
+      <div className="notes-search" style={{ marginBottom: 16 }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <Search
           placeholder="Search notes..."
           onSearch={onSearch}
           onChange={(e) => onSearch(e.target.value)}
+<<<<<<< HEAD
           className={styles['searchInput']}
+=======
+          style={{ width: '100%' }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           allowClear
         />
       </div>
@@ -46,14 +61,29 @@ const NotesList: React.FC<NotesListProps> = ({
         renderItem={(note) => (
           <List.Item
             key={note.id}
+<<<<<<< HEAD
             className={`${styles['noteItem']} ${selectedNoteId === note.id ? styles['noteItem'] + ' ' + styles['selectedNote'] : ''}`}
+=======
+            className={selectedNoteId === note.id ? 'selected-note' : ''}
+            style={{
+              backgroundColor: selectedNoteId === note.id ? '#f0f7ff' : 'transparent',
+              borderRadius: 8,
+              padding: '8px 12px',
+              marginBottom: 8,
+              cursor: 'pointer',
+            }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             onClick={() => onEdit(note)}
             actions={[
               <Space key="actions" size="small">
                 <Button
                   type="text"
                   size="small"
+<<<<<<< HEAD
                   icon={note.isPinned ? <StarFilled className={styles['pinnedIcon']} /> : <StarOutlined />}
+=======
+                  icon={note.isPinned ? <StarFilled style={{ color: '#faad14' }} /> : <StarOutlined />}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   onClick={(e) => {
                     e.stopPropagation();
                     onPin(note.id, !note.isPinned);
@@ -95,6 +125,7 @@ const NotesList: React.FC<NotesListProps> = ({
                 </Space>
               }
               description={
+<<<<<<< HEAD
                 <Text 
                   type="secondary" 
                   ellipsis={{ 
@@ -102,12 +133,20 @@ const NotesList: React.FC<NotesListProps> = ({
                   }}
                   style={{ WebkitLineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
                 >
+=======
+                <Text type="secondary" ellipsis={{ rows: 2 }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   {note.content?.replace(/<[^>]*>/g, '') || 'No content'}
                 </Text>
               }
             />
+<<<<<<< HEAD
             <div className={styles['noteDate']}>
               <Text type="secondary">
+=======
+            <div style={{ marginTop: 8 }}>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                 {new Date(note.updatedAt).toLocaleDateString()}
               </Text>
             </div>

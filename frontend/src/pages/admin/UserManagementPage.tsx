@@ -3,12 +3,18 @@ import {
   Table, 
   Button, 
   Input, 
+<<<<<<< HEAD
+=======
+  Space, 
+  Modal, 
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   Form, 
   Select, 
   Tag, 
   Typography, 
   Card, 
   Popconfirm, 
+<<<<<<< HEAD
   message,
   Avatar,
   Tooltip,
@@ -17,6 +23,14 @@ import {
   Modal
 } from 'antd';
 import styles from './UserManagementPage.module.css';
+=======
+  message, 
+  Badge,
+  Avatar,
+  Tooltip,
+  Switch
+} from 'antd';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { 
   SearchOutlined, 
   PlusOutlined, 
@@ -355,8 +369,13 @@ const UserManagementPage: React.FC = () => {
   ];
 
   return (
+<<<<<<< HEAD
     <div className={styles['pageContainer']}>
       <div className={styles['header']}>
+=======
+    <div style={{ padding: '24px' }}>
+      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <Title level={3}>User Management</Title>
         <Button 
           type="primary" 
@@ -368,11 +387,19 @@ const UserManagementPage: React.FC = () => {
       </div>
 
       <Card>
+<<<<<<< HEAD
         <div className={styles['toolbar']}>
           <Input
             placeholder="Search users..."
             prefix={<SearchOutlined />}
             className={styles['searchInput']}
+=======
+        <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
+          <Input
+            placeholder="Search users..."
+            prefix={<SearchOutlined />}
+            style={{ width: 300 }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             onPressEnter={(e: any) => handleSearch(e.target.value)}

@@ -3,7 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, Typography, Space, Button, Result, Spin, message } from 'antd';
 import { useAuth } from '../context/AuthContext';
 import { MailOutlined } from '@ant-design/icons';
+<<<<<<< HEAD
 import styles from './VerifyEmailPage.module.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const { Title, Text } = Typography;
 
@@ -61,14 +64,22 @@ const VerifyEmailPage: React.FC = () => {
 
   if (loading) {
     return (
+<<<<<<< HEAD
       <div className={styles.loadingContainer}>
+=======
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <Spin size="large" />
       </div>
     );
   }
 
   return (
+<<<<<<< HEAD
     <div className={styles.container}>
+=======
+    <div style={{ maxWidth: '500px', margin: '40px auto' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       <Card>
         {status === 'verifying' && (
           <Result
@@ -106,14 +117,22 @@ const VerifyEmailPage: React.FC = () => {
 
         {status === 'resend' && (
           <Space direction="vertical" size="large" style={{ width: '100%' }}>
+<<<<<<< HEAD
             <Title level={3} className={styles.title}>
+=======
+            <Title level={3} style={{ textAlign: 'center' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               Verify Your Email
             </Title>
             <Text>
               We've sent a verification link to <strong>{email || 'your email address'}</strong>.
               Please check your inbox and click the link to verify your email.
             </Text>
+<<<<<<< HEAD
             <div className={styles.buttonContainer}>
+=======
+            <div style={{ textAlign: 'center' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               <Button
                 type="primary"
                 icon={<MailOutlined />}

@@ -1,8 +1,12 @@
 import React, { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
+<<<<<<< HEAD
 import authService, { Tokens } from '../services/authService';
 
 // Key for storing auth data in localStorage
 const AUTH_STORAGE_KEY = 'notefusion_auth';
+=======
+import authService from '../services/authService';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 export interface User {
   id: string;
@@ -13,6 +17,7 @@ export interface User {
   verificationToken?: string;
 }
 
+<<<<<<< HEAD
 interface UpdateProfileData {
   name?: string;
   email?: string;
@@ -20,25 +25,34 @@ interface UpdateProfileData {
   newPassword?: string;
 }
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+<<<<<<< HEAD
   tokens: Tokens | null;
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   login: (email: string, password: string) => Promise<void>;
   register: (data: { name: string; email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
   verifyEmail: (token: string) => Promise<{ success: boolean; message: string }>;
   forgotPassword: (email: string) => Promise<{ success: boolean; message: string }>;
   resetPassword: (token: string, password: string, passwordConfirmation: string) => Promise<{ success: boolean; message: string }>;
+<<<<<<< HEAD
   updateProfile: (data: UpdateProfileData) => Promise<void>;
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   clearError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+<<<<<<< HEAD
   // Initialize state from localStorage if available
   const [user, setUser] = useState<User | null>(() => {
     const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
@@ -94,6 +108,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     return () => clearInterval(refreshInterval);
   }, [tokens?.refreshToken]);
+=======
+  const [user, setUser] = useState<User | null>(null);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [initialized, setInitialized] = useState<boolean>(false);
@@ -123,9 +140,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
     
     try {
+<<<<<<< HEAD
       const { user, tokens } = await authService.login({ email, password });
       setUser(user);
       setTokens(tokens);
+=======
+      const { user } = await authService.login({ email, password });
+      setUser(user);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An error occurred during login';
+      setError(message);
+      throw error;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     } finally {
       setLoading(false);
     }
@@ -151,7 +177,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       await authService.logout();
       setUser(null);
+<<<<<<< HEAD
       setTokens(null);
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     } catch (error) {
       console.error('Logout error:', error);
       setError('Failed to logout. Please try again.');
@@ -209,6 +238,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
   }, []);
 
+<<<<<<< HEAD
   const updateProfile = useCallback(async (data: UpdateProfileData) => {
     try {
       setLoading(true);
@@ -240,13 +270,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     loading: loading || !initialized,
     error,
     tokens,
+=======
+  const value = {
+    user,
+    isAuthenticated: !!user,
+    loading: loading || !initialized,
+    error,
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     login,
     register,
     logout,
     verifyEmail,
     forgotPassword,
     resetPassword,
+<<<<<<< HEAD
     updateProfile,
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     clearError,
   };
 

@@ -1,6 +1,9 @@
 import React from 'react';
 import { Modal, Typography, Button } from 'antd';
+<<<<<<< HEAD
 import styles from './TermsAndConditions.module.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const { Title, Paragraph } = Typography;
 
@@ -30,7 +33,11 @@ const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
       ]}
       width={800}
     >
+<<<<<<< HEAD
       <div className={styles['termsContent']}>
+=======
+      <div style={{ maxHeight: '60vh', overflowY: 'auto', padding: '0 16px' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <Title level={4}>Last Updated: August 16, 2025</Title>
         
         <Title level={5}>1. Acceptance of Terms</Title>

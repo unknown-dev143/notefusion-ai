@@ -1,14 +1,26 @@
+<<<<<<< HEAD
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker, AsyncAttrs, AsyncEngine
 from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column, sessionmaker
 from sqlalchemy.pool import NullPool, AsyncAdaptedQueuePool
 from sqlalchemy import MetaData, Column, Integer, String, DateTime, JSON, Text, ForeignKey, Boolean, select
 from sqlalchemy.ext.asyncio import AsyncSession as _AsyncSession
 from typing import AsyncGenerator, Optional, Type, TypeVar, Any, Dict, List, cast
+=======
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker, AsyncAttrs
+from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column
+from sqlalchemy.pool import NullPool
+from sqlalchemy import MetaData, Column, Integer, String, DateTime, JSON, Text, ForeignKey, Boolean
+from typing import AsyncGenerator, Optional, Type, TypeVar, Any, Dict, List
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import os
 import uuid
 import json
 from datetime import datetime
+<<<<<<< HEAD
 from contextlib import asynccontextmanager, asynccontextmanager
+=======
+from contextlib import asynccontextmanager
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 from pydantic import BaseModel
 
 from ..config import settings
@@ -25,7 +37,11 @@ convention = {
 # Create metadata with naming convention
 metadata = MetaData(naming_convention=convention)
 
+<<<<<<< HEAD
 class Base(DeclarativeBase):
+=======
+class Base(AsyncAttrs, DeclarativeBase):
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     """Base class for all models."""
     __abstract__ = True
     metadata = metadata
@@ -50,6 +66,7 @@ class Base(DeclarativeBase):
             if hasattr(self, key):
                 setattr(self, key, value)
 
+<<<<<<< HEAD
 # Create database engine with connection pooling
 engine: AsyncEngine = create_async_engine(
     settings.DATABASE_URL,
@@ -64,10 +81,24 @@ engine: AsyncEngine = create_async_engine(
 )
 
 # Create async session factory
+=======
+# Create database engine
+engine = create_async_engine(
+    settings.DATABASE_URL,
+    echo=settings.DEBUG,
+    future=True,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+    connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
+)
+
+# Create session factory
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 async_session_factory = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
     expire_on_commit=False,
+<<<<<<< HEAD
     autoflush=False,
     future=True
 )
@@ -75,6 +106,12 @@ async_session_factory = async_sessionmaker(
 # For backward compatibility
 SessionLocal = async_session_factory
 
+=======
+    autocommit=False,
+    autoflush=False,
+)
+
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 # Import all models to ensure they are registered with SQLAlchemy
 # This must be after Base is defined but before any model is used
 from .user import User
@@ -94,6 +131,7 @@ __all__ = [
 ]
 
 # Dependency to get DB session
+<<<<<<< HEAD
 @asynccontextmanager
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Get database session with proper transaction management.
@@ -105,6 +143,13 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         async with get_db() as db:
             result = await db.execute(select(User))
             users = result.scalars().all()
+=======
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """Get database session.
+    
+    Yields:
+        AsyncSession: Database session
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     """
     async with async_session_factory() as session:
         try:
@@ -112,15 +157,39 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.commit()
         except Exception as e:
             await session.rollback()
+<<<<<<< HEAD
             raise e
+=======
+            raise
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         finally:
             await session.close()
 
 # For use in FastAPI dependencies
 SessionLocal = async_session_factory
 
+<<<<<<< HEAD
 # Helper function to get a database session (alias for get_db for backward compatibility)
 get_db_session = get_db
+=======
+# Helper function to get a database session
+@asynccontextmanager
+async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
+    """Get a database session with automatic cleanup.
+    
+    Yields:
+        AsyncSession: Database session
+    """
+    async with SessionLocal() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 async def init_db() -> None:
     """Initialize database tables."""

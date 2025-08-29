@@ -12,7 +12,10 @@ import {
 } from '@ant-design/icons';
 import MoveFolderDialog from './MoveFolderDialog';
 import { Folder } from '../types/folder';
+<<<<<<< HEAD
 import styles from './FoldersPanel.module.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 export interface FoldersPanelProps {
   folders: Folder[];
@@ -165,7 +168,11 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
             onPressEnter={handleRenameFolder}
             onBlur={handleRenameFolder}
             size="small"
+<<<<<<< HEAD
             className={styles['folderInput']}
+=======
+            style={{ width: '80%' }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           />
         </div>
       );
@@ -173,18 +180,30 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
 
     return (
       <div 
+<<<<<<< HEAD
         className={styles['folderItem']}
+=======
+        className={`folder-item ${selectedFolderId === folder.id ? 'selected' : ''}`}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         onContextMenu={(e) => {
           e.preventDefault();
           setContextMenuFolder(folder);
           setContextMenuPosition({ x: e.clientX, y: e.clientY });
         }}
       >
+<<<<<<< HEAD
         <span className={styles['folderName']}>
           {expandedKeys.includes(folder.id) ? <FolderOpenOutlined /> : <FolderOutlined />}
           <span>{folder.name}</span>
         </span>
         <span className={styles['folderActions']}>
+=======
+        <span className="folder-name">
+          {expandedKeys.includes(folder.id) ? <FolderOpenOutlined /> : <FolderOutlined />}
+          <span>{folder.name}</span>
+        </span>
+        <span className="folder-actions">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <Button 
             type="text" 
             size="small" 
@@ -250,14 +269,22 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
   };
 
   return (
+<<<<<<< HEAD
     <div className={styles['foldersPanel']}>
       <div className={styles['actionBar']}>
+=======
+    <div className="folders-panel">
+      <div className="folders-header">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <h3>Folders</h3>
         <Button 
           type="primary" 
           icon={<PlusOutlined />} 
           size="small"
+<<<<<<< HEAD
           className={styles['newFolderButton']}
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           onClick={() => {
             setContextMenuFolder(null);
             setNewFolderName('');
@@ -268,7 +295,11 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
         </Button>
       </div>
       
+<<<<<<< HEAD
       <div className={styles['treeContainer']}>
+=======
+      <div className="folders-tree">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <Tree
           showIcon
           expandedKeys={expandedKeys}
@@ -292,16 +323,32 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
           onChange={(e) => setNewFolderName(e.target.value)}
           onPressEnter={handleCreateFolder}
           autoFocus
+<<<<<<< HEAD
           className={styles['folderInput']}
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         />
       </Modal>
 
       {contextMenuPosition && (
         <div
+<<<<<<< HEAD
           className={styles['folderContextMenu']}
           style={{
             left: contextMenuPosition.x,
             top: contextMenuPosition.y,
+=======
+          className="folder-context-menu"
+          style={{
+            position: 'fixed',
+            left: contextMenuPosition.x,
+            top: contextMenuPosition.y,
+            zIndex: 1000,
+            backgroundColor: 'white', 
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            borderRadius: '4px',
+            padding: '4px 0',
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           }}
           onClick={(e) => e.stopPropagation()}
           onContextMenu={(e) => e.preventDefault()}
@@ -310,19 +357,32 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
             items={contextMenuItems} 
             mode="vertical"
             selectable={false}
+<<<<<<< HEAD
             className={styles['contextMenu']}
+=======
+            style={{ border: 'none', boxShadow: 'none' }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           />
         </div>
       )}
 
       {contextMenuPosition && (
         <div
+<<<<<<< HEAD
           className={styles['contextMenuOverlay']}
           style={{
+=======
+          style={{
+            position: 'fixed',
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
+<<<<<<< HEAD
+=======
+            zIndex: 999,
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           }}
           onClick={() => setContextMenuPosition(null)}
         />
@@ -335,6 +395,57 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
         folders={folders}
         currentFolderId={moveTargetId}
       />
+<<<<<<< HEAD
+=======
+
+      <style>{`
+        .folders-panel {
+          padding: 16px;
+          border-right: 1px solid #f0f0f0;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+        .folders-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 16px;
+        }
+        .folders-tree {
+          flex: 1;
+          overflow-y: auto;
+        }
+        .folder-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 4px 0;
+          width: 100%;
+        }
+        .folder-item:hover {
+          background: #f5f5f5;
+        }
+        .folder-item.selected {
+          background: #e6f7ff;
+        }
+        .folder-name {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex: 1;
+        }
+        .folder-actions {
+          visibility: hidden;
+        }
+        .folder-item:hover .folder-actions {
+          visibility: visible;
+        }
+        .context-menu-item:hover {
+          background: #f5f5f5;
+        }
+      `}</style>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     </div>
   );
 };

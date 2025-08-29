@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
+<<<<<<< HEAD
 import { configDefaults } from 'vitest/config';
 
 export default defineConfig({
@@ -14,11 +15,17 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
+=======
+
+export default defineConfig({
+  plugins: [react(), tsconfigPaths()],
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.ts'],
     include: ['**/__tests__/**/*.test.{ts,tsx}'],
+<<<<<<< HEAD
     exclude: [...configDefaults.exclude, '**/node_modules/**'],
     testTimeout: 30000,
     clearMocks: true,
@@ -45,11 +52,16 @@ export default defineConfig({
         '**/__mocks__/**',
         '**/__tests__/**',
       ],
+=======
+    coverage: {
+      reporter: ['text', 'json', 'html'],
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       exclude: [
         'node_modules/',
         'src/setupTests.ts',
         '**/*.d.ts',
         '**/*.test.{ts,tsx}',
+<<<<<<< HEAD
         '**/index.ts',
         '**/types.ts',
         '**/vite-env.d.ts',
@@ -80,6 +92,9 @@ export default defineConfig({
       jsdom: {
         url: 'http://localhost:3000',
       },
+=======
+      ],
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     },
   },
 });

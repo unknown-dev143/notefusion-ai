@@ -1,22 +1,35 @@
 // Service worker for NoteFusion AI PWA
+<<<<<<< HEAD
 const CACHE_NAME = 'notefusion-ai-cache-v2';
 const CORE_ASSETS = [
+=======
+const CACHE_NAME = 'notefusion-ai-cache-v1';
+const urlsToCache = [
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   '/',
   '/index.html',
   '/manifest.json',
   '/logo192.png',
   '/logo512.png',
   '/favicon.ico',
+<<<<<<< HEAD
   '/static/js/bundle.js',
   '/static/css/main.chunk.css',
   'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap',
 ];
 
 // Install event - cache core assets
+=======
+  // Add other static assets you want to cache
+];
+
+// Install event - cache static assets
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
+<<<<<<< HEAD
         console.log('[Service Worker] Caching core assets');
         return cache.addAll(CORE_ASSETS);
       })
@@ -77,11 +90,28 @@ self.addEventListener('fetch', (event) => {
         // Return cached response if found
         if (cachedResponse) {
           return cachedResponse;
+=======
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
+  );
+});
+
+// Fetch event - serve from cache, falling back to network
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        // Cache hit - return response
+        if (response) {
+          return response;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         }
         
         // Clone the request
         const fetchRequest = event.request.clone();
 
+<<<<<<< HEAD
         // Otherwise, fetch from network
         return fetch(fetchRequest).then((response) => {
           // Check if we received a valid response
@@ -164,11 +194,51 @@ self.addEventListener('notificationclick', (event) => {
       if (clients.openWindow) {
         return clients.openWindow('/');
       }
+=======
+        return fetch(fetchRequest).then(
+          (response) => {
+            // Check if we received a valid response
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            // Clone the response
+            const responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          }
+        );
+      })
+    );
+});
+
+// Activate event - clean up old caches
+self.addEventListener('activate', (event) => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     })
   );
 });
 
+<<<<<<< HEAD
 // Handle messages from the client
+=======
+// Listen for message from client to skip waiting
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();

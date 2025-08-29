@@ -1,8 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+<<<<<<< HEAD
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import App from './App';
 import './index.css';
+=======
+import './index.css';
+import App from './App';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
@@ -14,6 +19,7 @@ root.render(
       <Toaster position="top-right" />
     </BrowserRouter>
   </React.StrictMode>
+<<<<<<< HEAD
 );
 
 // Configure service worker with callbacks
@@ -59,3 +65,6 @@ if ('serviceWorker' in navigator) {
     }
   });
 }
+=======
+); 
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e

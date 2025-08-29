@@ -1,20 +1,32 @@
 import React from 'react';
+<<<<<<< HEAD
 import { Layout, Dropdown, Avatar, Button as AntdButton, Menu as AntdMenu, Space, theme } from 'antd';
 import LanguageSelector from './LanguageSelector';
 import type { MenuProps } from 'antd';
 import { 
+=======
+import { Layout, Dropdown, Avatar, Badge, Button, Menu as AntdMenu } from 'antd';
+import type { MenuProps } from 'antd';
+import { 
+  BellOutlined, 
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   UserOutlined, 
   LogoutOutlined, 
   FlagOutlined,
   BookOutlined,
+<<<<<<< HEAD
   TeamOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   ClockCircleOutlined
+=======
+  TeamOutlined
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 } from '@ant-design/icons';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { useFeatureFlag } from '../features/feature-flags';
+<<<<<<< HEAD
 import { ThemeToggle } from './ThemeToggle';
 import { NotificationCenter } from '../features/notifications';
 import './AppHeader.css';
@@ -34,6 +46,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({ collapsed, toggleCollapsed, isMob
   const {
     token: { colorBgContainer },
   } = theme.useToken();
+=======
+
+const { Header } = Layout;
+
+const AppHeader: React.FC = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   
   // Check if user has admin role
   const isAdmin = user && typeof user === 'object' && 'role' in user 
@@ -54,6 +74,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({ collapsed, toggleCollapsed, isMob
       onClick: () => navigate('/profile')
     },
     {
+<<<<<<< HEAD
+=======
+      key: 'settings',
+      label: 'Settings',
+      onClick: () => navigate('/settings')
+    },
+    {
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       type: 'divider',
     },
     {
@@ -72,11 +100,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({ collapsed, toggleCollapsed, isMob
       label: <Link to="/notes">Notes</Link>,
     },
     {
+<<<<<<< HEAD
       key: 'study',
       icon: <ClockCircleOutlined />,
       label: <Link to="/study">Study Tools</Link>,
     },
     {
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       key: 'backups',
       icon: <TeamOutlined />,
       label: <Link to="/backups">Backups</Link>,
@@ -93,6 +124,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ collapsed, toggleCollapsed, isMob
   }
 
   return (
+<<<<<<< HEAD
     <Header 
       className="site-layout-background" 
       style={{ 
@@ -126,10 +158,18 @@ const AppHeader: React.FC<AppHeaderProps> = ({ collapsed, toggleCollapsed, isMob
         </div>
       </Space>
       <div className="nav-container">
+=======
+    <Header className="site-layout-background" style={{ padding: 0, display: 'flex', alignItems: 'center' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+        <div style={{ marginLeft: '24px', marginRight: '24px' }}>
+          <h2 style={{ color: '#1890ff', margin: 0 }}>NoteFusion AI</h2>
+        </div>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <AntdMenu
           theme="light"
           mode="horizontal"
           items={navItems}
+<<<<<<< HEAD
           className="nav-menu"
         />
       </div>
@@ -148,6 +188,22 @@ const AppHeader: React.FC<AppHeaderProps> = ({ collapsed, toggleCollapsed, isMob
           )}
         </Space>
       </div>
+=======
+          style={{ flex: 1, borderBottom: 'none', lineHeight: '64px' }}
+        />
+      </div>
+      <div style={{ marginRight: '24px' }}>
+        <Badge count={5}>
+          <Button type="text" icon={<BellOutlined style={{ fontSize: '16px' }} />} />
+        </Badge>
+      </div>
+      <Dropdown menu={{ items: userMenuItems }} trigger={['click']}>
+        <div style={{ padding: '0 24px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+          <Avatar icon={<UserOutlined />} style={{ marginRight: 8 }} />
+          <span>{user?.name || 'User'}</span>
+        </div>
+      </Dropdown>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     </Header>
   );
 };

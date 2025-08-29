@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+<<<<<<< HEAD
 import { Button, Dropdown, Menu, message, Modal, Input, Select } from 'antd';
 import type { MenuProps } from 'antd';
 import styles from './AIToolbar.module.css';
@@ -42,6 +43,41 @@ const AIToolbar: React.FC<AIToolbarProps> = ({
   const [templateCategory, setTemplateCategory] = useState<TemplateCategory>('custom');
 
   const handleAIAction = async (action: AIToolbarAction) => {
+=======
+import { Button, Dropdown, Menu, Space, Tooltip, message, Modal, Input, Select } from 'antd';
+import { 
+  RobotOutlined, 
+  BulbOutlined, 
+  FileTextOutlined, 
+  MagicIcon, 
+  ThunderboltOutlined, 
+  PlusOutlined,
+  SaveOutlined
+} from '@ant-design/icons';
+import AIService from '../../services/ai/AIService';
+
+interface AIToolbarProps {
+  noteId: string;
+  content: string;
+  onContentUpdate: (newContent: string) => void;
+  onSaveTemplate?: (template: { name: string; content: string }) => void;
+  disabled?: boolean;
+}
+
+const AIToolbar: React.FC<AIToolbarProps> = ({
+  noteId,
+  content,
+  onContentUpdate,
+  onSaveTemplate,
+  disabled = false
+}) => {
+  const [loading, setLoading] = useState<string | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [templateCategory, setTemplateCategory] = useState('custom');
+
+  const handleAIAction = async (action: string) => {
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     if (!content.trim()) {
       message.warning('Please add some content first');
       return;
@@ -110,6 +146,7 @@ const AIToolbar: React.FC<AIToolbarProps> = ({
       return;
     }
     
+<<<<<<< HEAD
     try {
       if (onSaveTemplate) {
         onSaveTemplate({
@@ -187,6 +224,72 @@ const AIToolbar: React.FC<AIToolbarProps> = ({
           aria-haspopup="menu"
           aria-expanded={isModalVisible}
           aria-label="AI Tools"
+=======
+    if (onSaveTemplate) {
+      onSaveTemplate({
+        name: templateName,
+        content: `Template for: ${templateName}\n\n${content}`
+      });
+    }
+    
+    setIsModalVisible(false);
+    setTemplateName('');
+    message.success('Template saved successfully');
+  };
+
+  const menu = (
+    <Menu
+      items={[
+        {
+          key: 'summarize',
+          label: 'Summarize',
+          icon: <FileTextOutlined />,
+          onClick: () => handleAIAction('summarize'),
+          disabled: loading !== null
+        },
+        {
+          key: 'improve',
+          label: 'Improve Writing',
+          icon: <MagicIcon />,
+          onClick: () => handleAIAction('improve'),
+          disabled: loading !== null
+        },
+        {
+          key: 'expand',
+          label: 'Expand Content',
+          icon: <PlusOutlined />,
+          onClick: () => handleAIAction('expand'),
+          disabled: loading !== null
+        },
+        {
+          key: 'simplify',
+          label: 'Simplify',
+          icon: <ThunderboltOutlined />,
+          onClick: () => handleAIAction('simplify'),
+          disabled: loading !== null
+        },
+        {
+          type: 'divider',
+        },
+        {
+          key: 'saveTemplate',
+          label: 'Save as Template',
+          icon: <SaveOutlined />,
+          onClick: handleSaveAsTemplate,
+          disabled: loading !== null
+        }
+      ]}
+    />
+  );
+
+  return (
+    <>
+      <Dropdown overlay={menu} trigger={['click']} disabled={disabled}>
+        <Button 
+          type="primary" 
+          icon={<RobotOutlined />} 
+          loading={loading !== null}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         >
           AI Tools
         </Button>
@@ -202,14 +305,20 @@ const AIToolbar: React.FC<AIToolbarProps> = ({
         }}
         okText="Save Template"
         cancelText="Cancel"
+<<<<<<< HEAD
         aria-modal={true}
         aria-labelledby="template-modal-title"
       >
         <div className={styles['modal-content']}>
+=======
+      >
+        <div style={{ marginBottom: 16 }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <Input
             placeholder="Template Name"
             value={templateName}
             onChange={(e) => setTemplateName(e.target.value)}
+<<<<<<< HEAD
             className={styles['input-field']}
             aria-label="Template name"
             onKeyDown={(e) => e.key === 'Enter' && handleTemplateSave()}
@@ -219,6 +328,15 @@ const AIToolbar: React.FC<AIToolbarProps> = ({
             placeholder="Select Category"
             value={templateCategory}
             onChange={(value) => setTemplateCategory(value)}
+=======
+            style={{ marginBottom: 12 }}
+          />
+          <Select
+            style={{ width: '100%' }}
+            placeholder="Select Category"
+            value={templateCategory}
+            onChange={setTemplateCategory}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             options={[
               { value: 'productivity', label: 'Productivity' },
               { value: 'creative', label: 'Creative' },
@@ -226,11 +344,18 @@ const AIToolbar: React.FC<AIToolbarProps> = ({
               { value: 'business', label: 'Business' },
               { value: 'custom', label: 'Custom' },
             ]}
+<<<<<<< HEAD
             aria-label="Template category"
           />
         </div>
       </Modal>
     </div>
+=======
+          />
+        </div>
+      </Modal>
+    </>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   );
 };
 

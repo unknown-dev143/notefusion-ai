@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """Main application module for NoteFusion AI backend."""
 import logging
 import time
@@ -70,12 +71,31 @@ from .core.exceptions import (
 
 # Configure logging
 setup_logging()
+=======
+from fastapi import FastAPI, UploadFile, File, WebSocket, HTTPException, BackgroundTasks, Depends, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.middleware import Middleware
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+from typing import Optional, List, Dict, Any
+import asyncio
+import os
+import json
+from jose import jwt, JWTError
+from datetime import datetime, timedelta
+import httpx
+from dotenv import load_dotenv
+from pathlib import Path
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 # Load environment variables
 load_dotenv()
 
 # Import application components
 from .config import settings
+<<<<<<< HEAD
 from .api.endpoints import tasks as task_endpoints
 
 # Initialize security components
@@ -85,6 +105,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login
 def get_api_key(request: Request):
     """Dependency to get the current API key from the request."""
     return request.state.api_key if hasattr(request.state, "api_key") else None
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 from .services.transcription.service import TranscriptionService
 from .services.pdf.service import PDFService
 from .services.fusion.service import FusionService
@@ -95,6 +117,7 @@ from .models.database import SessionLocal, Base, get_db
 from .schemas.ai_models import UserAIModelSettings as UserAIModelSettingsSchema
 from .middleware.subscription import SubscriptionChecker
 
+<<<<<<< HEAD
 # Request timing middleware
 class RequestTimingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -350,6 +373,76 @@ app.add_middleware(
     allow_methods=settings.CORS_METHODS,
     allow_headers=settings.CORS_HEADERS,
 )
+=======
+# Create FastAPI app
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    description="Backend API for NoteFusion AI",
+    version="0.1.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+)
+
+# Security
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")
+
+# Database session dependency
+async def get_db():
+    from .models.database import SessionLocal
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        await db.close()
+
+# Authentication dependency
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        )
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    
+    # Get user from database
+    db = next(get_db())
+    user = await db.get(User, int(user_id))
+    if user is None:
+        raise credentials_exception
+    return user
+
+# Mount static files
+app.mount("/static", StaticFiles(directory=settings.UPLOAD_FOLDER), name="static")
+
+# Add middleware
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Add subscription middleware
+app.add_middleware(
+    SubscriptionChecker,
+    required_tier=None,  # No tier required by default, check individual routes
+    required_features=[],
+    allow_trial=True
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.add_middleware(GZipMiddleware)
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 # Get Firebase config from environment variables
 FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID")
@@ -499,6 +592,7 @@ async def update_user_ai_settings(
     await db.refresh(settings)
     return settings
 
+<<<<<<< HEAD
 # WebSocket endpoint for real-time notifications
 @app.websocket("/ws/notifications")
 async def websocket_notifications(websocket: WebSocket, token: str = Query(...)):
@@ -576,20 +670,26 @@ limiter = Limiter(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 # Import and include all API routers
 from .api import routers as api_routers
 from .api.test_video_endpoint import router as test_video_router
 from .api.endpoints import payments as payments_router
 from .api.endpoints import notes as notes_router
+<<<<<<< HEAD
 from .api.routers import audio_notes
 
 # Import API v1 router
 from .api.v1 import api_router as v1_router
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 # Include all API routers
 for router in api_routers:
     app.include_router(router)
 
+<<<<<<< HEAD
 # Include API v1 router with version prefix
 app.include_router(v1_router, prefix="/api/v1")
 
@@ -598,10 +698,18 @@ app.include_router(test_video_router, prefix="/test-video")
 app.include_router(payments_router, prefix="/payments", tags=["payments"])
 app.include_router(notes_router, prefix=settings.API_V1_STR, tags=["notes"])
 app.include_router(audio_notes.router, prefix=settings.API_V1_STR, tags=["audio-notes"])
+=======
+# Include API routers
+app.include_router(api_routers, prefix=settings.API_V1_STR)
+app.include_router(test_video_router, prefix="/test-video")
+app.include_router(payments_router, prefix="/payments", tags=["payments"])
+app.include_router(notes_router, prefix=settings.API_V1_STR, tags=["notes"])
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
+<<<<<<< HEAD
     allow_origins=[
         "http://localhost:3000",  # Local development
         "http://localhost:5173",  # Vite default port
@@ -612,6 +720,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
     allow_headers=["*"],
+=======
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 )
 
 # Startup event to initialize background tasks
@@ -627,6 +741,7 @@ transcription_service = TranscriptionService()
 pdf_service = PDFService()
 fusion_service = FusionService(os.getenv("OPENAI_API_KEY"))
 
+<<<<<<< HEAD
 # Add API key authentication to protected endpoints
 protected_endpoints = [
     "/api/v1/notes",
@@ -640,6 +755,8 @@ for route in app.routes:
     if hasattr(route, "path") and any(route.path.startswith(ep) for ep in protected_endpoints):
         route.dependencies.append(Depends(RateLimiter(1000, 60)))  # 1000 requests per minute
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 # Pydantic models
 class GenerateNotesRequest(BaseModel):
     lecture_text: str

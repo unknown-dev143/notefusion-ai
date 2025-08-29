@@ -1,7 +1,10 @@
 import React, { Component, ReactNode, ErrorInfo, ReactElement, ComponentType } from 'react';
 import { Button, Typography, Result } from 'antd';
 import { ReloadOutlined, HomeOutlined, BugOutlined } from '@ant-design/icons';
+<<<<<<< HEAD
 import './ErrorBoundary.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const { Text, Paragraph } = Typography;
 
@@ -181,9 +184,15 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     if (!error || !errorInfo) return null;
 
     return (
+<<<<<<< HEAD
       <div className="error-details">
         <Paragraph strong>Error Details:</Paragraph>
         <pre className="error-pre">
+=======
+      <div style={{ marginTop: '1rem', padding: '1rem', background: '#fff2f0', borderRadius: '4px' }}>
+        <Paragraph strong>Error Details:</Paragraph>
+        <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           {error.toString()}
           {errorInfo.componentStack}
         </pre>

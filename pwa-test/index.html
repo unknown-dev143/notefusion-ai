@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<<<<<<< HEAD
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -119,10 +120,88 @@
               window.tracking.trackToolUsage(label);
             }
           }
+=======
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PWA Test</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1677ff"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <img src="/logo192.png" alt="NoteFusion AI Logo" style="width: 120px; height: 120px; margin: 20px auto; display: block;">
+  <h1>NoteFusion AI</h1>
+  <p>Your intelligent note-taking assistant</p>
+  <p><small>PWA Test Environment</small></p>
+  
+  <div id="status">Checking service worker support...</div>
+  <button id="installBtn" style="display: none;">Install PWA</button>
+  
+  <script>
+    // Check for service worker support
+    if ('serviceWorker' in navigator) {
+      document.getElementById('status').textContent = 'Service Worker is supported!';
+      
+      // Register service worker
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            document.getElementById('status').textContent = 'Service Worker registered successfully!';
+          })
+          .catch(error => {
+            console.log('ServiceWorker registration failed: ', error);
+            document.getElementById('status').textContent = 'Service Worker registration failed: ' + error;
+          });
+      });
+    } else {
+      document.getElementById('status').textContent = 'Service Worker is not supported in this browser.';
+    }
+    
+    // Handle install button
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      deferredPrompt = e;
+      // Show the install button
+      installBtn.style.display = 'block';
+      
+      installBtn.addEventListener('click', () => {
+        // Show the install prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+            installBtn.style.display = 'none';
+          } else {
+            console.log('User dismissed the install prompt');
+          }
+          deferredPrompt = null;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         });
       });
     });
   </script>
+<<<<<<< HEAD
   
   <script>
     // Check service worker status
@@ -238,3 +317,7 @@
   </script>
 </body>
 </html>
+=======
+</body>
+</html>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e

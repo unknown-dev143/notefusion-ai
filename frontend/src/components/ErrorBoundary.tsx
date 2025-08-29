@@ -1,9 +1,16 @@
 import React, { Component, ReactNode, ErrorInfo, ReactElement, ComponentType } from 'react';
+<<<<<<< HEAD
 import { Button, Typography } from 'antd';
 import { ReloadOutlined, HomeOutlined } from '@ant-design/icons';
 import styles from './ErrorBoundary.module.css';
 
 const { Text } = Typography;
+=======
+import { Button, Typography, Result } from 'antd';
+import { ReloadOutlined, HomeOutlined } from '@ant-design/icons';
+
+const { Text, Paragraph } = Typography;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -29,11 +36,42 @@ interface ErrorBoundaryState {
   reported: boolean;
   showDetails: boolean;
   lastErrorTime: number | null;
+<<<<<<< HEAD
+=======
+  errorCount: number;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   recoveryAttempts: number;
   isRecovering: boolean;
   lastRecoveryAttempt: number | null;
 }
 
+<<<<<<< HEAD
+=======
+// Error rate limiting constants
+const MAX_ERRORS = 5;
+const ERROR_WINDOW_MS = 60000; // 1 minute
+
+// Mock captureException if not using Sentry
+const captureException = (error: Error, context: any): void => {
+  if (process.env.NODE_ENV === 'development') {
+    console.error('Error reported to boundary:', error, context);
+  }
+};
+  errorInfo: ErrorInfo | null;
+  showDetails: boolean;
+  lastErrorTime: number | null;
+  errorCount: number;
+  recoveryAttempts: number;
+  isRecovering: boolean;
+  lastRecoveryAttempt: number | null;
+  reported: boolean;
+}
+
+// Constants for rate limiting
+const MAX_ERRORS = 5;
+const ERROR_WINDOW_MS = 60000; // 1 minute
+
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 // Mock captureException if not using Sentry
 const captureException = (error: Error, context: any): void => {
   if (process.env.NODE_ENV === 'development') {
@@ -56,6 +94,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     error: null,
     errorInfo: null,
     showDetails: this.props.showDetailsInDev ?? false,
+<<<<<<< HEAD
     reported: false,
     recoveryAttempts: 0,
     isRecovering: false,
@@ -64,16 +103,35 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   };
 
   public static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+=======
+    lastErrorTime: null,
+    errorCount: 0,
+    recoveryAttempts: 0,
+    isRecovering: false,
+    lastRecoveryAttempt: null,
+    reported: false
+  };
+
+  public static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+    const now = Date.now();
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     return {
       hasError: true,
       error,
       errorInfo: { componentStack: '' } as ErrorInfo,
+<<<<<<< HEAD
       reported: false,
       lastErrorTime: Date.now(),
       showDetails: process.env.NODE_ENV === 'development',
       recoveryAttempts: 0,
       isRecovering: false,
       lastRecoveryAttempt: null
+=======
+      lastErrorTime: now,
+      errorCount: 1,
+      showDetails: process.env.NODE_ENV === 'development',
+      reported: false
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     };
   }
 
@@ -103,7 +161,11 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
       // Report to error tracking service
       if (!this.state.reported && this.props.showReportDialog) {
+<<<<<<< HEAD
         this.handleReport();
+=======
+        this.reportError(error, errorContext);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       }
 
       // Call custom error handler if provided
@@ -119,17 +181,66 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }
   }
 
+<<<<<<< HEAD
   private handleReset = (): void => {
+=======
+  private reportError = (error: Error, context: any): void => {
+    if (this.state.reported) return;
+    
+    this.setState({ reported: true });
+    
+    // Clear any existing timeout
+    if (this.reportTimeout) {
+      clearTimeout(this.reportTimeout);
+    }
+    
+    // Use a timeout to prevent blocking the main thread
+    this.reportTimeout = setTimeout(() => {
+      try {
+        if (typeof window !== 'undefined') {
+          context = {
+            ...context,
+            userAgent: window.navigator?.userAgent,
+            url: window.location?.href
+          };
+        }
+        captureException(error, context);
+      } catch (reportingError) {
+        console.error('Error reporting to error service:', reportingError);
+      } finally {
+        this.reportTimeout = null;
+      }
+    }, 0);
+  };
+
+  public override componentWillUnmount(): void {
+    if (this.reportTimeout) {
+      clearTimeout(this.reportTimeout);
+      this.reportTimeout = null;
+    }
+  }
+
+  private handleReset = (): void => {
+    if (this.reportTimeout) {
+      clearTimeout(this.reportTimeout);
+      this.reportTimeout = null;
+    }
+    
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     this.setState({
       hasError: false,
       error: null,
       errorInfo: null,
+<<<<<<< HEAD
       showDetails: this.props.showDetailsInDev ?? false,
       reported: false,
       recoveryAttempts: 0,
       isRecovering: false,
       lastRecoveryAttempt: null,
       lastErrorTime: null
+=======
+      showDetails: this.props.showDetailsInDev ?? false
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     });
   };
 
@@ -139,6 +250,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }));
   };
 
+<<<<<<< HEAD
   private handleRecovery = async (): Promise<void> => {
     const { recoveryHandler } = this.props;
     if (!recoveryHandler) return;
@@ -256,13 +368,48 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             Show Error Details
           </Button>
         )}
+=======
+  private renderErrorDetails(): ReactNode {
+    const { error, errorInfo } = this.state;
+    if (!error) return null;
+
+    return (
+      <div style={{ marginTop: '1rem' }}>
+        <Text strong>Error Details:</Text>
+        <pre style={{
+          background: '#f5f5f5',
+          padding: '1rem',
+          borderRadius: '4px',
+          maxHeight: '300px',
+          overflow: 'auto',
+          marginTop: '0.5rem'
+        }}>
+          {error.toString()}
+          {errorInfo?.componentStack}
+        </pre>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       </div>
     );
   }
 
   public override render(): ReactNode {
+<<<<<<< HEAD
     const { hasError } = this.state;
     const { children, fallback } = this.props;
+=======
+    const { 
+      hasError, 
+      showDetails 
+    } = this.state;
+    
+    const { 
+      children, 
+      fallback,
+      title,
+      subtitle,
+      errorMessage
+    } = this.props;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
     if (!hasError) {
       return children;
@@ -272,7 +419,62 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       return fallback;
     }
 
+<<<<<<< HEAD
     return this.renderErrorContent();
+=======
+    const errorMessageToShow = errorMessage || 'An unexpected error occurred';
+
+    return (
+      <div style={{
+        padding: '2rem',
+        maxWidth: '800px',
+        margin: '0 auto',
+        textAlign: 'center'
+      }}>
+        <Result
+          status="error"
+          title={title}
+          subTitle={subtitle}
+          extra={[
+            <Button 
+              type="primary" 
+              key="tryAgain" 
+              icon={<ReloadOutlined />} 
+              onClick={this.handleReset}
+              aria-label="Try again"
+            >
+              Try Again
+            </Button>,
+            <Button 
+              key="home" 
+              icon={<HomeOutlined />}
+              onClick={() => window.location.href = '/'}
+              aria-label="Go to home"
+            >
+              Go to Home
+            </Button>,
+            <Button 
+              key="details" 
+              type="text" 
+              icon={<BugOutlined />}
+              onClick={this.toggleDetails}
+              aria-label={showDetails ? 'Hide error details' : 'Show error details'}
+            >
+              {showDetails ? 'Hide Details' : 'Show Details'}
+            </Button>
+          ]}
+        >
+          <Paragraph>
+            <Text type="secondary">
+              {errorMessageToShow}
+            </Text>
+          </Paragraph>
+          
+          {showDetails && this.renderErrorDetails()}
+        </Result>
+      </div>
+    );
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   }
 }
 

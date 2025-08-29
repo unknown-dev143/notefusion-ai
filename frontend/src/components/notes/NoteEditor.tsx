@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import { Card, Input, Button, Space, Typography, message, Tag } from 'antd';
+=======
+import { Card, Input, Button, Space, Typography, message, Tag, Tooltip } from 'antd';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { SaveOutlined, TagOutlined, DeleteOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Note } from '../../features/notes/context/NoteContext';
+<<<<<<< HEAD
 import './NoteEditor.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -87,19 +94,33 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
     <Card
       className="note-editor"
       title={
+<<<<<<< HEAD
         <Space className="note-editor-header">
+=======
+        <Space>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <Button
             type="text"
             icon={<ArrowLeftOutlined />}
             onClick={onBack}
+<<<<<<< HEAD
             className="back-button"
           />
           <Input
             className="note-title-input"
+=======
+            style={{ marginRight: 8 }}
+          />
+          <Input
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             placeholder="Note Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             bordered={false}
+<<<<<<< HEAD
+=======
+            style={{ fontSize: '1.5em', fontWeight: 'bold' }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           />
         </Space>
       }
@@ -126,32 +147,51 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
         </Space>
       }
     >
+<<<<<<< HEAD
       <div className="note-tags">
+=======
+      <div className="note-tags" style={{ marginBottom: 16 }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <Space size={[0, 8]} wrap>
           {tags.map((tag) => (
             <Tag
               key={tag}
               closable
               onClose={() => handleRemoveTag(tag)}
+<<<<<<< HEAD
               className="note-tag"
+=======
+              style={{ marginRight: 0 }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             >
               {tag}
             </Tag>
           ))}
           <Input
             size="small"
+<<<<<<< HEAD
             className="note-tag-input"
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             placeholder="Add tag..."
             value={newTag}
             onChange={(e) => setNewTag(e.target.value)}
             onKeyDown={handleTagKeyDown}
             onBlur={handleAddTag}
             prefix={<TagOutlined />}
+<<<<<<< HEAD
+=======
+            style={{ width: 100 }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           />
         </Space>
       </div>
 
+<<<<<<< HEAD
       <div className="note-content">
+=======
+      <div className="note-content" style={{ minHeight: '60vh' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <ReactQuill
           theme="snow"
           value={content}
@@ -171,7 +211,11 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
       </div>
 
       {note?.updatedAt && (
+<<<<<<< HEAD
         <div className="note-footer">
+=======
+        <div style={{ marginTop: 16, textAlign: 'right' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <Text type="secondary">
             Last updated: {new Date(note.updatedAt).toLocaleString()}
           </Text>

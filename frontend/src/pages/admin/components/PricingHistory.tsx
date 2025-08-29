@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Table, Tag, Space, Button, Tooltip } from 'antd';
 import { HistoryOutlined, RollbackOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+<<<<<<< HEAD
 import styles from './PricingHistory.module.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 interface PriceHistory {
   id: string;
@@ -69,11 +72,19 @@ const PricingHistory: React.FC = () => {
       key: 'priceChange',
       render: (_, record) => (
         <Space>
+<<<<<<< HEAD
           <span className={styles.previousPrice}>
             ${record.previousPrice.toFixed(2)}
           </span>
           <span>→</span>
           <span className={styles.newPrice}>
+=======
+          <span style={{ textDecoration: 'line-through', color: '#999' }}>
+            ${record.previousPrice.toFixed(2)}
+          </span>
+          <span>→</span>
+          <span style={{ fontWeight: 'bold' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             ${record.newPrice.toFixed(2)}
           </span>
         </Space>

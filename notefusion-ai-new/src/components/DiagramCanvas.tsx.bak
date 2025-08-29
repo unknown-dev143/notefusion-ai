@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useCallback, useRef, useState, useEffect, RefObject } from 'react';
 // @ts-ignore - Missing type definitions for react-canvas-draw
 import CanvasDraw from 'react-canvas-draw';
@@ -352,3 +353,359 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({
 };
 
 export default DiagramCanvas;
+=======
+import React, { useCallback, useRef, useState, useEffect, RefObject } from 'react';
+// @ts-ignore - Missing type definitions for react-canvas-draw
+import CanvasDraw from 'react-canvas-draw';
+import { FiSave, FiTrash2, FiRotateCcw, FiDownload, FiPenTool, FiType, FiSquare, FiCircle, FiMinus, FiX } from 'react-icons/fi';
+
+type Tool = 'pen' | 'eraser' | 'text' | 'rectangle' | 'circle' | 'line';
+
+// Define the CanvasDraw ref type
+interface CanvasDrawRef {
+  clear: () => void;
+  undo: () => void;
+  getSaveData: () => string;
+  loadSaveData: (saveData: string, immediate?: boolean) => void;
+  canvas: HTMLCanvasElement;
+  canvasContainer: HTMLDivElement;
+  ctx: CanvasRenderingContext2D;
+  drawing: HTMLCanvasElement;
+}
+
+interface DiagramCanvasProps {
+  onSave: (data: string) => void;
+  initialData?: string;
+  autoSave?: boolean;
+  onAutoSave?: (data: string) => void;
+}
+
+const DiagramCanvas: React.FC<DiagramCanvasProps> = ({ 
+  onSave, 
+  initialData, 
+  autoSave = false,
+  onAutoSave
+}) => {
+  const [canvas, setCanvas] = useState<CanvasDrawRef | null>(null);
+  const [brushColor, setBrushColor] = useState<string>("#222222");
+  const [brushRadius, setBrushRadius] = useState<number>(2);
+  const [activeTool, setActiveTool] = useState<Tool>('pen');
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const [textInput, setTextInput] = useState('');
+  const [showTextInput, setShowTextInput] = useState(false);
+  const [textPosition, setTextPosition] = useState({ x: 0, y: 0 });
+  const fileDownloadRef = useRef<HTMLAnchorElement>(null);
+  const canvasRef = useRef<CanvasDrawRef>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+
+  const colors = [
+    '#000000', '#ff0000', '#00ff00', '#0000ff', 
+    '#ffff00', '#00ffff', '#ff00ff', '#ffffff'
+  ];
+
+  const brushSizes = [1, 2, 4, 8, 12, 16];
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (autoSave && canvasRef.current) {
+      const data = canvasRef.current.getSaveData();
+      onAutoSave?.(data);
+    }
+  }, [autoSave, onAutoSave]);
+
+  // Handle mouse down for shapes
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!canvasRef.current || !canvasContainerRef.current) return;
+    
+    const rect = canvasContainerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    setStartPos({ x, y });
+    
+    if (activeTool === 'text') {
+      setTextPosition({ x, y });
+      setShowTextInput(true);
+      return;
+    }
+    
+    setIsDrawing(true);
+  };
+  
+  // Handle mouse move for drawing shapes
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDrawing || !canvasRef.current || !canvasContainerRef.current) return;
+    
+    const rect = canvasContainerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // In a real implementation, you would draw the shape on a temporary canvas
+    // and only commit to the main canvas on mouse up
+  };
+  
+  // Handle mouse up to complete shape drawing
+  const handleMouseUp = () => {
+    if (!isDrawing) return;
+    setIsDrawing(false);
+    
+    // In a real implementation, you would finalize the shape here
+    // and add it to the canvas
+  };
+  
+  // Handle text input submission
+  const handleTextSubmit = () => {
+    if (!canvasRef.current || !textInput.trim()) {
+      setShowTextInput(false);
+      return;
+    }
+    
+    // In a real implementation, you would add the text to the canvas at textPosition
+    // This is a simplified version that just alerts the text
+    alert(`Text to add: ${textInput}`);
+    
+    setTextInput('');
+    setShowTextInput(false);
+  };
+
+  const handleSave = useCallback(() => {
+    if (canvas) {
+      const data = canvas.getSaveData();
+      onSave(data);
+    }
+  }, [canvas, onSave]);
+
+  const handleClear = useCallback(() => {
+    if (canvas) {
+      canvas.clear();
+    }
+  }, [canvas]);
+
+  const handleUndo = useCallback(() => {
+    if (canvas) {
+      canvas.undo();
+    }
+  }, [canvas]);
+
+  const handleExport = useCallback(() => {
+    if (canvas && canvas.canvas) {
+      const dataUrl = (canvas.canvas as any).toDataURL("image/png");
+      if (fileDownloadRef.current) {
+        fileDownloadRef.current.href = dataUrl;
+        fileDownloadRef.current.download = "whiteboard.png";
+        fileDownloadRef.current.click();
+      }
+    }
+  }, [canvas]);
+
+  const handleBrushColor = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBrushColor(e.target.value);
+    setActiveTool('pen');
+  };
+
+  const handleBrushRadius = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBrushRadius(Number(e.target.value));
+  };
+
+  return (
+    <div className="border rounded-lg p-4 bg-white">
+      <div className="flex flex-col gap-4">
+        {/* Toolbar */}
+        <div className="flex flex-wrap justify-between items-center gap-2">
+          <h3 className="text-lg font-semibold">Whiteboard</h3>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Drawing Tools */}
+            <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-md">
+              <button
+                onClick={() => setActiveTool('pen')}
+                className={`p-2 rounded ${activeTool === 'pen' ? 'bg-white shadow' : 'hover:bg-gray-200'}`}
+                title="Pen"
+              >
+                <FiPenTool className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setActiveTool('eraser')}
+                className={`p-2 rounded ${activeTool === 'eraser' ? 'bg-white shadow' : 'hover:bg-gray-200'}`}
+                title="Eraser"
+              >
+                <FiX className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setActiveTool('text')}
+                className={`p-2 rounded ${activeTool === 'text' ? 'bg-white shadow' : 'hover:bg-gray-200'}`}
+                title="Add Text"
+              >
+                <FiType className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setActiveTool('rectangle')}
+                className={`p-2 rounded ${activeTool === 'rectangle' ? 'bg-white shadow' : 'hover:bg-gray-200'}`}
+                title="Rectangle"
+              >
+                <FiSquare className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setActiveTool('circle')}
+                className={`p-2 rounded ${activeTool === 'circle' ? 'bg-white shadow' : 'hover:bg-gray-200'}`}
+                title="Circle"
+              >
+                <FiCircle className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setActiveTool('line')}
+                className={`p-2 rounded ${activeTool === 'line' ? 'bg-white shadow' : 'hover:bg-gray-200'}`}
+                title="Line"
+              >
+                <FiMinus className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Color Picker */}
+            <div className="relative">
+              <button
+                onClick={() => setShowColorPicker(!showColorPicker)}
+                className="w-8 h-8 rounded border border-gray-300"
+                style={{ backgroundColor: brushColor }}
+                title="Select color"
+              />
+              {showColorPicker && (
+                <div className="absolute z-10 mt-2 p-2 bg-white rounded shadow-lg">
+                  <div className="grid grid-cols-4 gap-2">
+                    {colors.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => {
+                          setBrushColor(color);
+                          setShowColorPicker(false);
+                          setActiveTool('pen');
+                        }}
+                        className="w-6 h-6 rounded border border-gray-300"
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Brush Size */}
+            <div className="flex items-center gap-1">
+              <span className="text-xs">Size:</span>
+              <select
+                value={brushRadius}
+                onChange={(e) => setBrushRadius(Number(e.target.value))}
+                className="text-sm border rounded p-1"
+              >
+                {brushSizes.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleUndo}
+                className="p-2 text-gray-700 hover:bg-gray-200 rounded"
+                title="Undo"
+              >
+                <FiRotateCcw className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleClear}
+                className="p-2 text-gray-700 hover:bg-gray-200 rounded"
+                title="Clear"
+              >
+                <FiTrash2 className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleSave}
+                className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                title="Save"
+              >
+                <FiSave className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleExport}
+                className="p-2 bg-green-500 text-white rounded hover:bg-green-600"
+                title="Export"
+              >
+                <FiDownload className="w-5 h-5" />
+              </button>
+              <a ref={fileDownloadRef} style={{ display: 'none' }}>Download</a>
+            </div>
+          </div>
+        </div>
+
+        {/* Canvas Area */}
+        <div 
+          ref={canvasContainerRef}
+          className="relative border rounded bg-white"
+          style={{ width: '100%', height: '500px', overflow: 'hidden' }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          <CanvasDraw
+            ref={(canvasDraw: any) => {
+              if (canvasDraw) {
+                setCanvas(canvasDraw);
+                (canvasRef as React.MutableRefObject<any>).current = canvasDraw;
+              }
+            }}
+            brushColor={activeTool === 'eraser' ? '#fff' : brushColor}
+            brushRadius={brushRadius}
+            lazyRadius={0}
+            saveData={initialData}
+            style={{
+              width: '100%',
+              height: '100%',
+              touchAction: 'none',
+            }}
+            canvasWidth={800}
+            canvasHeight={500}
+          />
+          
+          {/* Text Input Overlay */}
+          {showTextInput && (
+            <div
+              style={{
+                position: 'absolute',
+                left: `${textPosition.x}px`,
+                top: `${textPosition.y}px`,
+                zIndex: 1000,
+              }}
+            >
+              <div className="flex bg-white border rounded shadow-lg p-2">
+                <input
+                  type="text"
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleTextSubmit()}
+                  className="border rounded px-2 py-1 mr-2"
+                  autoFocus
+                  placeholder="Enter text..."
+                />
+                <button
+                  onClick={handleTextSubmit}
+                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DiagramCanvas;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e

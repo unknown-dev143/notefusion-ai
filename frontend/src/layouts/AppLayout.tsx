@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import * as React from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import { Layout, notification, ConfigProvider, theme } from 'antd';
@@ -25,11 +26,21 @@ const themeConfig = {
     },
   },
 };
+=======
+import React from 'react';
+import { Layout, notification } from 'antd';
+import AppHeader from '../components/AppHeader';
+import AppSider from '../components/AppSider';
+import ErrorBoundary from '../components/ErrorBoundary';
+
+const { Content } = Layout;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
+<<<<<<< HEAD
 // Enhanced error handler with different error types
 const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
   console.error('Application Error:', error, errorInfo);
@@ -59,10 +70,22 @@ const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
     message,
     description,
     placement: 'topRight' as NotificationPlacement,
+=======
+// Error handler function that can be reused
+const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
+  // Log to your error tracking service (e.g., Sentry, LogRocket)
+  console.error('Application Error:', error, errorInfo);
+  
+  // Show error notification to the user
+  notification.error({
+    message: 'An error occurred',
+    description: 'We encountered an error. Our team has been notified.',
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     duration: 5,
   });
 };
 
+<<<<<<< HEAD
 const AppLayout: React.FC<AppLayoutProps> = ({ children }: React.PropsWithChildren<AppLayoutProps>) => {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -137,6 +160,26 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }: React.PropsWithChildr
         </Layout>
       </ErrorBoundary>
     </ConfigProvider>
+=======
+const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
+  return (
+    <ErrorBoundary 
+      onError={handleError}
+      showReportDialog={process.env.NODE_ENV === 'production'}
+    >
+      <Layout style={{ minHeight: '100vh' }}>
+        <AppSider />
+        <Layout className="site-layout">
+          <AppHeader />
+          <Content style={{ margin: '24px 16px 0' }}>
+            <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
+              {children}
+            </div>
+          </Content>
+        </Layout>
+      </Layout>
+    </ErrorBoundary>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   );
 };
 

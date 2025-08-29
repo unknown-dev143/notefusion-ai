@@ -1,6 +1,7 @@
 """Test configuration and fixtures."""
 import pytest
 from datetime import datetime, timedelta
+<<<<<<< HEAD
 from typing import AsyncGenerator, Generator
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, Session
@@ -42,6 +43,17 @@ async def async_db_engine() -> AsyncEngine:
 @pytest.fixture(scope="session")
 def db_engine() -> Engine:
     """Create a sync database engine for testing."""
+=======
+from sqlalchemy import create_engine, event
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.engine import Engine
+
+from tests.models import Base, User, Subscription, Invoice, SubscriptionTier, SubscriptionStatus
+
+@pytest.fixture(scope="session")
+def db_engine() -> Engine:
+    """Create a database engine for testing."""
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     engine = create_engine(
         "sqlite:///:memory:",
         echo=False,
@@ -61,6 +73,7 @@ def db_engine() -> Engine:
     
     return engine
 
+<<<<<<< HEAD
 # Async session fixture
 @pytest.fixture
 def override_get_db(async_db_engine: AsyncEngine):
@@ -106,6 +119,10 @@ async def db(async_db_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]
 # Sync session fixture (for existing tests)
 @pytest.fixture
 def db_session(db_engine: Engine) -> Generator[Session, None, None]:
+=======
+@pytest.fixture
+def db_session(db_engine: Engine) -> Session:
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     """Create a database session for testing."""
     connection = db_engine.connect()
     transaction = connection.begin()

@@ -1,11 +1,14 @@
 import { api, handleApiError } from '../../../lib/api';
 
+<<<<<<< HEAD
 export interface Tokens {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
 }
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 interface LoginCredentials {
   email: string;
   password: string;
@@ -15,6 +18,7 @@ interface RegisterData extends LoginCredentials {
   name: string;
 }
 
+<<<<<<< HEAD
 export interface User {
   id: string;
   email: string;
@@ -27,6 +31,17 @@ export interface User {
 interface AuthResponse {
   user: User;
   tokens: Tokens;
+=======
+interface AuthResponse {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    emailVerified: boolean;
+  };
+  token: string;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 }
 
 const authService = {
@@ -36,8 +51,13 @@ const authService = {
   async register(userData: RegisterData): Promise<AuthResponse> {
     try {
       const response = await api.post<AuthResponse>('/auth/register', userData);
+<<<<<<< HEAD
       if (response.data.tokens) {
         this._setTokens(response.data.tokens);
+=======
+      if (response.data.token) {
+        localStorage.setItem('authToken', response.data.token);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       }
       return response.data;
     } catch (error) {
@@ -51,8 +71,13 @@ const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
       const response = await api.post<AuthResponse>('/auth/login', credentials);
+<<<<<<< HEAD
       if (response.data.tokens) {
         this._setTokens(response.data.tokens);
+=======
+      if (response.data.token) {
+        localStorage.setItem('authToken', response.data.token);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       }
       return response.data;
     } catch (error) {
@@ -63,6 +88,7 @@ const authService = {
   /**
    * Logout user
    */
+<<<<<<< HEAD
   logout(): Promise<void> {
     this._clearTokens();
     return Promise.resolve();
@@ -93,6 +119,18 @@ const authService = {
     localStorage.removeItem('tokenExpiry');
   },
 
+=======
+  async logout(): Promise<void> {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('authToken');
+    }
+  },
+
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   /**
    * Verify user email
    */
@@ -165,6 +203,7 @@ const authService = {
    * Get auth token
    */
   getToken(): string | null {
+<<<<<<< HEAD
     return localStorage.getItem('accessToken');
   },
 
@@ -176,6 +215,9 @@ const authService = {
     const expiry = localStorage.getItem('tokenExpiry');
     if (!expiry) return true;
     return Date.now() > parseInt(expiry, 10);
+=======
+    return localStorage.getItem('authToken');
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   },
 };
 

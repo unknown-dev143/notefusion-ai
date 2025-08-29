@@ -1,5 +1,8 @@
 import React, { useRef } from 'react';
+<<<<<<< HEAD
 import './ImportExportMenu.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { Button, Dropdown, Menu, message } from 'antd';
 import { 
   ExportOutlined, 
@@ -15,7 +18,11 @@ import {
   exportToMarkdown, 
   exportToTxt, 
   importFromFile 
+<<<<<<< HEAD
 } from '../utils/exportUtils';
+=======
+} from '@/utils/exportUtils';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 interface ImportExportMenuProps {
   content: string;
@@ -118,6 +125,7 @@ const ImportExportMenu: React.FC<ImportExportMenuProps> = ({
   );
 
   return (
+<<<<<<< HEAD
     <div className="import-export-menu">
       <Dropdown 
         overlay={menu} 
@@ -131,10 +139,16 @@ const ImportExportMenu: React.FC<ImportExportMenuProps> = ({
           className="export-button"
           aria-label="Open import/export menu"
         />
+=======
+    <>
+      <Dropdown overlay={menu} trigger={['click']} disabled={disabled}>
+        <Button type="text" icon={<ExportOutlined />} />
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       </Dropdown>
       <input
         type="file"
         ref={fileInputRef}
+<<<<<<< HEAD
         className="file-input"
         accept=".md,.txt,.docx"
         onChange={handleImport}
@@ -142,6 +156,13 @@ const ImportExportMenu: React.FC<ImportExportMenuProps> = ({
         title="Select file to import"
       />
     </div>
+=======
+        style={{ display: 'none' }}
+        accept=".md,.txt,.docx"
+        onChange={handleImport}
+      />
+    </>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   );
 };
 

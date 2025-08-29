@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import axios, { AxiosRequestConfig, CancelTokenSource } from 'axios';
 import { aiCache, withCache } from '../../utils/cache';
 import { debounce } from 'lodash';
@@ -14,6 +15,12 @@ const CACHE_TTL = {
   LONG: 24 * 60 * 60 * 1000, // 24 hours
 };
 
+=======
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 export interface AISuggestion {
   id: string;
   type: 'summarize' | 'improve' | 'expand' | 'simplify' | 'action_items' | 'custom';
@@ -31,6 +38,7 @@ export interface AITemplate {
   isPremium: boolean;
 }
 
+<<<<<<< HEAD
 // Extended interfaces for AI responses
 export interface AISummary {
   id: string;
@@ -59,11 +67,16 @@ export interface AIContentStructure {
 
 class AIService {
   // Get AI suggestions for a note with caching and request cancellation
+=======
+class AIService {
+  // Get AI suggestions for a note
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   static async getSuggestions(
     noteId: string,
     context: string,
     type?: AISuggestion['type']
   ): Promise<AISuggestion[]> {
+<<<<<<< HEAD
     const cacheKey = `suggestions_${noteId}_${type || 'all'}`;
     
     // Cancel previous request if it exists
@@ -145,11 +158,57 @@ class AIService {
       getKey: (category?: string) => `templates_${category || 'all'}`
     }
   );
+=======
+    try {
+      const response = await axios.post(`${API_BASE_URL}/ai/suggestions`, {
+        noteId,
+        context,
+        type
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error getting AI suggestions:', error);
+      throw error;
+    }
+  }
+
+  // Apply an AI template to generate content
+  static async applyTemplate(
+    templateId: string,
+    variables: Record<string, string>,
+    noteId?: string
+  ): Promise<{ content: string }> {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/ai/templates/apply`, {
+        templateId,
+        variables,
+        noteId
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error applying AI template:', error);
+      throw error;
+    }
+  }
+
+  // Get available AI templates
+  static async getTemplates(category?: string): Promise<AITemplate[]> {
+    try {
+      const params = category ? { category } : {};
+      const response = await axios.get(`${API_BASE_URL}/ai/templates`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error getting AI templates:', error);
+      throw error;
+    }
+  }
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
   // Generate content using AI
   static async generateContent(
     prompt: string,
     context: string,
+<<<<<<< HEAD
     options: {
       maxLength?: number;
       temperature?: number;
@@ -157,11 +216,19 @@ class AIService {
       format?: 'text' | 'markdown' | 'html';
       tone?: 'professional' | 'casual' | 'academic' | 'creative';
     } = {}
+=======
+    options?: {
+      maxLength?: number;
+      temperature?: number;
+      creativity?: number;
+    }
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   ): Promise<{ content: string }> {
     try {
       const response = await axios.post(`${API_BASE_URL}/ai/generate`, {
         prompt,
         context,
+<<<<<<< HEAD
         options: {
           maxLength: 1000,
           temperature: 0.7,
@@ -169,6 +236,9 @@ class AIService {
           tone: 'professional',
           ...options
         }
+=======
+        options
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       });
       return response.data;
     } catch (error) {
@@ -176,6 +246,7 @@ class AIService {
       throw error;
     }
   }
+<<<<<<< HEAD
 
   // Summarize content
   static async summarizeContent(
@@ -285,6 +356,8 @@ class AIService {
       throw error;
     }
   }
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 }
 
 export default AIService;

@@ -1,7 +1,11 @@
 import '@testing-library/jest-dom/vitest';
+<<<<<<< HEAD
 import { vi, beforeAll, afterEach, afterAll } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import { server } from './mocks/server';
+=======
+import { vi } from 'vitest';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -10,8 +14,13 @@ Object.defineProperty(window, 'matchMedia', {
     matches: false,
     media: query,
     onchange: null,
+<<<<<<< HEAD
     addListener: vi.fn(),
     removeListener: vi.fn(),
+=======
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
@@ -19,6 +28,7 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock localStorage
+<<<<<<< HEAD
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
@@ -139,4 +149,17 @@ beforeAll(() => {
 afterAll(() => {
   console.error = originalConsoleError;
   console.warn = originalConsoleWarn;
+=======
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+  key: vi.fn(),
+  length: 0,
+};
+
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 });

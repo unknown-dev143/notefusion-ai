@@ -1,10 +1,15 @@
 # NoteFusion AI
 
+<<<<<<< HEAD
 An intelligent note-taking and study assistant that transforms lectures, textbooks, and audio recordings into comprehensive, structured study materials using AI. Now with advanced file uploads and AI-powered content generation.
+=======
+An intelligent note-taking and study assistant that transforms lectures and textbooks into comprehensive, structured study materials using AI.
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 ## 🚀 Features
 
 ### Core Functionality
+<<<<<<< HEAD
 - **Multi-file Upload**: Support for PDFs, audio files (MP3, WAV, M4A), and text documents
 - **Live Recording**: Real-time audio recording with automatic transcription
 - **Smart Fusion**: AI-powered combination of lecture and textbook content
@@ -15,6 +20,16 @@ An intelligent note-taking and study assistant that transforms lectures, textboo
 
 ### Advanced Features
 
+=======
+- **Multi-file Upload**: Support for PDFs, audio/video files, and text documents
+- **Live Recording**: Real-time audio recording with automatic transcription
+- **Smart Fusion**: AI-powered combination of lecture and textbook content
+- **Structured Notes**: Organized notes with source tagging ([Lecture] / [Book])
+- **Practice Questions**: Auto-generated questions with detailed answers
+- **Study Time Estimation**: Intelligent time estimates based on content complexity
+
+### Advanced Features
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - **Export Options**: Markdown, PDF, and Anki-style flashcards
 - **Search Functionality**: Full-text search across all content
 - **Version History**: Track changes to notes over time
@@ -23,13 +38,17 @@ An intelligent note-taking and study assistant that transforms lectures, textboo
 - **Detail Levels**: Concise, Standard, and In-depth note generation
 
 ### Technical Features
+<<<<<<< HEAD
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - **Real-time Transcription**: Live audio processing with Whisper
 - **PDF Processing**: Text extraction and structural analysis
 - **WebSocket Support**: Live audio streaming and transcription
 - **Responsive Design**: Modern UI with Tailwind CSS
 - **Database Storage**: SQLite for session and content management
 
+<<<<<<< HEAD
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -157,6 +176,9 @@ For production deployments, consider:
 5. Using a proper database backup strategy
 
 ## 🛠️ Installation (Development)
+=======
+## 🛠️ Installation
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 ### Prerequisites
 - Python 3.8+
@@ -211,7 +233,10 @@ py start_app.py
    ```
 
 2. **Install dependencies**:
+<<<<<<< HEAD
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
    ```bash
    npm install
    ```
@@ -235,26 +260,38 @@ py start_app.py
 ### Features Overview
 
 #### File Upload
+<<<<<<< HEAD
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - **PDFs**: Automatically extract text and structure
 - **Audio/Video**: Real-time transcription with Whisper
 - **Text Files**: Direct processing and analysis
 
 #### Live Recording
+<<<<<<< HEAD
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - **Real-time Transcription**: See text appear as you speak
 - **Pause/Resume**: Control recording flow
 - **WebSocket Connection**: Seamless audio streaming
 
 #### Smart Fusion
+<<<<<<< HEAD
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - **Source Tagging**: Clear indication of content origin
 - **Structured Output**: Organized sections with headings
 - **Practice Questions**: Auto-generated for each section
 - **Study Time Estimates**: Intelligent time calculations
 
 #### Export Options
+<<<<<<< HEAD
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 - **Markdown**: Clean, formatted text files
 - **PDF**: Professional document export
 - **Flashcards**: Anki-compatible format
@@ -262,7 +299,10 @@ py start_app.py
 ## 🏗️ Architecture
 
 ### Backend (FastAPI)
+<<<<<<< HEAD
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 ```
 backend/
 ├── main.py                 # FastAPI application
@@ -279,7 +319,10 @@ backend/
 ```
 
 ### Frontend (React)
+<<<<<<< HEAD
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 ```
 frontend/
 ├── package.json           # Node.js dependencies
@@ -295,7 +338,10 @@ frontend/
 ### Environment Variables
 
 Backend (`.env`):
+<<<<<<< HEAD
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
 DATABASE_URL=notefusion.db

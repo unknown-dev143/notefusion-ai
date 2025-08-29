@@ -13,10 +13,21 @@ import {
   Switch,
   message
 } from 'antd';
+<<<<<<< HEAD
 import { DiscountCode } from '../../../types/discount';
 import { formatDate } from '../../../utils/date';
 import { CheckOutlined, CloseOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import styles from './DiscountManagement.module.css';
+=======
+import { 
+  PlusOutlined, 
+  EditOutlined, 
+  DeleteOutlined,
+  SearchOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined
+} from '@ant-design/icons';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import type { ColumnsType } from 'antd/es/table';
 import moment from 'moment';
 
@@ -153,7 +164,11 @@ const DiscountManagement: React.FC = () => {
       dataIndex: 'code',
       key: 'code',
       render: (text, record) => (
+<<<<<<< HEAD
         <div className="discount-code">
+=======
+        <div>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <div className="font-medium">{text}</div>
           <div className="text-xs text-gray-500">{record.description}</div>
         </div>
@@ -173,6 +188,7 @@ const DiscountManagement: React.FC = () => {
     {
       title: 'Usage',
       key: 'usage',
+<<<<<<< HEAD
       render: (_, record) => {
         const progress = Math.min(100, (record.uses / (record.maxUses || 100)) * 100);
         return (
@@ -189,6 +205,21 @@ const DiscountManagement: React.FC = () => {
           </div>
         );
       },
+=======
+      render: (_, record) => (
+        <div>
+          <div>
+            {record.uses} / {record.maxUses || '∞'} uses
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-1.5">
+            <div 
+              className="bg-blue-600 h-1.5 rounded-full" 
+              style={{ width: `${Math.min(100, (record.uses / (record.maxUses || 100)) * 100)}%` }}
+            />
+          </div>
+        </div>
+      ),
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     },
     {
       title: 'Validity',
@@ -200,12 +231,21 @@ const DiscountManagement: React.FC = () => {
         const isActive = now >= validFrom && now <= validUntil;
         
         return (
+<<<<<<< HEAD
           <div className="discount-validity">
             <div className={`status-indicator ${isActive ? 'status-active' : 'status-inactive'}`}>
               {isActive ? (
                 <CheckCircleOutlined className="icon" />
               ) : (
                 <CloseCircleOutlined className="icon" />
+=======
+          <div>
+            <div className="flex items-center">
+              {isActive ? (
+                <CheckCircleOutlined className="text-green-500 mr-1" />
+              ) : (
+                <CloseCircleOutlined className="text-red-500 mr-1" />
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               )}
               <span>{isActive ? 'Active' : 'Inactive'}</span>
             </div>
@@ -221,7 +261,11 @@ const DiscountManagement: React.FC = () => {
       dataIndex: 'isActive',
       key: 'status',
       render: (isActive: boolean) => (
+<<<<<<< HEAD
         <Tag className={`discount-tag ${isActive ? 'active' : 'expired'}`}>
+=======
+        <Tag color={isActive ? 'green' : 'red'}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           {isActive ? 'Active' : 'Inactive'}
         </Tag>
       ),
@@ -230,33 +274,53 @@ const DiscountManagement: React.FC = () => {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
+<<<<<<< HEAD
         <div className="discount-actions">
+=======
+        <Space size="middle">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <Button 
             type="text" 
             icon={<EditOutlined />} 
             onClick={() => handleEdit(record)}
+<<<<<<< HEAD
             className="action-button"
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           />
           <Button 
             type="text" 
             danger 
             icon={<DeleteOutlined />} 
             onClick={() => handleDelete(record.id)}
+<<<<<<< HEAD
             className="action-button"
           />
         </div>
+=======
+          />
+        </Space>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       ),
     },
   ];
 
   return (
     <div className="discount-management">
+<<<<<<< HEAD
       <div className="discount-header">
+=======
+      <div className="flex justify-between items-center mb-6">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         <h3 className="text-lg font-medium">Discount Codes</h3>
         <div className="flex space-x-4">
           <Input
             placeholder="Search discount codes..."
             prefix={<SearchOutlined />}
+<<<<<<< HEAD
+=======
+            style={{ width: 250 }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           />
           <Button 
             type="primary" 
@@ -269,7 +333,10 @@ const DiscountManagement: React.FC = () => {
       </div>
 
       <Table 
+<<<<<<< HEAD
         className="discount-table"
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         columns={columns} 
         dataSource={discounts}
         rowKey="id"
@@ -285,7 +352,10 @@ const DiscountManagement: React.FC = () => {
         width={700}
       >
         <Form
+<<<<<<< HEAD
           className="discount-form"
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
@@ -344,6 +414,10 @@ const DiscountManagement: React.FC = () => {
                   <InputNumber 
                     min={0}
                     max={getFieldValue('discountType') === 'percentage' ? 100 : undefined}
+<<<<<<< HEAD
+=======
+                    style={{ width: '100%' }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                     addonAfter={getFieldValue('discountType') === 'percentage' ? '%' : '$'}
                   />
                 </Form.Item>
@@ -357,7 +431,11 @@ const DiscountManagement: React.FC = () => {
               label="Maximum Uses"
               tooltip="Leave empty for unlimited uses"
             >
+<<<<<<< HEAD
               <InputNumber min={1} />
+=======
+              <InputNumber min={1} style={{ width: '100%' }} />
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             </Form.Item>
 
             <Form.Item
@@ -367,6 +445,10 @@ const DiscountManagement: React.FC = () => {
             >
               <InputNumber 
                 min={0} 
+<<<<<<< HEAD
+=======
+                style={{ width: '100%' }} 
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                 prefix="$"
                 precision={2}
               />
@@ -380,6 +462,10 @@ const DiscountManagement: React.FC = () => {
           >
             <RangePicker 
               showTime 
+<<<<<<< HEAD
+=======
+              style={{ width: '100%' }} 
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               format="YYYY-MM-DD HH:mm"
             />
           </Form.Item>
@@ -411,6 +497,10 @@ const DiscountManagement: React.FC = () => {
                   <Select
                     mode="multiple"
                     placeholder="Select products..."
+<<<<<<< HEAD
+=======
+                    style={{ width: '100%' }}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   >
                     {/* These would be populated from your products API */}
                     <Option value="tier-1">Basic Plan</Option>
@@ -433,7 +523,11 @@ const DiscountManagement: React.FC = () => {
             />
           </Form.Item>
 
+<<<<<<< HEAD
           <div className="discount-form-footer">
+=======
+          <div className="flex justify-end space-x-4 mt-6">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <Button onClick={() => setIsModalVisible(false)}>
               Cancel
             </Button>

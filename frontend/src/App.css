@@ -19,6 +19,7 @@
   color: white;
 }
 
+<<<<<<< HEAD
 .loading-fallback {
   display: flex;
   flex-direction: column;
@@ -35,6 +36,8 @@
   color: #666;
 }
 
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 .App-link {
   color: #61dafb;
 }

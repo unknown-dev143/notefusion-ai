@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+<<<<<<< HEAD
 import './Tooltip.css';
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 interface TooltipProps {
   /** The content to show in the tooltip */
@@ -60,6 +63,7 @@ const Tooltip: React.FC<TooltipProps> = ({
     const scrollY = window.scrollY || document.documentElement.scrollTop;
     const scrollX = window.scrollX || document.documentElement.scrollLeft;
 
+<<<<<<< HEAD
     // Calculate positions based on tooltip position
     const positions = {
       top: {
@@ -82,12 +86,43 @@ const Tooltip: React.FC<TooltipProps> = ({
 
     const { top: newTop, left: newLeft } = positions[position];
     
+=======
+    let top = 0;
+    let left = 0;
+
+    switch (position) {
+      case 'top':
+        top = trigger.top + scrollY - tooltip.height - 8;
+        left = trigger.left + scrollX + (trigger.width - tooltip.width) / 2;
+        break;
+      case 'right':
+        top = trigger.top + scrollY + (trigger.height - tooltip.height) / 2;
+        left = trigger.left + scrollX + trigger.width + 8;
+        break;
+      case 'bottom':
+        top = trigger.bottom + scrollY + 8;
+        left = trigger.left + scrollX + (trigger.width - tooltip.width) / 2;
+        break;
+      case 'left':
+        top = trigger.top + scrollY + (trigger.height - tooltip.height) / 2;
+        left = trigger.left + scrollX - tooltip.width - 8;
+        break;
+    }
+
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     // Ensure tooltip stays within viewport
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     
+<<<<<<< HEAD
     const left = Math.max(8, Math.min(viewportWidth - tooltip.width - 8, newLeft));
     const top = Math.max(8, Math.min(viewportHeight - tooltip.height - 8, newTop));
+=======
+    if (left < 0) left = 8;
+    if (left + tooltip.width > viewportWidth) left = viewportWidth - tooltip.width - 8;
+    if (top < 0) top = 8;
+    if (top + tooltip.height > viewportHeight) top = viewportHeight - tooltip.height - 8;
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
     setCoords({ top, left });
   }, [position]);
@@ -111,6 +146,7 @@ const Tooltip: React.FC<TooltipProps> = ({
 
   // Update position when tooltip is open
   useEffect((): (() => void) | void => {
+<<<<<<< HEAD
     if (!isOpen || !tooltipRef.current) return;
     
     updatePosition();
@@ -119,6 +155,11 @@ const Tooltip: React.FC<TooltipProps> = ({
     tooltipRef.current.style.setProperty('--tooltip-top', `${coords.top}px`);
     tooltipRef.current.style.setProperty('--tooltip-left', `${coords.left}px`);
     
+=======
+    if (!isOpen) return;
+    
+    updatePosition();
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     // Re-position on scroll/resize
     const handleScroll = (): void => updatePosition();
     const handleResize = (): void => updatePosition();
@@ -130,7 +171,11 @@ const Tooltip: React.FC<TooltipProps> = ({
       window.removeEventListener('scroll', handleScroll, true);
       window.removeEventListener('resize', handleResize);
     };
+<<<<<<< HEAD
   }, [isOpen, updatePosition, coords.top, coords.left]);
+=======
+  }, [isOpen, updatePosition]);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
   // Clean up timeouts on unmount
   useEffect((): (() => void) => {
@@ -208,12 +253,46 @@ const Tooltip: React.FC<TooltipProps> = ({
     ? createPortal(
         <div
           ref={tooltipRef}
+<<<<<<< HEAD
           className={`tooltip ${position} ${className}`}
           role="tooltip"
           id="tooltip-content"
         >
           {content}
           {showArrow && <div className="tooltip-arrow" />}
+=======
+          id="tooltip-content"
+          role="tooltip"
+          className={`
+            fixed z-50 px-3 py-1.5 text-sm text-white bg-gray-800 rounded whitespace-nowrap
+            shadow-lg animate-fade-in pointer-events-none
+            ${className}
+          `}
+          style={{
+            top: `${coords.top}px`,
+            left: `${coords.left}px`,
+            maxWidth: 'calc(100vw - 24px)',
+          }}
+        >
+          {content}
+          {showArrow && (
+            <div
+              className={`
+                absolute w-3 h-3 bg-gray-800 transform rotate-45 -z-10
+                ${
+                  position === 'top'
+                    ? 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2'
+                    : position === 'right'
+                    ? 'left-0 top-1/2 -translate-x-1/2 -translate-y-1/2'
+                    : position === 'bottom'
+                    ? 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2'
+                    : 'right-0 top-1/2 translate-x-1/2 -translate-y-1/2'
+                }
+              `}
+              aria-hidden="true"
+            />
+          )}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         </div>,
         document.body
       )

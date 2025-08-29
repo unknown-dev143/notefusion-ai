@@ -1,13 +1,20 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import './RichTextEditor.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Button, Space, Form, Input, Tag, message, Popconfirm, Spin } from 'antd';
 import type { FormInstance } from 'antd/es/form';
 import ReactQuill from 'react-quill';
+=======
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Card, Button, Space, Form, Input, Tag, Select, Spin, message, Popconfirm } from 'antd';
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { 
   SaveOutlined, 
   ArrowLeftOutlined, 
   DeleteOutlined, 
+<<<<<<< HEAD
   TagOutlined 
 } from '@ant-design/icons';
 import 'react-quill/dist/quill.snow.css';
@@ -40,13 +47,49 @@ type NoteFormValues = Omit<NoteData, 'tags'>;
 
 const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
   const [form] = Form.useForm<NoteFormValues>();
+=======
+  StarOutlined, 
+  StarFilled,
+  TagOutlined
+} from '@ant-design/icons';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { useNoteStore } from '../store/useNoteStore';
+import { Note, CreateNoteDto } from '../types';
+
+const { TextArea } = Input;
+const { Option } = Select;
+
+const toolbarOptions = [
+  ['bold', 'italic', 'underline', 'strike'],
+  ['blockquote', 'code-block'],
+  [{ 'header': 1 }, { 'header': 2 }],
+  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+  [{ 'script': 'sub'}, { 'script': 'super' }],
+  [{ 'indent': '-1'}, { 'indent': '+1' }],
+  [{ 'direction': 'rtl' }],
+  [{ 'size': ['small', false, 'large', 'huge'] }],
+  [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+  [{ 'color': [] }, { 'background': [] }],
+  [{ 'font': [] }],
+  [{ 'align': [] }],
+  ['clean'],
+  ['link', 'image', 'video']
+];
+
+export const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
+  const [form] = Form.useForm();
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [tags, setTags] = useState<string[]>([]);
   const [inputTag, setInputTag] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+<<<<<<< HEAD
   const formRef = React.useRef<FormInstance<NoteFormValues>>(null);
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   
   const { 
     currentNote, 
@@ -54,6 +97,10 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
     createNote, 
     updateNote, 
     deleteNote, 
+<<<<<<< HEAD
+=======
+    togglePinNote,
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     isLoading 
   } = useNoteStore();
 
@@ -68,8 +115,13 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
   useEffect(() => {
     if (currentNote && !isNew) {
       form.setFieldsValue({
+<<<<<<< HEAD
         title: currentNote.title || '',
         content: currentNote.content || ''
+=======
+        title: currentNote.title,
+        content: currentNote.content,
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       });
       setTags(currentNote.tags || []);
     } else if (isNew) {
@@ -78,12 +130,31 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
     }
   }, [currentNote, isNew, form]);
 
+<<<<<<< HEAD
   // Handle form submission
   const handleSubmit = async (formData: NoteFormValues) => {
     try {
       setIsSaving(true);
       const noteData: NoteData = {
         ...formData,
+=======
+  const handleTagClose = (removedTag: string) => {
+    setTags(tags.filter(tag => tag !== removedTag));
+  };
+
+  const handleTagAdd = () => {
+    if (inputTag && !tags.includes(inputTag)) {
+      setTags([...tags, inputTag]);
+      setInputTag('');
+    }
+  };
+
+  const handleSave = async (values: Pick<CreateNoteDto, 'title' | 'content'>) => {
+    try {
+      setIsSaving(true);
+      const noteData = {
+        ...values,
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         tags,
       };
 
@@ -97,13 +168,18 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
       
       navigate('/notes');
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error saving note:', error);
       message.error('Failed to save note');
+=======
+      message.error(`Failed to save note: ${error instanceof Error ? error.message : 'Unknown error'}`);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     } finally {
       setIsSaving(false);
     }
   };
 
+<<<<<<< HEAD
   // Handle form submission from button click
   const handleFormSubmit = () => {
     form.submit();
@@ -117,24 +193,42 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
   // Handle form field changes
   const handleFormChange = (changedValues: any, allValues: NoteFormValues) => {
     // Handle form field changes if needed
+=======
+  const handlePinToggle = async () => {
+    if (!id) return;
+    try {
+      await togglePinNote(id);
+      message.success(`Note ${currentNote?.isPinned ? 'unpinned' : 'pinned'} successfully`);
+    } catch (error) {
+      message.error(`Failed to toggle pin status: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   };
 
   const handleDelete = async () => {
     if (!id) return;
+<<<<<<< HEAD
     
+=======
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     try {
       setIsDeleting(true);
       await deleteNote(id);
       message.success('Note deleted successfully');
       navigate('/notes');
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error deleting note:', error);
       message.error('Failed to delete note');
+=======
+      message.error(`Failed to delete note: ${error instanceof Error ? error.message : 'Unknown error'}`);
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     } finally {
       setIsDeleting(false);
     }
   };
 
+<<<<<<< HEAD
   const handleTagClose = (removedTag: string) => {
     setTags(tags.filter(tag => tag !== removedTag));
   };
@@ -164,12 +258,22 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
           <Spin size="large" />
           <p className="mt-4">Loading note...</p>
         </div>
+=======
+  if (isLoading && !isNew) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Spin size="large" />
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       </div>
     );
   }
 
   return (
+<<<<<<< HEAD
     <div className="p-4">
+=======
+    <div className="note-editor">
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       <div className="mb-4">
         <Button 
           type="text" 
@@ -184,6 +288,7 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
       <Card
         title={
           <div className="flex justify-between items-center">
+<<<<<<< HEAD
             <span>{isNew ? 'Create New Note' : 'Edit Note'}</span>
             <Space>
               {!isNew && (
@@ -203,13 +308,47 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
                     Delete
                   </Button>
                 </Popconfirm>
+=======
+            <span>{isNew ? 'New Note' : 'Edit Note'}</span>
+            <Space>
+              {!isNew && id && (
+                <>
+                  <Button 
+                    icon={currentNote?.isPinned ? <StarFilled /> : <StarOutlined />}
+                    onClick={handlePinToggle}
+                    type="text"
+                  >
+                    {currentNote?.isPinned ? 'Pinned' : 'Pin Note'}
+                  </Button>
+                  <Popconfirm
+                    title="Are you sure you want to delete this note?"
+                    onConfirm={handleDelete}
+                    okText="Yes"
+                    cancelText="No"
+                    okButtonProps={{ loading: isDeleting }}
+                  >
+                    <Button 
+                      danger 
+                      icon={<DeleteOutlined />} 
+                      loading={isDeleting}
+                    >
+                      Delete
+                    </Button>
+                  </Popconfirm>
+                </>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               )}
               <Button 
                 type="primary" 
                 icon={<SaveOutlined />} 
+<<<<<<< HEAD
                 onClick={handleFormSubmit}
                 loading={isSaving}
                 htmlType="submit"
+=======
+                onClick={() => form.submit()}
+                loading={isSaving}
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               >
                 Save
               </Button>
@@ -217,6 +356,7 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
           </div>
         }
       >
+<<<<<<< HEAD
         <Form<NoteFormValues>
           form={form}
           onFinish={handleSubmit}
@@ -225,6 +365,15 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
           initialValues={{
             title: '',
             content: ''
+=======
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSave}
+          initialValues={{
+            title: '',
+            content: '',
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           }}
         >
           <Form.Item
@@ -235,6 +384,7 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
             <Input placeholder="Note title" size="large" />
           </Form.Item>
 
+<<<<<<< HEAD
           <Form.Item
             name="content"
             label="Content"
@@ -253,6 +403,24 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
 
           <div className="mt-4">
             <div className="flex items-center mb-2">
+=======
+          <div className="mb-4">
+            <div className="flex items-center mb-2">
+              <TagOutlined className="mr-2" />
+              <span className="mr-2">Tags:</span>
+              {tags.map(tag => (
+                <Tag
+                  key={tag}
+                  closable
+                  onClose={() => handleTagClose(tag)}
+                  className="mb-2"
+                >
+                  {tag}
+                </Tag>
+              ))}
+            </div>
+            <Space.Compact style={{ width: '100%' }}>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               <Input
                 placeholder="Add a tag"
                 value={inputTag}
@@ -261,6 +429,7 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
                   e.preventDefault();
                   handleTagAdd();
                 }}
+<<<<<<< HEAD
                 className="w-48"
               />
               <Button 
@@ -285,6 +454,29 @@ const RichTextEditor: React.FC<{ isNew?: boolean }> = ({ isNew = false }) => {
               ))}
             </div>
           </div>
+=======
+              />
+              <Button type="primary" onClick={handleTagAdd}>
+                Add
+              </Button>
+            </Space.Compact>
+          </div>
+
+          <Form.Item
+            name="content"
+            label="Content"
+            rules={[{ required: true, message: 'Please enter some content' }]}
+          >
+            <ReactQuill
+              theme="snow"
+              modules={{
+                toolbar: toolbarOptions,
+              }}
+              placeholder="Start writing your note here..."
+              className="h-96 mb-12"
+            />
+          </Form.Item>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         </Form>
       </Card>
     </div>
