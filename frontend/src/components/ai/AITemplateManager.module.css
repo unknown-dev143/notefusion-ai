@@ -1,0 +1,113 @@
+.templateManager {
+  margin-bottom: 16px;
+}
+
+.searchContainer {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.searchInput {
+  width: 300px;
+}
+
+.templateList {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+}
+
+.templateItem {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.templateItem:hover {
+  background-color: #f9f9f9;
+}
+
+.templateHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.templateName {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.templateDescription {
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.templateFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #888;
+  font-size: 12px;
+}
+
+.templateActions {
+  display: flex;
+  gap: 8px;
+}
+
+.categoryTag {
+  margin-right: 8px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: #888;
+}
+
+/* Modal form styles */
+.modalFormItem {
+  margin-bottom: 16px;
+}
+
+.modalInput {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.modalTextArea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.modalSelect {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.modalTextArea {
+  margin-top: 8px;
+  min-height: 100px;
+  resize: vertical;
+}
+
+.secondaryText {
+  font-size: 12px;
+}
+
+.accessLevelContainer {
+  margin-top: 8px;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}

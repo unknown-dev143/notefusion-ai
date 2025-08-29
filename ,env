@@ -1,0 +1,36 @@
+# Database
+POSTGRES_USER=notefusion
+POSTGRES_PASSWORD=notefusion123
+POSTGRES_DB=notefusion
+
+# Redis
+REDIS_PASSWORD=your-redis-password
+REDIS_URL=redis://localhost:6379/0
+
+# Backend
+SECRET_KEY=your-secret-key-here
+JWT_SECRET_KEY=your-jwt-secret-here
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+
+# API
+API_V1_STR=/api/v1
+
+# Environment
+ENVIRONMENT=development
+DEBUG=True
+
+# AI Security
+AI_ENABLE_SECURITY=true
+AI_ENABLE_RATE_LIMITING=true
+AI_ENABLE_CONTENT_MODERATION=true
+
+# Rate Limits
+AI_RATE_LIMIT=60/minute
+AI_RATE_LIMIT_FREE=30/minute
+AI_RATE_LIMIT_BASIC=100/minute
+AI_RATE_LIMIT_PRO=1000/minute
+
+# Content Moderation
+MODERATION_STRICTNESS=medium  # low, medium, high
+MAX_INPUT_LENGTH=10000
+MAX_TOKENS=4000

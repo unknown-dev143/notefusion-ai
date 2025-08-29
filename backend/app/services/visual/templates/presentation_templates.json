@@ -1,0 +1,65 @@
+{
+    "default": {
+        "slide_duration": 5,
+        "transitions": {
+            "type": "fade",
+            "duration": 0.5
+        },
+        "fonts": {
+            "title": "Arial",
+            "body": "Helvetica"
+        },
+        "colors": {
+            "background": "#FFFFFF",
+            "text": "#000000",
+            "accent": "#007AFF"
+        },
+        "layout": {
+            "margin": 50,
+            "title_size": 36,
+            "body_size": 24
+        }
+    },
+    "professional": {
+        "slide_duration": 6,
+        "transitions": {
+            "type": "slide",
+            "duration": 0.7
+        },
+        "fonts": {
+            "title": "Georgia",
+            "body": "Arial"
+        },
+        "colors": {
+            "background": "#F5F5F5",
+            "text": "#333333",
+            "accent": "#0066CC"
+        },
+        "layout": {
+            "margin": 60,
+            "title_size": 40,
+            "body_size": 28
+        }
+    },
+    "modern": {
+        "slide_duration": 4,
+        "transitions": {
+            "type": "zoom",
+            "duration": 0.3
+        },
+        "fonts": {
+            "title": "Roboto",
+            "body": "Open Sans"
+        },
+        "colors": {
+            "background": "#1A1A1A",
+            "text": "#FFFFFF",
+            "accent": "#00FF9B"
+        },
+        "layout": {
+            "margin": 40,
+            "title_size": 42,
+            "body_size": 26
+        }
+    }
+}

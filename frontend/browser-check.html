@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Environment Check</title>
+</head>
+<body>
+<h1>Environment Check</h1>
+    
+    <div class="test" id="browser">
+        <h3>Browser Information</h3>
+        <div id="browser-info">Checking...</div>
+    </div>
+
+    <div class="test" id="localstorage">
+        <h3>Local Storage</h3>
+        <div id="localstorage-info">Checking...</div>
+    </div>
+
+    <div class="test" id="console">
+        <h3>Console Output</h3>
+        <div id="console-info">Check the browser's console for output (F12 or right-click -> Inspect -> Console)</div>
+    </div>
+
+    <div class="test" id="files">
+        <h3>File System Access</h3>
+        <div id="files-info">Checking...</div>
+    </div>
+
+    <script>
+        // Test 1: Browser information
+        const browserInfo = document.getElementById('browser-info');
+        try {
+            const info = [
+                `User Agent: ${navigator.userAgent}`,
+                `Platform: ${navigator.platform}`,
+                `Cookies Enabled: ${navigator.cookieEnabled}`,
+                `Online: ${navigator.onLine ? 'Yes' : 'No'}`,
+                `JavaScript: Enabled`,
+                `Screen: ${window.screen.width}x${window.screen.height}`
+            ];
+            
+            browserInfo.innerHTML = info.map(item => `<div>${item}</div>`).join('');
+            document.querySelector('#browser').classList.add('pass');
+        } catch (e) {
+            browserInfo.innerHTML = `Error: ${e.message}`;
+            document.querySelector('#browser').classList.add('fail');
+        }
+
+        // Test 2: Local Storage
+        const localStorageInfo = document.getElementById('localstorage-info');
+        try {
+            const testKey = 'test_' + Date.now();
+            localStorage.setItem(testKey, 'test');
+            const value = localStorage.getItem(testKey);
+            localStorage.removeItem(testKey);
+            
+            if (value === 'test') {
+                localStorageInfo.innerHTML = 'Local Storage is working correctly';
+                document.querySelector('#localstorage').classList.add('pass');
+            } else {
+                throw new Error('Local Storage read/write failed');
+            }
+        } catch (e) {
+            localStorageInfo.innerHTML = `Error: ${e.message}`;
+            document.querySelector('#localstorage').classList.add('fail');
+        }
+
+        // Test 3: Console
+        console.log('Console test: This is a test message');
+        console.log('Current time:', new Date().toISOString());
+        document.querySelector('#console').classList.add('pass');
+
+        // Test 4: File System Access (limited in browsers)
+        const filesInfo = document.getElementById('files-info');
+        try {
+            const testBlob = new Blob(['test'], { type: 'text/plain' });
+            const testUrl = URL.createObjectURL(testBlob);
+            
+            const a = document.createElement('a');
+            a.href = testUrl;
+            a.download = 'test-file.txt';
+            a.textContent = 'Download test file';
+            
+            filesInfo.innerHTML = 'File system access (limited in browsers): ';
+            filesInfo.appendChild(a);
+            filesInfo.innerHTML += '<br>Click the link to test file download.';
+            document.querySelector('#files').classList.add('pass');
+        } catch (e) {
+            filesInfo.innerHTML = `Error: ${e.message}`;
+            document.querySelector('#files').classList.add('fail');
+        }
+    </script>
+</body>
+</html>

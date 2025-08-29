@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>NoteFusion AI</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<!-- PWA Banners -->
+  <div id="install-banner" class="alert alert-info">
+    <div>
+      <strong>Install NoteFusion AI</strong>
+      <p>Add NoteFusion AI to your home screen for quick access and an app-like experience.</p>
+    </div>
+    <div class="button-group">
+      <button id="install-button" class="btn" data-track="click" data-track-category="button" data-track-label="Install">Install</button>
+      <button id="close-banner" class="btn btn-outline">Not Now</button>
+    </div>
+  </div>
+
+  <div id="update-available" class="alert alert-info hidden">
+    <div>
+      <strong>Update Available</strong>
+      <p>A new version of NoteFusion AI is available. Please refresh to update.</p>
+    </div>
+    <button id="update-button" class="btn" data-track="click" data-track-category="button" data-track-label="Update">Update Now</button>
+  </div>
+
+  <div id="offline-banner" class="alert alert-error">
+    <span>You are currently offline. Some features may be limited.</span>
+  </div>
+
+  <div id="online-banner" class="alert alert-success">
+    <span>You are back online. Syncing your data...</span>
+  </div>
+
+  <div class="container">
+    <header class="app-header">
+      <h1>NoteFusion AI</h1>
+      <p class="app-tagline">Your intelligent note-taking and audio processing assistant</p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>PWA Test Page</h2>
+        <p>This page tests the Progressive Web App functionality of NoteFusion AI.</p>
+        
+        <div class="test-section">
+          <h3>Service Worker Status</h3>
+          <div id="sw-status">Checking service worker status...</div>
+          <button id="check-sw" class="btn" data-track="click" data-track-category="button" data-track-label="Check Service Worker">Check Again</button>
+          <button id="unregister-sw" class="btn btn-outline" data-track="click" data-track-category="button" data-track-label="Unregister Service Worker">Unregister Service Worker</button>
+        </div>
+        
+        <div class="test-section">
+          <h3>Cache Management</h3>
+          <button id="clear-cache" class="btn" data-track="click" data-track-category="button" data-track-label="Clear Cache">Clear Cache</button>
+          <button id="update-cache" class="btn" data-track="click" data-track-category="button" data-track-label="Update Cache">Update Cache</button>
+        </div>
+        
+        <div class="test-section">
+          <h3>Installation</h3>
+          <button id="trigger-install" class="btn" data-track="click" data-track-category="button" data-track-label="Show Install Prompt">Show Install Prompt</button>
+          <p class="hint">Note: The install button will only be shown if the app can be installed.</p>
+        </div>
+        
+        <div class="test-section">
+          <h3>Offline Test</h3>
+          <p>Try going offline in your browser's developer tools to test the offline experience.</p>
+          <p>Current status: <span id="connection-status">Checking...</span></p>
+        </div>
+      </section>
+    </main>
+    
+    <footer class="app-footer">
+      <p> 2023 NoteFusion AI. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#" class="footer-link" data-track="click" data-track-category="link" data-track-label="Privacy Policy">Privacy Policy</a>
+        <span class="divider">|</span>
+        <a href="#" class="footer-link" data-track="click" data-track-category="link" data-track-label="Terms of Service">Terms of Service</a>
+        <span class="divider">|</span>
+        <a href="#" class="footer-link" data-track="click" data-track-category="link" data-track-label="Contact Us">Contact Us</a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- PWA Scripts -->
+  <script src="pwa.js"></script>
+  
+  <script>
+    // Initialize tracking
+    document.addEventListener('DOMContentLoaded', () => {
+      // Track page view
+      const pageName = document.title || window.location.pathname;
+      if (window.tracking) {
+        window.tracking.trackPageView(pageName);
+      }
+      
+      // Add click handlers for trackable elements
+      document.querySelectorAll('[data-track]').forEach(element => {
+        element.addEventListener('click', (e) => {
+          if (window.tracking) {
+            const action = element.getAttribute('data-track');
+            const category = element.getAttribute('data-track-category') || 'interaction';
+            const label = element.getAttribute('data-track-label') || 'unknown';
+            
+            // Track the interaction
+            window.tracking.trackSessionActivity(label, {
+              action: action,
+              category: category,
+              label: label,
+              href: element.href || window.location.href
+            });
+            
+            // If it's a tool click, also track tool usage
+            if (action === 'tool_click') {
+              window.tracking.trackToolUsage(label);
+            }
+          }
+        });
+      });
+    });
+  </script>
+  
+  <script>
+    // Check service worker status
+    function checkServiceWorkerStatus() {
+      if (!('serviceWorker' in navigator)) {
+        document.getElementById('sw-status').innerHTML = 
+          '<span style="color: #ff4d4f;">Service Workers are not supported in this browser.</span>';
+        return;
+      }
+      
+      navigator.serviceWorker.getRegistration()
+        .then(registration => {
+          if (!registration) {
+            document.getElementById('sw-status').innerHTML = 
+              '<span style="color: #faad14;">No service worker is registered.</span>';
+          } else {
+            document.getElementById('sw-status').innerHTML = 
+              `<span style="color: #52c41a;">Service Worker is registered and ${registration.active ? 'active' : 'not active'}.</span>`;
+          }
+        })
+        .catch(error => {
+          document.getElementById('sw-status').innerHTML = 
+            `<span style="color: #ff4d4f;">Error checking service worker: ${error.message}</span>`;
+        });
+    }
+    
+    // Update connection status
+    function updateConnectionStatus() {
+      const statusElement = document.getElementById('connection-status');
+      if (navigator.onLine) {
+        statusElement.innerHTML = '<span style="color: #52c41a;">Online</span>';
+      } else {
+        statusElement.innerHTML = '<span style="color: #ff4d4f;">Offline</span>';
+      }
+    }
+    
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check service worker status on page load
+      checkServiceWorkerStatus();
+      updateConnectionStatus();
+      
+      // Check SW button
+      document.getElementById('check-sw').addEventListener('click', checkServiceWorkerStatus);
+      
+      // Unregister SW button
+      document.getElementById('unregister-sw').addEventListener('click', () => {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (const registration of registrations) {
+              registration.unregister().then(() => {
+                alert('Service Worker unregistered. Page will refresh.');
+                window.location.reload();
+              });
+            }
+          });
+        }
+      });
+      
+      // Clear cache button
+      document.getElementById('clear-cache').addEventListener('click', () => {
+        if ('caches' in window) {
+          caches.keys().then(cacheNames => {
+            const cacheDeletions = cacheNames.map(cacheName => {
+              return caches.delete(cacheName);
+            });
+            
+            Promise.all(cacheDeletions).then(() => {
+              alert('Cache cleared. Page will refresh.');
+              window.location.reload();
+            });
+          });
+        } else {
+          alert('Cache API not supported in this browser.');
+        }
+      });
+      
+      // Update cache button
+      document.getElementById('update-cache').addEventListener('click', () => {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistration()
+            .then(registration => {
+              if (registration) {
+                return registration.update();
+              }
+              throw new Error('No service worker registered');
+            })
+            .then(() => {
+              alert('Service Worker updated. Page will refresh.');
+              window.location.reload();
+            })
+            .catch(error => {
+              alert(`Error updating service worker: ${error.message}`);
+            });
+        } else {
+          alert('Service Workers not supported in this browser.');
+        }
+      });
+      
+      // Trigger install button
+      document.getElementById('trigger-install').addEventListener('click', () => {
+        if (window.pwaHelper && window.pwaHelper.deferredPrompt) {
+          window.pwaHelper.installApp();
+        } else {
+          alert('Installation not available. The app may already be installed or your browser does not support installation.');
+        }
+      });
+    });
+    
+    // Listen for online/offline events
+    window.addEventListener('online', updateConnectionStatus);
+    window.addEventListener('offline', updateConnectionStatus);
+  </script>
+</body>
+</html>

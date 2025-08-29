@@ -1,0 +1,220 @@
+.audioRecorder {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.audioRecorder:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.controlsRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.recordingTime {
+  font-size: 1.1em;
+  font-weight: 500;
+  color: #595959;
+  text-align: center;
+  margin-top: 8px;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  background: #f5f5f5;
+  padding: 4px 12px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Waveform Styles */
+.waveform {
+  width: 100%;
+  height: 120px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 16px 0;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Audio Preview Container */
+.audioPreviewContainer {
+  width: 100%;
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.audioPreview {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+/* Processing Indicator */
+.processingIndicator {
+  width: 100%;
+  margin: 20px 0;
+  padding: 16px;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.transcription {
+  margin-top: 24px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border-left: 4px solid #1890ff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.transcriptionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.transcriptionHeader h4 {
+  margin: 0;
+  color: #262626;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.transcription p {
+  margin: 0;
+  line-height: 1.6;
+  color: #434343;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Save to Notes Modal Styles */
+.previewSection {
+  margin-top: 16px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
+}
+
+.previewSection p {
+  margin: 8px 0;
+  color: #595959;
+}
+
+.transcriptionPreview {
+  margin-top: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #f0f0f0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.transcriptionPreview p {
+  margin: 4px 0;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.transcriptionPreview strong {
+  color: #262626;
+  font-weight: 500;
+}
+
+/* Save button in transcription header */
+.transcriptionHeader .ant-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+/* Modal footer buttons */
+.ant-modal-footer .ant-btn + .ant-btn:not(.ant-dropdown-trigger) {
+  margin-left: 8px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .audioRecorder {
+    padding: 16px;
+    border-radius: 8px;
+  }
+  
+  .waveform {
+    height: 100px;
+  }
+  
+  .controlsRow {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .recordingTime {
+    font-size: 1em;
+  }
+  
+  .transcriptionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .transcriptionHeader .ant-btn {
+    width: 100%;
+    margin-top: 8px;
+    justify-content: center;
+  }
+  
+  .ant-modal-body {
+    padding: 16px;
+  }
+  
+  .previewSection, 
+  .transcriptionPreview {
+    padding: 12px;
+  }
+}
+
+.audioPreview {
+  display: none;
+}
+
+.error {
+  color: #ff4d4f;
+  margin-top: 8px;
+}
+
+.success {
+  color: #52c41a;
+  margin-top: 8px;
+}

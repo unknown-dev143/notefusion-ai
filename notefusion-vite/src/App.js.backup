@@ -1,0 +1,40 @@
+import React from 'react';
+import { NotificationProvider } from './components/NotificationProvider';
+import { Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import Navbar from './components/Navbar';
+import Dashboard from './pages/Dashboard';
+import SessionPage from './pages/SessionPage';
+import NewSession from './pages/NewSession';
+import SessionsList from './pages/SessionsList';
+import Whiteboard from './pages/Whiteboard.tsx';
+import FlashcardsQuizzesPage from './pages/FlashcardsQuizzesPage';
+import './App.css';
+import GoogleLogin from './components/GoogleLogin';
+
+// Create a client
+const queryClient = new QueryClient();
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <NotificationProvider>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <main className="container mx-auto px-4 py-8">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/new" element={<NewSession />} />
+            <Route path="/sessions" element={<SessionsList />} />
+            <Route path="/session/:sessionId" element={<SessionPage />} />
+            <Route path="/whiteboard" element={<Whiteboard />} />
+            <Route path="/flashcards-quizzes" element={<FlashcardsQuizzesPage />} />
+          </Routes>
+        </main>
+      </div>
+      </NotificationProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App; 

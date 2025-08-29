@@ -1,0 +1,5 @@
+.termsContent {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 0 16px;
+}

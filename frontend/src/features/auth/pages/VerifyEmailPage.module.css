@@ -1,0 +1,20 @@
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+}
+
+.container {
+  max-width: 500px;
+  margin: 40px auto;
+}
+
+.title {
+  text-align: center;
+}
+
+.buttonContainer {
+  text-align: center;
+  margin-top: 16px;
+}

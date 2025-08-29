@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Test page">
+    <!-- Theme color with fallbacks for different browsers -->
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        // Add theme-color meta tags for supported browsers
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1a73e8';
+        lightTheme.media = '(prefers-color-scheme: light)';
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#1a1b2e';
+        darkTheme.media = '(prefers-color-scheme: dark)';
+        document.head.appendChild(darkTheme);
+      }
+    </script>
+    <meta name="msapplication-TileColor" content="#1a73e8">
+    <meta name="msapplication-navbutton-color" content="#1a73e8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Test Page</title>
+    <link rel="stylesheet" href="test-styles.css">
+</head>
+<body>
+    <h1>Test Page</h1>
+    <div id="content">
+        <!-- Test content goes here -->
+    </div>
+    <script>
+        // Test scripts go here
+    </script>
+</body>
+</html>

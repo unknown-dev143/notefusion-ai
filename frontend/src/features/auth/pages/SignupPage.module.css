@@ -1,0 +1,36 @@
+.termsCheckbox {
+  margin-right: 8px;
+}
+
+.verificationModal {
+  text-align: center;
+  padding: 20px;
+}
+
+.verificationIcon {
+  font-size: 48px;
+  color: #52c41a;
+  margin-bottom: 16px;
+}
+
+.verificationButton {
+  margin-top: 16px;
+}
+
+.verificationLink {
+  margin-top: 16px;
+}
+
+.authFooter {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.loginLink {
+  font-weight: 500;
+}
+
+.signupButton {
+  width: 100%;
+  margin-top: 8px;
+}

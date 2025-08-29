@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+    <!-- Theme Color with media queries for light/dark mode (added by JavaScript for supported browsers) -->
+    <script>
+      // Only add theme-color meta tags for browsers that support them
+      if (!/firefox|fxios|opr/i.test(navigator.userAgent)) {
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1976d2';
+        lightTheme.setAttribute('media', '(prefers-color-scheme: light)');
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#0d47a1';
+        darkTheme.setAttribute('media', '(prefers-color-scheme: dark)');
+        document.head.appendChild(darkTheme);
+      }
+    </script>
+    
+    <!-- Microsoft Application -->
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    <meta name="msapplication-TileColor" content="#1976d2">
+    <meta name="msapplication-navbutton-color" content="#1976d2">
+    <meta name="msapplication-window" content="width=device-width;height=device-height">
+    
+    <!-- General PWA settings -->
+    <meta name="application-name" content="NoteFusion AI">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NoteFusion AI">
+    
+    <!-- Icons -->
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+    <!-- Safari Pinned Tab -->
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#1976d2">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <title>PWA Test - NoteFusion AI</title>
+    <link rel="stylesheet" href="/pwa-test-styles.css">
+</head>
+<body>
+    <main class="container">
+        <h1>PWA Test Page</h1>
+    
+    <div>
+        <h2>Service Worker Status</h2>
+        <div id="swStatus" class="status info">Checking service worker support...</div>
+        <button id="registerSW">Register Service Worker</button>
+        <button id="unregisterSW">Unregister Service Worker</button>
+    </div>
+
+    <div>
+        <h2>Install PWA</h2>
+        <div id="installStatus" class="status info">Checking installability...</div>
+        <button id="installButton" class="hidden">Install NoteFusion AI</button>
+    </div>
+
+    <div>
+        <h2>Offline Status</h2>
+        <div id="offlineStatus" class="status info">Checking connection status...</div>
+    </div>
+    </main>
+
+    <script>
+        // Service Worker Registration
+        const swStatus = document.getElementById('swStatus');
+        const registerSW = document.getElementById('registerSW');
+        const unregisterSW = document.getElementById('unregisterSW');
+        const installButton = document.getElementById('installButton');
+        const installStatus = document.getElementById('installStatus');
+        const offlineStatus = document.getElementById('offlineStatus');
+
+        // Check service worker support
+        if ('serviceWorker' in navigator) {
+            swStatus.textContent = 'Service Worker is supported in this browser';
+            swStatus.className = 'status success';
+            
+            // Register button
+            registerSW.addEventListener('click', async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register('/sw.js');
+                    swStatus.textContent = 'Service Worker registered successfully';
+                    swStatus.className = 'status success';
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                } catch (error) {
+                    swStatus.textContent = `Service Worker registration failed: ${error}`;
+                    swStatus.className = 'status error';
+                    console.error('ServiceWorker registration failed: ', error);
+                }
+            });
+
+            // Unregister button
+            unregisterSW.addEventListener('click', async () => {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                    await registration.unregister();
+                    console.log('ServiceWorker unregistered');
+                    swStatus.textContent = 'Service Worker has been unregistered';
+                    swStatus.className = 'status info';
+                }
+            });
+
+            // Check if already registered
+            if (navigator.serviceWorker.controller) {
+                swStatus.textContent = 'Service Worker is already registered and controlling this page';
+                swStatus.className = 'status success';
+            }
+        } else {
+            swStatus.textContent = 'Service workers are not supported in this browser';
+            swStatus.className = 'status error';
+        }
+
+        // PWA Install Prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            window.deferredPrompt = e;
+            installButton.classList.remove('hidden');
+            installStatus.textContent = 'This app can be installed on your device';
+            installStatus.className = 'status info';
+            
+            installButton.addEventListener('click', () => {
+                installStatus.textContent = 'Installing...';
+                installStatus.className = 'status info';
+                
+                window.deferredPrompt.prompt();
+                
+                window.deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        installStatus.textContent = 'App installed successfully!';
+                        installStatus.className = 'status success';
+                    } else {
+                        installStatus.textContent = 'App installation cancelled';
+                        installStatus.className = 'status info';
+                    }
+                    window.deferredPrompt = null;
+                    installButton.classList.add('hidden');
+                });
+            });
+        });
+
+        // Check if app is already installed
+        window.addEventListener('appinstalled', () => {
+            installStatus.textContent = 'App was successfully installed!';
+            installStatus.className = 'status success';
+            installButton.classList.add('hidden');
+            console.log('PWA was installed');
+        });
+
+        // Check if the app is running in standalone mode
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            installStatus.textContent = 'Running in standalone mode';
+            installStatus.className = 'status success';
+            installButton.classList.add('hidden');
+        }
+
+        // Check connection status
+        function updateOnlineStatus() {
+            if (navigator.onLine) {
+                offlineStatus.textContent = 'You are currently online.';
+                offlineStatus.className = 'status success';
+            } else {
+                offlineStatus.textContent = 'You are currently offline. Some features may be limited.';
+                offlineStatus.className = 'status info';
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+    </script>
+    <script src="/pwa-test.js" defer></script>
+</body>
+</html>

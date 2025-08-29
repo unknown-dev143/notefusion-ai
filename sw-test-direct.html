@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Direct Service Worker Test Page">
+    <!-- Theme color with fallbacks for different browsers -->
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        // Add theme-color meta tags for supported browsers
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1a73e8';
+        lightTheme.media = '(prefers-color-scheme: light)';
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#1a1b2e';
+        darkTheme.media = '(prefers-color-scheme: dark)';
+        document.head.appendChild(darkTheme);
+      }
+      
+      // Add Microsoft-specific meta tags
+      const msTileColor = document.createElement('meta');
+      msTileColor.name = 'msapplication-TileColor';
+      msTileColor.content = '#1a73e8';
+      document.head.appendChild(msTileColor);
+      
+      const msNavButtonColor = document.createElement('meta');
+      msNavButtonColor.name = 'msapplication-navbutton-color';
+      msNavButtonColor.content = '#1a73e8';
+      document.head.appendChild(msNavButtonColor);
+    </script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Direct Service Worker Test</title>
+</head>
+<body>
+<h1>Direct Service Worker Test</h1>
+    
+    <div id="status">Checking Service Worker support...</div>
+    
+    <div>
+        <button id="registerBtn">Register Service Worker</button>
+        <button id="unregisterBtn" disabled>Unregister Service Worker</button>
+    </div>
+    
+    <h3>Output:</h3>
+    <div id="output"></div>
+
+    <script>
+        const statusEl = document.getElementById('status');
+        const outputEl = document.getElementById('output');
+        const registerBtn = document.getElementById('registerBtn');
+        const unregisterBtn = document.getElementById('unregisterBtn');
+        
+        // Simple logging function
+        function log(message) {
+            outputEl.textContent += `[${new Date().toLocaleTimeString()}] ${message}\n`;
+            outputEl.scrollTop = outputEl.scrollHeight;
+        }
+        
+        // Update UI based on registration state
+        async function updateUI() {
+            if (!('serviceWorker' in navigator)) {
+                statusEl.textContent = 'Service Workers are not supported in this browser';
+                statusEl.className = 'offline';
+                registerBtn.disabled = true;
+                return;
+            }
+            
+            try {
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration) {
+                    statusEl.textContent = 'Service Worker is registered';
+                    statusEl.className = 'online';
+                    registerBtn.disabled = true;
+                    unregisterBtn.disabled = false;
+                    log('Service Worker is active and controlling this page');
+                } else {
+                    statusEl.textContent = 'No Service Worker is currently registered';
+                    statusEl.className = 'offline';
+                    registerBtn.disabled = false;
+                    unregisterBtn.disabled = true;
+                }
+            } catch (error) {
+                log('Error checking Service Worker status: ' + error.message);
+            }
+        }
+        
+        // Register Service Worker
+        registerBtn.addEventListener('click', async () => {
+            try {
+                log('Registering Service Worker...');
+                const registration = await navigator.serviceWorker.register('sw-offline.js');
+                log(`Service Worker registered with scope: ${registration.scope}`);
+                await updateUI();
+            } catch (error) {
+                log('Registration failed: ' + error.message);
+            }
+        });
+        
+        // Unregister Service Worker
+        unregisterBtn.addEventListener('click', async () => {
+            try {
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration) {
+                    const result = await registration.unregister();
+                    log(`Service Worker unregistered: ${result ? 'Success' : 'Failed'}`);
+                    await updateUI();
+                }
+            } catch (error) {
+                log('Unregistration failed: ' + error.message);
+            }
+        });
+        
+        // Check for updates
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            log('Controller changed, reloading page...');
+            window.location.reload();
+        });
+        
+        // Initial update
+        updateUI().catch(console.error);
+    </script>
+</body>
+</html>

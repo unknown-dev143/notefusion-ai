@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>NoteFusion AI</title>
+</head>
+<body>
+<noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    
+    <!-- Load and initialize the app -->
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Register service worker for PWA -->
+    <script>
+      // Check that service workers are supported
+      if ('serviceWorker' in navigator) {
+        // Register the enhanced service worker
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw-enhanced.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+              
+              // Check for updates every hour
+              setInterval(() => {
+                registration.update().catch(err => 
+                  console.log('Service worker update check failed:', err)
+                );
+              }, 60 * 60 * 1000);
+            })
+            .catch(error => {
+              console.error('ServiceWorker registration failed: ', error);
+            });
+        });
+      }
+      
+      // Handle PWA installation
+      let deferredPrompt;
+      
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent Chrome 67 and earlier from automatically showing the prompt
+        e.preventDefault();
+        // Stash the event so it can be triggered later
+        deferredPrompt = e;
+        console.log('PWA installation available');
+        
+        // Optionally show a custom install button
+        // showInstallPromotion();
+      });
+      
+      // Track app installation
+      window.addEventListener('appinstalled', (evt) => {
+        console.log('PWA was installed');
+        // You can track installations in analytics here
+      });
+    </script>
+</body>
+</html>

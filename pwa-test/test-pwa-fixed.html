@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Theme color with fallbacks for different browsers -->
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        // Add theme-color meta tags for supported browsers
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1a73e8';
+        lightTheme.media = '(prefers-color-scheme: light)';
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#1a1b2e';
+        darkTheme.media = '(prefers-color-scheme: dark)';
+        document.head.appendChild(darkTheme);
+      }
+      
+      // Add Microsoft-specific meta tags
+      const msTileColor = document.createElement('meta');
+      msTileColor.name = 'msapplication-TileColor';
+      msTileColor.content = '#1a73e8';
+      document.head.appendChild(msTileColor);
+      
+      const msNavButtonColor = document.createElement('meta');
+      msNavButtonColor.name = 'msapplication-navbutton-color';
+      msNavButtonColor.content = '#1a73e8';
+      document.head.appendChild(msNavButtonColor);
+    </script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>PWA Test - Fixed</title>
+    <link rel="apple-touch-icon" href="/icon-192x192.png">
+    <link rel="stylesheet" href="test-styles.css">
+</head>
+<body>
+<h1>PWA Test - Fixed</h1>
+    
+    <div class="test">
+        <h2>1. Service Worker Test</h2>
+        <button id="test-sw">Test Service Worker</button>
+        <div id="sw-log"></div>
+    </div>
+    
+    <div class="test">
+        <h2>2. Install Prompt Test</h2>
+        <button id="test-install">Test Install Prompt</button>
+        <div id="install-log"></div>
+    </div>
+    
+    <div class="test">
+        <h2>3. Offline Test</h2>
+        <button id="test-offline">Test Offline</button>
+        <div id="offline-log"></div>
+    </div>
+
+    <script>
+        // Log to a specific element
+        function logToElement(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            const entry = document.createElement('div');
+            entry.className = isError ? 'error' : '';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            element.appendChild(entry);
+            element.scrollTop = element.scrollHeight;
+            console.log(message);
+        }
+
+        // Test Service Worker
+        document.getElementById('test-sw').addEventListener('click', async () => {
+            const logId = 'sw-log';
+            logToElement(logId, 'Testing Service Worker...');
+            
+            if (!('serviceWorker' in navigator)) {
+                logToElement(logId, '❌ Service Worker not supported in this browser', true);
+                return;
+            }
+            
+            try {
+                // Clear any existing registration first
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.unregister();
+                    logToElement(logId, 'Unregistered previous service worker');
+                }
+                
+                // Register the test service worker
+                const registration = await navigator.serviceWorker.register('test-sw.js', {
+                    scope: '/pwa-test/'
+                });
+                
+                logToElement(logId, '✅ Service Worker registered with scope: ' + registration.scope);
+                
+                if (navigator.serviceWorker.controller) {
+                    logToElement(logId, '✅ Service Worker is controlling this page');
+                } else {
+                    logToElement(logId, '⚠️ Service Worker registered but not controlling this page');
+                }
+                
+                // Listen for controller changes
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    logToElement(logId, '🎛️ Controller changed - page will refresh');
+                    window.location.reload();
+                });
+                
+            } catch (error) {
+                logToElement(logId, '❌ Service Worker registration failed: ' + error.message, true);
+                console.error('Service Worker registration failed:', error);
+            }
+        });
+
+        // Test Install Prompt
+        document.getElementById('test-install').addEventListener('click', () => {
+            const logId = 'install-log';
+            logToElement(logId, 'Testing Install Prompt...');
+            
+            if ('onbeforeinstallprompt' in window) {
+                logToElement(logId, '✅ Install prompt is supported in this browser');
+                
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    // Prevent the default prompt
+                    e.preventDefault();
+                    logToElement(logId, '🎯 Install prompt triggered');
+                    
+                    // Show our own install button
+                    const installButton = document.createElement('button');
+                    installButton.textContent = 'Install PWA';
+                    installButton.className = 'btn';
+                    installButton.style.margin = '10px 0';
+                    document.getElementById(logId).appendChild(installButton);
+                    
+                    // Show the install prompt when our button is clicked
+                    installButton.addEventListener('click', () => {
+                        logToElement(logId, 'Showing install prompt...');
+                        e.prompt();
+                        
+                        // Wait for the user to respond to the prompt
+                        e.userChoice.then((choiceResult) => {
+                            if (choiceResult.outcome === 'accepted') {
+                                logToElement(logId, '✅ User accepted the install prompt');
+                            } else {
+                                logToElement(logId, '❌ User dismissed the install prompt');
+                            }
+                            installButton.remove();
+                        });
+                    });
+                });
+                
+                // Check if the app is already installed
+                if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+                    logToElement(logId, 'ℹ️ App is already installed');
+                } else {
+                    logToElement(logId, 'ℹ️ App is not installed yet');
+                }
+                
+            } else {
+                logToElement(logId, '⚠️ Install prompt not supported in this browser', true);
+            }
+        });
+
+        // Test Offline Functionality
+        document.getElementById('test-offline').addEventListener('click', async () => {
+            const logId = 'offline-log';
+            logToElement(logId, 'Testing Offline Functionality...');
+            
+            if (!('caches' in window)) {
+                logToElement(logId, '❌ Cache API not supported in this browser', true);
+                return;
+            }
+            
+            try {
+                // Test if we can access the cache
+                const cache = await caches.open('pwa-test-cache-v1');
+                
+                // Test 1: Cache a test response
+                const testUrl = '/pwa-test/test-offline';
+                await cache.put(testUrl, new Response('Test offline data', {
+                    headers: { 'Content-Type': 'text/plain' }
+                }));
+                logToElement(logId, '✅ Successfully stored test data in cache');
+                
+                // Test 2: Retrieve the cached response
+                const response = await cache.match(testUrl);
+                if (response) {
+                    const data = await response.text();
+                    logToElement(logId, `✅ Successfully retrieved data from cache: "${data}"`);
+                } else {
+                    throw new Error('Failed to retrieve data from cache');
+                }
+                
+                // Test 3: Check online status
+                logToElement(logId, `🌐 Online status: ${navigator.onLine ? 'Online' : 'Offline'}`);
+                
+                // Test 4: Try to fetch a non-existent resource (should be handled by service worker)
+                try {
+                    const testFetch = await fetch('/pwa-test/test-fetch');
+                    if (testFetch.status === 200) {
+                        const data = await testFetch.text();
+                        logToElement(logId, `✅ Successfully fetched resource: ${data}`);
+                    } else {
+                        logToElement(logId, `⚠️ Received status ${testFetch.status} for test fetch`);
+                    }
+                } catch (error) {
+                    logToElement(logId, `⚠️ Fetch error (expected if offline): ${error.message}`);
+                }
+                
+                // Test 5: Verify service worker is controlling the page
+                if (navigator.serviceWorker.controller) {
+                    logToElement(logId, '✅ Service Worker is controlling the page');
+                } else {
+                    logToElement(logId, '⚠️ Service Worker is not controlling the page');
+                }
+                
+            } catch (error) {
+                logToElement(logId, `❌ Offline test failed: ${error.message}`, true);
+                console.error('Offline test failed:', error);
+            }
+        });
+
+        // Log initial service worker state
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistration().then(registration => {
+                if (registration) {
+                    logToElement('sw-log', `ℹ️ Service Worker already registered with scope: ${registration.scope}`);
+                } else {
+                    logToElement('sw-log', 'ℹ️ No Service Worker is currently registered');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

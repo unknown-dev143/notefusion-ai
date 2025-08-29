@@ -1,0 +1,105 @@
+/* Audio Page */
+.audio-page {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.audio-page .page-title {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Text to Speech */
+.text-to-speech {
+  padding: 16px 0;
+}
+
+.text-to-speech .ant-input {
+  margin-bottom: 16px;
+}
+
+.text-to-speech .voice-settings {
+  margin: 16px 0;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+/* Speech to Text */
+.speech-to-text {
+  padding: 16px 0;
+}
+
+.recording-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px 0;
+  gap: 8px;
+  color: #ff4d4f;
+  font-weight: 500;
+}
+
+.recording-indicator .pulse {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff4d4f;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(255, 77, 79, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 77, 79, 0);
+  }
+}
+
+.transcript-container {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  min-height: 200px;
+  background: #fff;
+}
+
+.audio-controls {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.audio-controls button {
+  min-width: 120px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .audio-page {
+    padding: 16px;
+  }
+  
+  .audio-controls {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .audio-controls button {
+    width: 100%;
+    max-width: 280px;
+  }
+}

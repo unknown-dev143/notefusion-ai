@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>NoteFusion AI</title>
+</head>
+<body>
+<noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="loading">Loading NoteFusion AI...</div>
+    <div id="error"></div>
+    <div id="root"></div>
+    <script>
+      window.addEventListener('error', function(error) {
+        const errorDiv = document.getElementById('error');
+        if (errorDiv) {
+          errorDiv.style.display = 'block';
+          errorDiv.innerHTML = `
+            <h2>An error occurred</h2>
+            <p><strong>${error.message}</strong></p>
+            <p>${error.filename} (line ${error.lineno}:${error.colno})</p>
+            <pre>${error.error?.stack || 'No stack trace available'}</pre>
+          `;
+        }
+        const loading = document.getElementById('loading');
+        if (loading) loading.style.display = 'none';
+      });
+      
+      // Hide loading when app is mounted
+      document.addEventListener('DOMContentLoaded', function() {
+        const loading = document.getElementById('loading');
+        if (loading) loading.style.display = 'none';
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

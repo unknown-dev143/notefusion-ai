@@ -1,0 +1,31 @@
+[Unit]
+Description=NoteFusion AI Backend
+After=network.target postgresql.service redis-server.service
+
+[Service]
+User=notefusion
+Group=www-data
+WorkingDirectory=/var/www/notefusion/backend
+Environment="PATH=/var/www/notefusion/backend/venv/bin"
+EnvironmentFile=/var/www/notefusion/backend/.env
+
+# Gunicorn configuration
+ExecStart=/var/www/notefusion/backend/venv/bin/gunicorn \
+    --config /var/www/notefusion/backend/deploy/gunicorn_conf.py \
+    app.main:app
+
+# Restart settings
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+SyslogIdentifier=notefusion
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/var/www/notefusion/backend/logs /var/www/notefusion/backend/uploads /var/www/notefusion/backend/videos /var/www/notefusion/backend/temp
+
+[Install]
+WantedBy=multi-user.target

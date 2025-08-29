@@ -1,0 +1,40 @@
+.resultContainer {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.successIcon {
+  font-size: 48px;
+  color: #52c41a;
+  margin-bottom: 16px;
+}
+
+errorIcon {
+  font-size: 48px;
+  color: #ff4d4f;
+  margin-bottom: 16px;
+}
+
+.errorList {
+  margin-top: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.loadingContainer {
+  margin-bottom: 16px;
+}
+
+.fileList {
+  margin-top: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.fileName {
+  max-width: 80%;
+}
+
+.fileSize {
+  margin-left: auto;
+}

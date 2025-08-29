@@ -1,0 +1,108 @@
+.folderContextMenu {
+  position: fixed;
+  z-index: 1000;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  padding: 4px 0;
+  min-width: 150px;
+  left: 0;
+  top: 0;
+}
+
+.dynamicPosition {
+  /* This class will be used with style prop for dynamic positioning */
+  position: fixed;
+}
+
+.contextMenu {
+  border: none;
+  box-shadow: none;
+}
+
+.actionBar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.treeContainer {
+  overflow: auto;
+  max-height: calc(100vh - 200px);
+  padding: 4px 0;
+}
+
+.folderInput {
+  width: 80%;
+}
+
+.contextMenuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+}
+
+.folderItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  width: 100%;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.folderItem:hover {
+  background-color: #f5f5f5;
+}
+
+.folderItem.selected {
+  background-color: #e6f7ff;
+}
+
+.folderName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.folderActions {
+  visibility: hidden;
+  display: flex;
+  gap: 4px;
+}
+
+.folderItem:hover .folderActions {
+  visibility: visible;
+}
+
+.foldersPanel {
+  padding: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.contextMenuItem {
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.contextMenuItem:hover {
+  background-color: #f5f5f5;
+}
+
+.contextMenuDivider {
+  margin: 4px 0;
+  border-top: 1px solid #f0f0f0;
+}

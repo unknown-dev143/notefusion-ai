@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Service Worker Test Page">
+    <!-- Theme color with fallbacks for different browsers -->
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        // Add theme-color meta tags for supported browsers
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1a73e8';
+        lightTheme.media = '(prefers-color-scheme: light)';
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#1a1b2e';
+        darkTheme.media = '(prefers-color-scheme: dark)';
+        document.head.appendChild(darkTheme);
+      }
+      
+      // Add Microsoft-specific meta tags
+      const msTileColor = document.createElement('meta');
+      msTileColor.name = 'msapplication-TileColor';
+      msTileColor.content = '#1a73e8';
+      document.head.appendChild(msTileColor);
+      
+      const msNavButtonColor = document.createElement('meta');
+      msNavButtonColor.name = 'msapplication-navbutton-color';
+      msNavButtonColor.content = '#1a73e8';
+      document.head.appendChild(msNavButtonColor);
+    </script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Service Worker Test</title>
+</head>
+<body>
+<h1>Service Worker Tester</h1>
+    
+    <div>
+        <h2>Service Worker Status</h2>
+        <div id="swStatus" class="status">Checking...</div>
+        
+        <div>
+            <button id="registerBtn">Register SW</button>
+            <button id="unregisterBtn">Unregister SW</button>
+            <button id="checkCacheBtn">Check Cache</button>
+        </div>
+        
+        <div>
+            <button id="goOfflineBtn">Go Offline</button>
+            <button id="goOnlineBtn" disabled>Go Online</button>
+        </div>
+        
+        <pre id="output">Output will appear here...</pre>
+    </div>
+
+    <script>
+        const swStatus = document.getElementById('swStatus');
+        const output = document.getElementById('output');
+        
+        // Log to output
+        function log(message) {
+            output.textContent += `\n${new Date().toISOString()} - ${message}`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        // Update service worker status
+        async function updateStatus() {
+            if ('serviceWorker' in navigator) {
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration) {
+                    swStatus.textContent = 'Service Worker is registered';
+                    swStatus.className = 'status online';
+                } else {
+                    swStatus.textContent = 'No Service Worker registered';
+                    swStatus.className = 'status offline';
+                }
+            } else {
+                swStatus.textContent = 'Service Workers not supported';
+                swStatus.className = 'status offline';
+            }
+        }
+        
+        // Register Service Worker
+        document.getElementById('registerBtn').addEventListener('click', async () => {
+            try {
+                const registration = await navigator.serviceWorker.register('sw-offline.js');
+                log('Service Worker registered with scope: ' + registration.scope);
+                await updateStatus();
+            } catch (error) {
+                log('Registration failed: ' + error.message);
+                log('Error details: ' + JSON.stringify(error, Object.getOwnPropertyNames(error)));
+            }
+        });
+        
+        // Unregister Service Worker
+        document.getElementById('unregisterBtn').addEventListener('click', async () => {
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (registration) {
+                const result = await registration.unregister();
+                log('Service Worker unregistered: ' + (result ? 'Success' : 'Failed'));
+                await updateStatus();
+            } else {
+                log('No Service Worker to unregister');
+            }
+        });
+        
+        // Check Cache
+        document.getElementById('checkCacheBtn').addEventListener('click', async () => {
+            const cacheNames = await caches.keys();
+            log('Found caches: ' + cacheNames.join(', '));
+            
+            for (const cacheName of cacheNames) {
+                const cache = await caches.open(cacheName);
+                const requests = await cache.keys();
+                log(`\nCache: ${cacheName}`);
+                requests.forEach((request, i) => {
+                    log(`  ${i+1}. ${request.url}`);
+                });
+            }
+        });
+        
+        // Toggle offline mode
+        document.getElementById('goOfflineBtn').addEventListener('click', () => {
+            window.dispatchEvent(new Event('offline'));
+            log('Offline mode activated');
+            document.getElementById('goOfflineBtn').disabled = true;
+            document.getElementById('goOnlineBtn').disabled = false;
+        });
+        
+        document.getElementById('goOnlineBtn').addEventListener('click', () => {
+            window.dispatchEvent(new Event('online'));
+            log('Online mode activated');
+            document.getElementById('goOfflineBtn').disabled = false;
+            document.getElementById('goOnlineBtn').disabled = true;
+        });
+        
+        // Initial status check
+        updateStatus().catch(console.error);
+    </script>
+</body>
+</html>

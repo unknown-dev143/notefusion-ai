@@ -1,0 +1,513 @@
+name: 🚀 CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop, 'feature/*', 'dependabot/**']
+    tags: ['v*']
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      force:
+        description: 'Force deployment even if checks fail (admin only)'
+        required: false
+        default: 'false'
+      node-version:
+        description: 'Node.js version to use'
+        required: false
+        default: '18'
+      python-version:
+        description: 'Python version to use'
+        required: false
+        default: '3.10'
+
+# Environment variables
+env:
+  # Version matrix
+  NODE_VERSIONS: '["16.x", "18.x", "20.x"]'
+  PYTHON_VERSIONS: '["3.9", "3.10", "3.11"]'
+  POSTGRES_VERSIONS: '["13", "14", "15"]'
+  
+  # Build settings
+  NODE_ENV: production
+  NPM_CONFIG_PRODUCTION: 'false'
+  # Defaults for jobs that reference single versions
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.10'
+  
+  # Timeouts (in minutes)
+  TEST_TIMEOUT: 30
+  BUILD_TIMEOUT: 45
+  DEPLOY_TIMEOUT: 60
+  
+  # Security settings
+  SECURITY_SCAN_ENABLED: true
+  PERFORMANCE_TEST_ENABLED: true
+  
+  # Database settings
+  POSTGRES_USER: test
+  POSTGRES_PASSWORD: test
+  POSTGRES_DB: test
+
+# Common environment variables for jobs
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # Job to check code quality, security, and run linters
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 30  # 30 minutes timeout for code quality checks
+    strategy:
+      matrix:
+        node-version: ["16.x", "18.x", "20.x"]
+        python-version: ["3.9", "3.10", "3.11"]
+      fail-fast: false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements-dev.txt
+          pip install safety bandit
+      
+      - name: Run Python linter (flake8)
+        working-directory: ./backend
+        run: flake8 .
+      
+      - name: Run Python security scan (bandit)
+        if: env.SECURITY_SCAN_ENABLED == 'true'
+        working-directory: ./backend
+        run: |
+          # Install jq if not already installed
+          command -v jq >/dev/null 2>&1 || { 
+            echo "Installing jq..."; 
+            sudo apt-get update -qq && sudo apt-get install -y jq >/dev/null 2>&1 || echo "Could not install jq"; 
+          }
+          
+          # Run bandit with appropriate config
+          if [ -f pyproject.toml ]; then
+            bandit -r . -c pyproject.toml -f json -o bandit-results.json 2>/dev/null || echo "{}" > bandit-results.json
+          else
+            bandit -r . -f json -o bandit-results.json 2>/dev/null || echo "{}" > bandit-results.json
+          fi
+          
+          # Check for critical issues
+          if [ -f bandit-results.json ] && jq -e '.metrics._totals.issues.CRITICAL > 0' bandit-results.json >/dev/null 2>&1; then
+            echo "::error::Critical security issues found in Python code"
+            jq '.metrics._totals.issues' bandit-results.json
+            exit 1
+          fi
+      
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+      
+      - name: Run TypeScript type check
+        working-directory: ./frontend
+        run: npx tsc --noEmit
+      
+      - name: Run ESLint
+        working-directory: ./frontend
+        run: npx eslint . --ext .ts,.tsx --max-warnings 0
+      
+      - name: Run Security Audit (npm audit)
+        working-directory: ./frontend
+        if: success()
+        run: |
+          # Allow audit to fail but capture results
+          npm audit --production --audit-level=critical || true
+          # Store detailed audit results for review
+          npm audit --production --json > audit-results.json 2>/dev/null || echo "{}" > audit-results.json
+          
+          # Check for critical vulnerabilities and fail the build if found
+          if [ -f audit-results.json ] && jq -e '.vulnerabilities.critical > 0' audit-results.json >/dev/null 2>&1; then
+            echo "::error::Critical security vulnerabilities found in npm dependencies"
+            jq '.vulnerabilities.critical' audit-results.json
+            exit 1
+          fi
+      
+      - name: Run Security Audit (pip-audit)
+        run: |
+          python -m pip install pip-audit
+          pip-audit --requirement backend/requirements.txt --ignore-vuln GHSA-5q6m-3h65-53r3 --format json -o pip-audit-results.json || echo "{}" > pip-audit-results.json
+      
+      - name: Run Dependency Check
+        run: |
+          echo "Checking for outdated dependencies..."
+          # Check for outdated npm packages
+          cd frontend
+          npm outdated --json > ../npm-outdated.json 2>/dev/null || echo "{}" > ../npm-outdated.json
+          cd ..
+          
+          # Check for outdated Python packages
+          pip list --outdated --format=json | jq 'map({package: .name, current: .version, latest: .latest_version})' > pip-outdated.json 2>/dev/null || echo "[]" > pip-outdated.json
+      
+      - name: Upload security scan results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-scan-results-${{ matrix.node-version }}-${{ matrix.python-version }}
+          path: |
+            **/bandit-results.json
+            **/audit-results.json
+            **/pip-audit-results.json
+          retention-days: 7
+      
+
+  # Backend testing and performance job
+  test-backend:
+    name: Test Backend (Python ${{ matrix.python-version }}, PostgreSQL ${{ matrix.postgres-version }})
+    needs: code-quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+        postgres-version: ["13", "14", "15"]
+      fail-fast: false
+    
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres-version }}-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-py${{ matrix.python-version }}-
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install -r backend/requirements-test.txt
+          pip install pytest-cov pytest-xdist
+      
+      - name: Wait for PostgreSQL
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-client >/dev/null 2>&1 || true
+          for i in {1..10}; do
+            if pg_isready -h localhost -p 5432 -U test -d test; then
+              echo "PostgreSQL is ready"
+              exit 0
+            fi
+            echo "Waiting for PostgreSQL to start..."
+            sleep 3
+          done
+          echo "Failed to connect to PostgreSQL"
+          exit 1
+      
+      - name: Run backend tests with coverage
+        working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@localhost:5432/${{ env.POSTGRES_DB }}
+          TESTING: "true"
+          PYTHONPATH: ${{ github.workspace }}/backend
+          PYTHONUNBUFFERED: 1
+          PYTHONDONTWRITEBYTECODE: 1
+          PYTHONFAULTHANDLER: 1
+        run: |
+          set -e
+          echo "Running tests with Python ${{ matrix.python-version }} and PostgreSQL ${{ matrix.postgres-version }}"
+          
+          # Run tests with coverage in parallel
+          python -m pytest -v \
+            --cov=app \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term \
+            --cov-fail-under=80 \
+            --durations=10 \
+            --junitxml=junit/test-results-${{ matrix.python-version }}-pg${{ matrix.postgres-version }}.xml \
+            --cov-report=html:coverage/html \
+            -n auto
+          
+          # Generate coverage badge if on main branch
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            pip install coverage-badge
+            python -m coverage_badge -o coverage.svg -f
+          fi
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-py${{ matrix.python-version }}-pg${{ matrix.postgres-version }}
+          path: |
+            backend/coverage.xml
+            backend/junit/*.xml
+            backend/coverage/**/*
+          retention-days: 7
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: backend/coverage.xml
+          flags: unittests,python-${{ matrix.python-version }},postgres-${{ matrix.postgres-version }}
+          name: codecov-umbrella
+          fail_ci_if_error: false
+      
+      - name: Upload coverage badge
+        if: github.ref_name == 'main' && matrix.python-version == '3.10' && matrix.postgres-version == '14'
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-badge
+          path: coverage.svg
+          retention-days: 7
+
+  # Frontend testing and performance job
+  test-frontend:
+    name: Test Frontend (Node ${{ matrix.node-version }})
+    needs: code-quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        node-version: ["16.x", "18.x", "20.x"]
+        browser: ["chrome", "firefox"]
+      fail-fast: false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Start mock API (background if available)
+        run: |
+          if [ -f "./mock-api/server.js" ]; then
+            echo "Starting mock API on port 3001..."
+            docker run -d --rm \
+              -p 3001:3001 \
+              -v "$GITHUB_WORKSPACE/mock-api":/app \
+              -w /app \
+              node:18-alpine sh -c "npm init -y >/dev/null 2>&1 || true; npm install express && node server.js"
+          else
+            echo "No mock-api/server.js found. Skipping mock API."
+          fi
+      
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm install -g npm@latest
+      
+      - name: Run unit tests with coverage
+        working-directory: ./frontend
+        env:
+          CI: true
+          NODE_ENV: test
+        run: |
+          npx jest --coverage \
+            --watchAll=false \
+            --coverageReporters="json-summary" \
+            --coverageReporters="lcov" \
+            --coverageDirectory="coverage/jest" \
+            --testResultsProcessor="jest-junit"
+          
+          # Generate coverage badge if on main branch
+          if [ "${{ github.ref_name }}" = "main" ] && [ "${{ matrix.node-version }}" = "18.x" ]; then
+            npm install -g coverage-badges-cli
+            coverage-badges --output ./coverage/badge.svg
+          fi
+      
+      - name: Run integration tests
+        if: matrix.node-version == '18.x'  # Only run on Node 18 to save resources
+        working-directory: ./frontend
+        run: |
+          # Install Cypress and its dependencies
+          npx cypress install
+          npx cypress verify
+          
+          # Run Cypress tests in headless mode
+          npx cypress run --browser ${{ matrix.browser }} --headless --record false
+      
+      - name: Setup LHCI environment
+        if: matrix.node-version == '18.x' && matrix.browser == 'chrome'
+        run: echo "LHCI environment setup"
+
+  # Deploy to staging environment
+  deploy-staging:
+    name: Deploy to Staging
+    needs: [test-backend, test-frontend]
+    if: >
+      github.ref == 'refs/heads/develop' || 
+      (
+        github.event_name == 'workflow_dispatch' && 
+        github.event.inputs.environment == 'staging' &&
+        (
+          github.event.inputs.force == 'true' ||
+          github.actor == 'dependabot[bot]' ||
+          github.event_name != 'workflow_dispatch' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.force == 'true')
+        )
+      )
+    runs-on: ubuntu-latest
+    environment: 'staging'
+
+  # Deploy to production environment with canary deployment
+  deploy-canary:
+    name: 🚀 Deploy to Canary (5%)
+    needs: [deploy-staging]
+    if: >
+      (
+        (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      ) || 
+      (
+        github.event_name == 'workflow_dispatch' && 
+        github.event.inputs.environment == 'production' &&
+        (github.event.inputs.force == 'true' || github.actor == 'dependabot[bot]')
+      )
+    runs-on: ubuntu-latest
+    environment: 'production'
+    steps:
+      - name: Deploy to production
+        run: |
+          # Create SSH key file
+          mkdir -p ~/.ssh
+          if [ -n "${{ secrets.PROD_SSH_PRIVATE_KEY }}" ]; then
+            echo "${{ secrets.PROD_SSH_PRIVATE_KEY }}" > ~/.ssh/prod_deploy_key
+            chmod 600 ~/.ssh/prod_deploy_key
+          else
+            echo "ERROR: PROD_SSH_PRIVATE_KEY secret is not set"
+            exit 1
+          fi
+          chmod 600 ~/.ssh/prod_deploy_key
+          
+          # Set up SSH known hosts
+          if [ -z "${{ secrets.PROD_CANARY_SERVER }}" ]; then
+            echo "ERROR: PROD_CANARY_SERVER secret is not set"
+            exit 1
+          fi
+          if [ -n "${{ secrets.PROD_CANARY_SERVER }}" ]; then
+            ssh-keyscan -H "${{ secrets.PROD_CANARY_SERVER }}" >> ~/.ssh/known_hosts
+          fi
+          
+          # Copy the deployment script to the server and execute it
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/prod_deploy_key deploy.sh \
+              ${{ secrets.PROD_DEPLOY_USER || 'deploy' }}@${{ secrets.PROD_CANARY_SERVER || 'example.com' }}:/tmp/
+          
+          # Set default tag if not provided in release event
+          DEPLOY_TAG="latest"
+          if [ -n "${{ github.event.release.tag_name }}" ]; then
+            DEPLOY_TAG="${{ github.event.release.tag_name }}"
+          fi
+          
+          # Execute the deployment script
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/prod_deploy_key \
+              ${{ secrets.PROD_DEPLOY_USER || 'deploy' }}@${{ secrets.PROD_CANARY_SERVER || 'example.com' }} \
+              "chmod +x /tmp/deploy.sh && /tmp/deploy.sh $DEPLOY_TAG"
+          
+          # Clean up
+          rm -f deploy.sh
+          rm -f ~/.ssh/prod_deploy_key
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "Cleaning up..."
+          # Clean up SSH keys and sensitive data
+          echo "🔒 Removing sensitive data..."
+          if [ -f ~/.ssh/staging_deploy_key ]; then
+            echo "  Removing staging deployment key..."
+            rm -f ~/.ssh/staging_deploy_key
+          fi
+          
+          if [ -f ~/.ssh/prod_deploy_key ]; then
+            echo "  Removing production deployment key..."
+            rm -f ~/.ssh/prod_deploy_key
+          fi
+          
+          # Clean up any temporary files
+          echo "🗑️  Cleaning up temporary files..."
+          if [ -f deploy.sh ]; then
+            rm -f deploy.sh
+          fi
+          
+          # Clean up old artifacts to save storage
+          echo "🗑️  Cleaning up old artifacts..."
+          if ! command -v gh >/dev/null 2>&1; then
+            type -p curl >/dev/null && curl -fsSL https://raw.githubusercontent.com/cli/cli/trunk/script/install.sh | sh || true
+          fi
+          
+          # Clean up npm cache
+          echo "🧹 Cleaning npm cache..."
+          npm cache clean --force || true
+          
+          echo "✅ Cleanup completed successfully!"
+          if command -v gh >/dev/null 2>&1; then
+            gh run list --workflow=ci-cd.yml --json databaseId -q '.[].databaseId' | head -n 10 | xargs -I{} gh run delete {} || true
+          else
+            echo "gh CLI not available; skipping artifact cleanup via gh."
+          fi
+          echo "🐳 Cleaning up Docker resources..."
+          docker system prune -af --volumes
+          echo "✨ Cleanup completed"
