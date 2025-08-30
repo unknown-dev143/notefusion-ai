@@ -6,7 +6,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.sql import func
-from .database import Base
+from .database_clean import Base
 import uuid
 from pydantic import constr
 

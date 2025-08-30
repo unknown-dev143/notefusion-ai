@@ -5,7 +5,7 @@ from sqlalchemy import Column, String, Text, Enum as SQLEnum, JSON, DateTime, Fo
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
-from .database import Base
+from .database_clean import Base
 
 # Import the TaskStatus and TaskType enums
 class TaskStatus(str, Enum):

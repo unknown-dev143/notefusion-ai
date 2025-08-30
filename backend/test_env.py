@@ -1,49 +1,62 @@
-<<<<<<< HEAD
-import sys  
-print(sys.executable)  
-=======
 import sys
-import os
-import platform
-import site
+import subprocess
 
-def print_divider():
-    print("\n" + "="*80 + "\n")
+def check_python_version():
+    print(f"Python version: {sys.version}")
+    if sys.version_info < (3, 7):
+        print("Error: Python 3.7 or higher is required")
+        return False
+    return True
 
-print("Python Environment Information:")
-print_divider()
-print(f"Python Executable: {sys.executable}")
-print(f"Python Version: {platform.python_version()}")
-print(f"Platform: {platform.platform()}")
+def check_package(package_name):
+    try:
+        __import__(package_name)
+        print(f"✅ {package_name} is installed")
+        return True
+    except ImportError:
+        print(f"❌ {package_name} is NOT installed")
+        return False
 
-print_divider()
-print("Python Path:")
-for p in sys.path:
-    print(f"  - {p}")
+def run_fastapi_test():
+    print("\nTesting FastAPI...")
+    test_app = """
+from fastapi import FastAPI
+import uvicorn
 
-print_divider()
-print("Site Packages:")
-for path in site.getsitepackages():
-    print(f"  - {path}")
+app = FastAPI()
 
-print_divider()
-print("Testing Basic Imports:")
+@app.get("/")
+async def read_root():
+    return {"message": "Test successful! FastAPI is working."}
 
-try:
-    import numpy
-    print("✅ numpy:", numpy.__version__)
-except ImportError as e:
-    print("❌ numpy import failed:", str(e))
+if __name__ == "__main__":
+    print("Starting test server on http://127.0.0.1:5000")
+    uvicorn.run("__main__:app", host="0.0.0.0", port=5000, log_level="info")
+"""
+    with open("test_fastapi.py", "w") as f:
+        f.write(test_app)
+    
+    print("Starting test server...")
+    process = subprocess.Popen(
+        [sys.executable, "test_fastapi.py"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    
+    try:
+        print("Test server started. Press Ctrl+C to stop.")
+        process.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        print("\nTest server is running. Please open http://127.0.0.1:5000 in your browser.")
+        print("Press Enter to stop the server...")
+        input()
+    finally:
+        process.terminate()
+        print("Test server stopped.")
 
-try:
-    import moviepy
-    print("✅ moviepy:", moviepy.__version__)
-except ImportError as e:
-    print("❌ moviepy import failed:", str(e))
-
-try:
-    from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
-    print("✅ moviepy.editor imports successful")
-except ImportError as e:
-    print("❌ moviepy.editor import failed:", str(e))
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+if __name__ == "__main__":
+    print("Checking environment...")
+    if check_python_version():
+        check_package("fastapi")
+        check_package("uvicorn")
+        run_fastapi_test()

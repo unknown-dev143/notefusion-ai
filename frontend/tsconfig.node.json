@@ -1,64 +1,10 @@
 {
-<<<<<<< HEAD
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    /* Base Options */
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true,
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "target": "ES2020",
-    "lib": ["ES2020"],
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": false,
-    "outDir": "./dist",
-    "rootDir": ".",
-    "allowJs": false,
-    
-    /* Strict Type-Checking */
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "useUnknownInCatchVariables": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "exactOptionalPropertyTypes": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noPropertyAccessFromIndexSignature": true,
-    
-    /* Module Resolution */
-    "typeRoots": [
-      "./node_modules/@types"
-    ],
-    "types": ["node", "vite/client"],
-    "skipLibCheck": true
-  },
-  "include": ["vite.config.ts"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.spec.ts",
-    "**/*.test.ts"
-  ]
-=======
   "compilerOptions": {
     "composite": true,
+    "skipLibCheck": true,
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true
   },
   "include": ["vite.config.ts"]
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 }

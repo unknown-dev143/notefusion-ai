@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """Main application module for NoteFusion AI backend."""
 import logging
 import time

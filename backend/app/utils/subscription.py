@@ -11,7 +11,7 @@ from ..models import (
     SubscriptionStatus,
     get_subscription_features
 )
-from ..models.database import get_db
+from ..models.database_clean import get_db
 
 async def get_user_subscription(user_id: int, db: Session) -> Optional[Subscription]:
     """

@@ -6,17 +6,13 @@ import sys
 from sqlalchemy import engine_from_config, pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine
-<<<<<<< HEAD
 from sqlalchemy.future import Connection as SAConnection
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 # Add the app directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 # Import your SQLAlchemy models here
 from app.models import Base
-<<<<<<< HEAD
 from app.config import settings
 
 # Import all models to ensure they are registered with SQLAlchemy
@@ -26,16 +22,10 @@ from app.models.task import Task, TaskStatus, TaskType
 from app.models.subscription_models import Subscription, Invoice, SubscriptionTier, SubscriptionStatus
 from app.models.note import Note, Attachment, Folder
 from app.models.flashcard import Flashcard
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 from alembic import context
-
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
-config = context.config
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -51,14 +41,6 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-<<<<<<< HEAD
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
-
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -85,19 +67,8 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-<<<<<<< HEAD
-    context.configure(
-        connection=connection, 
-        target_metadata=target_metadata,
-        compare_type=True,
-        compare_server_default=True,
-        include_schemas=True,
-        render_as_batch=True  # For SQLite support
-    )
-=======
     """Run migrations in 'online' mode."""
     context.configure(connection=connection, target_metadata=target_metadata)
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
     with context.begin_transaction():
         context.run_migrations()
@@ -105,46 +76,37 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-<<<<<<< HEAD
     # Get the database URL from settings
-    config.set_main_option('sqlalchemy.url', settings.DATABASE_URL)
+    from app.config import settings
+    config.set_main_option('sqlalchemy.url', str(settings.DATABASE_URL))
     
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
-
-    if isinstance(connectable, AsyncEngine):
-        asyncio.run(run_async_migrations())
-    else:
-        with connectable.connect() as connection:
-            context.configure(
-                connection=connection, 
-                target_metadata=target_metadata,
-                compare_type=True,
-                compare_server_default=True,
-                include_schemas=True,
-                render_as_batch=True  # For SQLite support
-            )
-
-            with context.begin_transaction():
-                context.run_migrations()
-
-async def run_async_migrations():
-    """Run migrations with async engine."""
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     connectable = AsyncEngine(
         engine_from_config(
             config.get_section(config.config_ini_section, {}),
             prefix="sqlalchemy.",
             poolclass=pool.NullPool,
-<<<<<<< HEAD
             future=True
-=======
-            future=True,
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+        )
+    )
+
+    async with connectable.connect() as connection:
+        await connection.run_sync(do_run_migrations)
+
+    await connectable.dispose()
+
+
+async def run_async_migrations():
+    """Run migrations with async engine."""
+    # Get the database URL from settings
+    from app.config import settings
+    config.set_main_option('sqlalchemy.url', str(settings.DATABASE_URL))
+    
+    connectable = AsyncEngine(
+        engine_from_config(
+            config.get_section(config.config_ini_section, {}),
+            prefix="sqlalchemy.",
+            poolclass=pool.NullPool,
+            future=True
         )
     )
 

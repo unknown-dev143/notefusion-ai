@@ -1,0 +1,69 @@
+# Core
+fastapi>=0.95.2,<1.0.0
+uvicorn>=0.22.0,<1.0.0
+python-dotenv>=1.0.0,<2.0.0
+
+# Database
+sqlalchemy>=2.0.0,<3.0.0
+alembic>=1.10.3,<2.0.0
+psycopg2-binary>=2.9.6,<3.0.0
+aiosqlite>=0.19.0,<1.0.0
+
+# Authentication & Security
+passlib[bcrypt]>=1.7.4,<2.0.0
+python-jose[cryptography]>=3.3.0,<4.0.0
+python-multipart>=0.0.6,<1.0.0
+email-validator>=2.0.0,<3.0.0
+pydantic[email]>=1.10.7,<2.0.0
+python-json-logger>=2.0.7,<3.0.0
+python-keycloak>=3.5.0,<4.0.0
+
+# Rate Limiting & Security Headers
+slowapi>=0.1.8,<1.0.0
+python-json-logger>=2.0.7,<3.0.0
+python-keycloak>=3.5.0,<4.0.0
+
+# Export Functionality
+weasyprint>=60.0,<61.0  # For PDF export
+markdown2>=2.4.9,<3.0.0  # For Markdown to HTML conversion
+jinja2>=3.1.2,<4.0.0  # For HTML templates
+
+# OpenAI Integration
+openai>=0.27.8,<1.0.0
+
+# Audio Processing
+pydub>=0.25.1,<1.0.0
+whisper-openai>=1.1.10,<2.0.0
+
+# Redis for rate limiting and caching
+redis>=4.5.4,<5.0.0
+
+# Cryptography
+cryptography>=40.0.0,<42.0.0
+
+# Testing
+pytest>=7.3.1,<8.0.0
+pytest-cov>=4.0.0,<5.0.0
+pytest-asyncio>=0.21.0,<1.0.0
+httpx>=0.24.0,<1.0.0
+
+# Development
+black>=23.3.0,<24.0.0
+isort>=5.12.0,<6.0.0
+mypy>=1.2.0,<2.0.0
+flake8>=6.0.0,<7.0.0
+
+# Monitoring and Logging
+sentry-sdk>=1.22.0,<2.0.0
+python-json-logger>=2.0.7,<3.0.0
+
+# Security
+bandit>=1.7.4,<2.0.0
+safety>=2.3.5,<3.0.0
+
+# API Security
+python-keycloak>=3.5.0,<4.0.0
+python-jose[cryptography]>=3.3.0,<4.0.0
+
+# WebSocket Security
+websockets>=11.0.3,<12.0.0

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any, ClassVar
-from pydantic import BaseModel, Field, validator, root_validator, conint, confloat
+from pydantic import BaseModel, Field, validator, root_validator, conint, confloat, model_validator
 import re
 import uuid
 
@@ -196,7 +196,7 @@ class FlashcardResponse(FlashcardBase):
         }
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class FlashcardStats(BaseSchema):
     """Schema for flashcard statistics.
@@ -234,7 +234,7 @@ class FlashcardStats(BaseSchema):
         }
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class FlashcardBatch(BaseSchema):
     """Schema for creating multiple flashcards at once.
@@ -255,11 +255,13 @@ class FlashcardBatch(BaseSchema):
         description="Tags to apply to all flashcards in the batch"
     )
     
-    @root_validator
-    def validate_batch_size(cls, values):
-        if len(values.get('flashcards', [])) > cls.MAX_BATCH_SIZE:
-            raise ValueError(f'Cannot create more than {cls.MAX_BATCH_SIZE} flashcards at once')
-        return values
+    @model_validator(mode='after')
+    def validate_batch_size(self):
+        if len(self.flashcards) > self.MAX_BATCH_SIZE:
+            raise ValueError(
+                f"Batch size exceeds maximum of {self.MAX_BATCH_SIZE} flashcards"
+        )
+        return self
     
     @validator('default_tags', each_item=True)
     def validate_default_tags(cls, v):

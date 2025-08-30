@@ -1,0 +1,103 @@
+apiVersion: 1
+
+# List of rule groups to import
+# Each group has a name, interval, and list of rules
+groups:
+  - name: NoteFusion Alerts
+    interval: 1m
+    rules:
+      # High error rate alert
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{job=~"notefusion-.*", status=~"5.."}[5m])) by (job, status, endpoint)
+            /
+            sum(rate(http_requests_total{job=~"notefusion-.*"}[5m])) by (job, status, endpoint)
+            * 100 > 5
+          )
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.job }}"
+          description: "Error rate is {{ $value | humanize }}% for endpoint {{ $labels.endpoint }} (status: {{ $labels.status }})"
+
+      # High latency alert
+      - alert: HighLatency
+        expr: |
+          (
+            rate(http_request_duration_seconds_sum{job=~"notefusion-.*"}[5m])
+            /
+            rate(http_request_duration_seconds_count{job=~"notefusion-.*"}[5m])
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency on {{ $labels.job }}"
+          description: "The request latency is high ({{ $value | humanize }}s) for endpoint {{ $labels.endpoint }}"
+
+      # High CPU usage alert
+      - alert: HighCPUUsage
+        expr: |
+          100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value | humanize }}%"
+
+      # High memory usage alert
+      - alert: HighMemoryUsage
+        expr: |
+          (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | humanize }}%"
+
+      # High disk usage alert
+      - alert: HighDiskUsage
+        expr: |
+          (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value | humanize }}%"
+
+      # Service down alert
+      - alert: ServiceDown
+        expr: up{job=~"notefusion-.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} has been down for more than 1 minute"
+
+      # High rate of authentication failures
+      - alert: HighAuthFailures
+        expr: |
+          rate(authentication_failures_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate of authentication failures"
+          description: "{{ $value | humanize }} authentication failures per second"
+
+      # Rate limit exceeded
+      - alert: RateLimitExceeded
+        expr: |
+          rate(rate_limit_exceeded_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Rate limit exceeded"
+          description: "Rate limit has been exceeded ({{ $value | humanize }} times per second)"

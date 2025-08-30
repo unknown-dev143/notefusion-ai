@@ -1,9 +1,10 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Enum as SQLEnum, JSON
-from sqlalchemy.orm import relationship
-from .database import Base
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy.sql import func
+from .database_clean import Base
 
 class SubscriptionTier(str, Enum):
     FREE = "free"
@@ -23,44 +24,51 @@ class SubscriptionStatus(str, Enum):
 
 class Subscription(Base):
     __tablename__ = "subscriptions"
+    __allow_unmapped__ = True  # Allow unmapped attributes to avoid Mapped[] requirement
     
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
-    tier = Column(SQLEnum(SubscriptionTier), default=SubscriptionTier.FREE, nullable=False)
-    status = Column(SQLEnum(SubscriptionStatus), default=SubscriptionTier.FREE, nullable=False)
-    current_period_start = Column(DateTime, nullable=True)
-    current_period_end = Column(DateTime, nullable=True)
-    cancel_at_period_end = Column(Boolean, default=False)
-    payment_method_id = Column(String, nullable=True)
-    subscription_id = Column(String, unique=True, nullable=True)  # ID from payment provider
-    metadata = Column(JSON, default={})
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True, nullable=False)
+    tier: Mapped[SubscriptionTier] = mapped_column(SQLEnum(SubscriptionTier), default=SubscriptionTier.FREE, nullable=False)
+    status: Mapped[SubscriptionStatus] = mapped_column(SQLEnum(SubscriptionStatus), default=SubscriptionStatus.INCOMPLETE, nullable=False)
+    current_period_start: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    current_period_end: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    cancel_at_period_end: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    payment_method_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    subscription_id: Mapped[Optional[str]] = mapped_column(String(255), unique=True, nullable=True)  # ID from payment provider
+    subscription_metadata: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict, name="metadata", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, 
+        server_default=func.now(), 
+        onupdate=func.now(),
+        nullable=False
+    )
     
     # Relationships
-    user = relationship("User", back_populates="subscription")
-    invoices = relationship("Invoice", back_populates="subscription")
+    user: Mapped[Any] = relationship("User", back_populates="subscription")
+    invoices: Mapped[List["Invoice"]] = relationship("Invoice", back_populates="invoices", cascade="all, delete-orphan")
 
 class Invoice(Base):
     __tablename__ = "invoices"
+    __allow_unmapped__ = True  # Allow unmapped attributes to avoid Mapped[] requirement
     
-    id = Column(Integer, primary_key=True, index=True)
-    subscription_id = Column(Integer, ForeignKey("subscriptions.id"), nullable=False)
-    amount = Column(Integer, nullable=False)  # in cents
-    currency = Column(String, default="usd")
-    invoice_id = Column(String, unique=True, nullable=True)  # ID from payment provider
-    payment_intent_id = Column(String, nullable=True)
-    status = Column(String, nullable=False)
-    paid = Column(Boolean, default=False)
-    receipt_url = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    paid_at = Column(DateTime, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    subscription_id: Mapped[int] = mapped_column(ForeignKey("subscriptions.id"), nullable=False)
+    amount: Mapped[int] = mapped_column(Integer, nullable=False)  # in cents
+    currency: Mapped[str] = mapped_column(String(3), default="usd", nullable=False)
+    invoice_id: Mapped[Optional[str]] = mapped_column(String(255), unique=True, nullable=True)
+    payment_intent_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False)
+    paid: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    receipt_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
+    paid_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Relationships
-    subscription = relationship("Subscription", back_populates="invoices")
+    subscription: Mapped[Any] = relationship("Subscription", back_populates="invoices")
 
 # Update the User model to include subscription relationship
-from .user import User as UserModel
+from .user_clean import User as UserModel
 UserModel.subscription = relationship("Subscription", back_populates="user", uselist=False)
 
 # Subscription features and limits

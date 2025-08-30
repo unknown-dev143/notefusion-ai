@@ -1,11 +1,11 @@
 from enum import Enum
 from datetime import datetime
-from typing import Optional, List, TYPE_CHECKING
+from typing import Optional, List, TYPE_CHECKING, Any, Dict
 from sqlalchemy import String, Boolean, DateTime, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.sql import func
 
-from .database import Base
+from .database_clean import Base
 
 class AIProvider(str, Enum):
     OPENAI = "openai"
@@ -39,7 +39,7 @@ class DBAIModel(Base):
     )
     
     # Relationships
-    user_settings: Mapped[List["UserAIModelSettings"]] = relationship(
+    user_settings: Mapped[Any] = relationship(
         "UserAIModelSettings", 
         back_populates="ai_model",
         cascade="all, delete-orphan"
@@ -47,6 +47,7 @@ class DBAIModel(Base):
 
 class UserAIModelSettings(Base):
     __tablename__ = "user_ai_model_settings"
+    __allow_unmapped__ = True  # Allow unmapped attributes to avoid Mapped[] requirement
     
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
@@ -62,8 +63,8 @@ class UserAIModelSettings(Base):
     )
     
     # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="ai_model_settings")
-    ai_model: Mapped[DBAIModel] = relationship(
+    user: Mapped[Any] = relationship("User", back_populates="ai_model_settings")
+    ai_model: Mapped[Any] = relationship(
         "DBAIModel", 
         back_populates="user_settings",
         lazy="joined"

@@ -2,27 +2,30 @@ import sys
 import os
 
 # Add the current directory to the Python path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-print("Testing imports...")
-
+# Try to import the required modules
 try:
-    from app.models.database import SessionLocal
-    print("✅ Successfully imported SessionLocal from app.models.database")
-    
-    from app.models.task import Task, TaskStatus, TaskType
-    print("✅ Successfully imported Task models")
-    
-    from app.schemas.video import VideoGenerationRequest
-    print("✅ Successfully imported VideoGenerationRequest")
-    
-    from app.services.video.service import VideoGenerationService
-    print("✅ Successfully imported VideoGenerationService")
-    
-    print("\n✅ All imports successful!")
-    
+    from app.main_clean import app
+    print("✅ Successfully imported app from main_clean")
+    print(f"App title: {app.title}")
 except ImportError as e:
-    print(f"\n❌ Import error: {e}")
+    print(f"❌ Error importing: {e}")
     print("\nCurrent Python path:")
     for path in sys.path:
-        print(f"  - {path}")
+        print(f"- {path}")
+    
+    print("\nCurrent directory:")
+    print(f"- {os.getcwd()}")
+    
+    print("\nDirectory contents:")
+    for item in os.listdir():
+        print(f"- {item}")
+        
+    print("\nApp directory contents:")
+    app_dir = os.path.join(os.getcwd(), 'app')
+    if os.path.exists(app_dir):
+        for item in os.listdir(app_dir):
+            print(f"- {item}")
+    else:
+        print(f"App directory not found at: {app_dir}")

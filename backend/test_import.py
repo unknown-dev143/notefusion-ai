@@ -1,43 +1,26 @@
 import sys
 import os
 
-print("Python version:", sys.version)
-print("\nPython path:")
-for p in sys.path:
-    print(f"  {p}")
+# Add the current directory to Python path
+sys.path.insert(0, os.path.abspath('.'))
 
-print("\nTrying to import moviepy...")
 try:
-    import moviepy.editor
-    print("✅ Successfully imported moviepy.editor")
+    from app.main_clean import app
+    print("✅ Successfully imported main_clean!")
+    print(f"App title: {app.title}")
+except ImportError as e:
+    print(f"❌ Import error: {e}")
+    print("\nCurrent working directory:", os.getcwd())
+    print("\nPython path:")
+    for p in sys.path:
+        print(f"- {p}")
     
-    print("\nMoviePy version:", moviepy.__version__)
-    
-    # Test basic functionality
-    from moviepy.editor import TextClip
-    print("✅ Successfully imported TextClip from moviepy.editor")
-    
-except Exception as e:
-    print("❌ Error importing moviepy:")
-    print(str(e))
-    
-    # Try to import the module directly
-    try:
-        import moviepy
-        print("\nBut moviepy package is installed at:", moviepy.__file__)
-    except ImportError as ie:
-        print("\nCould not import moviepy at all:", str(ie))
-    
-    # Check if the module exists in site-packages
-    print("\nChecking site-packages...")
-    import site
-    for path in site.getsitepackages():
-        print(f"\nChecking {path}:")
-        if os.path.exists(path) and 'moviepy' in os.listdir(path):
-            print(f"  ✅ Found moviepy in {path}")
-        else:
-            print(f"  ❌ moviepy not found in {path}")
-    
-    # Check if the module is in the current directory
-    if os.path.exists('moviepy'):
-        print("\n⚠️ Found moviepy in current directory, which might cause conflicts")
+    print("\nDirectory contents:")
+    for item in os.listdir('.'):
+        print(f"- {item}")
+        
+    print("\nApp directory contents:")
+    app_dir = os.path.join(os.getcwd(), 'app')
+    if os.path.exists(app_dir):
+        for item in os.listdir(app_dir):
+            print(f"- {item}")

@@ -13,6 +13,10 @@ volumes:
   redis_data:
   uploads:
   node_modules:
+  prometheus_data:
+  grafana_data:
+  pgadmin_data:
+  mailhog_data:
 
 services:
   # Database Service
@@ -78,6 +82,13 @@ services:
       - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000
       - CORS_ORIGINS=http://localhost:3000,http://localhost:8000
       - FRONTEND_URL=http://localhost:3000
+      # Email settings for MailHog
+      - EMAILS_ENABLED=true
+      - SMTP_TLS=false
+      - SMTP_PORT=1025
+      - SMTP_HOST=mailhog
+      - SMTP_USER=test@example.com
+      - SMTP_PASSWORD=test
     volumes:
       - ./backend:/app
       - /app/venv
@@ -193,6 +204,109 @@ services:
   #   restart: unless-stopped
   #     - app-network
   #   restart: unless-stopped
+
+  # Monitoring Services
+  # Prometheus - Metrics collection and alerting
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    networks:
+      - app-network
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  # Grafana - Visualization and dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - app-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  # Node Exporter - Host metrics
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    command:
+      - '--path.rootfs=/host'
+    pid: host
+    volumes:
+      - '/:/host:ro,rslave'
+    ports:
+      - "9100:9100"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # cAdvisor - Container metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Redis Exporter
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-your-redis-password}
+    ports:
+      - "9121:9121"
+    networks:
+      - app-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # Postgres Exporter
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER:-notefusion}:${POSTGRES_PASSWORD:-notefusion123}@db:5432/${POSTGRES_DB:-notefusion}?sslmode=disable
+    ports:
+      - "9187:9187"
+    networks:
+      - app-network
+    depends_on:
+      - db
+    restart: unless-stopped
 
   # Traefik Reverse Proxy (optional - for production)
   # traefik:
