@@ -463,4 +463,4 @@ docker-compose.override.yml
 **/__pycache__/
 *.sqlite3
 *.db
-*.sql
+*.sqltest_openai_curl.bat
