@@ -1,53 +1,72 @@
-"""Database models package"""
+"""Database models package."""
+from typing import AsyncGenerator, Optional
+from sqlalchemy.ext.asyncio import AsyncSession
 
-# Import Base first to avoid circular imports
-from .database import Base
+# Import Base and Session first to avoid circular imports
+from .database_clean import Base, SessionLocal, engine, async_session_factory, metadata
 
 # Import all models to ensure they are registered with SQLAlchemy
 # The order matters to avoid circular imports
-from .user import User
+from .user_clean import User
 from .ai_models import DBAIModel, UserAIModelSettings, AIProvider, AIModelStatus
 from .task import Task, TaskStatus, TaskType
-<<<<<<< HEAD
 from .user_task import UserTask, TaskStatus as UserTaskStatus, TaskPriority
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-from .subscription_models import Subscription, Invoice, SubscriptionTier, SubscriptionStatus
-from .subscription import get_subscription_features
-
-# Import remaining database models after all models are defined
-from .database import Session, Transcript, Diagram, NotesVersion, PracticeQuestion
-<<<<<<< HEAD
+from .subscription import (
+    Subscription, 
+    Invoice, 
+    SubscriptionTier, 
+    SubscriptionStatus, 
+    get_subscription_features
+)
 from .flashcard import Flashcard
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
+# Re-export common types and models
 __all__ = [
     'Base',
-    'Session',
-<<<<<<< HEAD
-    'UserTask',
-    'UserTaskStatus',
-    'TaskPriority',
-    'Transcript',
-    'Flashcard',
-=======
-    'Transcript',
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-    'Diagram',
-    'NotesVersion',
-    'PracticeQuestion',
+    'metadata',
     'User',
-    'DBAIModel',
-    'UserAIModelSettings',
-    'AIProvider',
-    'AIModelStatus',
     'Task',
     'TaskStatus',
     'TaskType',
+    'UserTask',
+    'UserTaskStatus',
+    'TaskPriority',
     'Subscription',
     'Invoice',
     'SubscriptionTier',
     'SubscriptionStatus',
+    'DBAIModel',
+    'UserAIModelSettings',
+    'AIProvider',
+    'AIModelStatus',
+    'Flashcard',
     'get_subscription_features',
+    'get_db',
+    'SessionLocal',
+    'async_session_factory',
+    'engine'
 ]
+
+# Dependency to get DB session
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """
+    Dependency that provides a database session.
+    
+    Yields:
+        AsyncSession: An async database session
+        
+    Example:
+        ```python
+        async with get_db() as db:
+            # Use db session here
+            result = await db.execute(select(User).where(User.id == user_id))
+            user = result.scalar_one_or_none()
+        ```
+    """
+    async with SessionLocal() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise

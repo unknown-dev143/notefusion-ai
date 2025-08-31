@@ -1,7 +1,11 @@
 """NoteFusion AI Backend Package."""
 
 # Import models to ensure they are registered with SQLAlchemy
-from .models import database, user, ai_models, task, subscription_models
+from .models import (
+    Base, SessionLocal, engine, async_session_factory, metadata,
+    User, Task, Subscription, Invoice, DBAIModel, UserAIModelSettings, Flashcard,
+    get_db
+)
 
 # Import schemas
 from .schemas import ai_models as ai_models_schemas, video, subscription as subscription_schemas
@@ -14,11 +18,9 @@ from .utils import subscription as subscription_utils
 
 # Make these available when importing from app
 __all__ = [
-    'database',
-    'user',
-    'ai_models',
-    'task',
-    'subscription_models',
+    'Base', 'SessionLocal', 'engine', 'async_session_factory', 'metadata',
+    'User', 'Task', 'Subscription', 'Invoice', 'DBAIModel', 'UserAIModelSettings', 'Flashcard',
+    'get_db',
     'ai_models_schemas',
     'video',
     'subscription_schemas',

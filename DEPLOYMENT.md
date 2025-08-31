@@ -1,12 +1,51 @@
 # NoteFusion AI - Deployment Guide
 
-## Prerequisites
+## Deployment Options
 
+### Option 1: Railway.app (Recommended for Production)
+
+#### Prerequisites
+1. GitHub account
+2. Railway.app account (free tier available)
+3. Railway CLI (optional)
+
+#### Deployment Steps
+
+1. **Fork the Repository**
+   - Fork the repository to your GitHub account
+
+2. **Deploy to Railway**
+   - Go to [Railway.app](https://railway.app/)
+   - Click "New Project" and select "Deploy from GitHub repo"
+   - Select your forked repository
+   - Railway will automatically detect the project type and start building
+
+3. **Configure Environment Variables**
+   - Go to the "Variables" tab in your Railway project
+   - Add all variables from `railway.template.env`
+   - Set `ENVIRONMENT=production`
+   - Add your database credentials and other secrets
+
+4. **Set Up Database**
+   - In the Railway dashboard, go to the "Database" tab
+   - Click "Create PostgreSQL"
+   - The `DATABASE_URL` will be automatically added to your environment variables
+
+5. **Configure Domains**
+   - Go to the "Settings" tab
+   - Under "Custom Domains", add your domain or use the provided railway.app domain
+   - SSL will be automatically configured
+
+6. **Deploy**
+   - Push any changes to your GitHub repository to trigger a new deployment
+   - Monitor the deployment in the Railway dashboard
+
+### Option 2: Local Development with Docker
+
+#### Prerequisites
 1. Docker and Docker Compose installed
 2. At least 4GB of free RAM
 3. At least 2 CPU cores
-
-## Deployment Steps
 
 ### 1. Clone the Repository
 

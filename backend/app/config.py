@@ -1,41 +1,22 @@
-<<<<<<< HEAD
 """Application configuration with enhanced security settings."""
 import os
-from typing import Optional, List
+from typing import List, Optional, Union
 from pydantic import AnyHttpUrl, validator, SecretStr
-=======
-"""Application configuration."""
-import os
-from typing import Optional
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 from pydantic_settings import BaseSettings
 from pathlib import Path
 
 class Settings(BaseSettings):
     # Application settings
-<<<<<<< HEAD
     ENV: str = os.getenv("ENV", "development")
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
     
     # Security settings
-    SECRET_KEY: SecretStr = os.getenv("SECRET_KEY", "")
-    SECURITY_PASSWORD_SALT: str = os.getenv("SECURITY_PASSWORD_SALT", "")
-=======
-    ENV: str = "development"
-    DEBUG: bool = True
-    SECRET_KEY: str = "your-secret-key"  # Change this in production
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+    SECRET_KEY: SecretStr = os.getenv("SECRET_KEY", "your-secret-key")
+    SECURITY_PASSWORD_SALT: str = os.getenv("SECURITY_PASSWORD_SALT", "your-password-salt")
     
     # API settings
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "NoteFusion AI"
-    
-<<<<<<< HEAD
-    # CORS settings
-    CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:8000",
-    ]
     
     # Database settings
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./notefusion.db")
@@ -49,7 +30,7 @@ class Settings(BaseSettings):
     DB_ECHO: bool = os.getenv("DB_ECHO", "false").lower() == "true"
     
     # JWT settings
-    JWT_SECRET_KEY: SecretStr = os.getenv("JWT_SECRET_KEY", "")
+    JWT_SECRET_KEY: SecretStr = os.getenv("JWT_SECRET_KEY", "your-jwt-secret-key")
     JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24 hours
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "30"))  # 30 days
@@ -62,10 +43,12 @@ class Settings(BaseSettings):
     # Email settings
     EMAILS_ENABLED: bool = os.getenv("EMAILS_ENABLED", "false").lower() == "true"
     SMTP_TLS: bool = os.getenv("SMTP_TLS", "true").lower() == "true"
-    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
-    SMTP_HOST: str = os.getenv("SMTP_HOST", "")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "1025"))  # Default to MailHog port
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "mailhog")  # Default to mailhog service name
     SMTP_USER: str = os.getenv("SMTP_USER", "")
     SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+    EMAILS_FROM_EMAIL: str = os.getenv("EMAILS_FROM_EMAIL", "noreply@notefusion.ai")
+    EMAILS_FROM_NAME: str = os.getenv("EMAILS_FROM_NAME", "NoteFusion AI")
     
     # Security headers
     SECURE_HSTS_SECONDS: int = 31536000  # 1 year
@@ -76,8 +59,13 @@ class Settings(BaseSettings):
     CSRF_COOKIE_SECURE: bool = not DEBUG
     
     # CORS settings
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:8000",
+    ]
+    
     @validator("CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v):
+    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
         elif isinstance(v, (list, str)):
@@ -88,47 +76,10 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
-=======
-    # Database settings
-    DATABASE_URL: str = "sqlite+aiosqlite:///./notefusion.db"
-    TEST_DATABASE_URL: str = "sqlite+aiosqlite:///./test_notefusion.db"
-    
-    # Authentication settings
-    JWT_SECRET_KEY: str = "your-jwt-secret"  # Change this in production
-    JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30  # 30 days
-    JWT_VERIFICATION_TOKEN_EXPIRE_HOURS: int = 24  # 24 hours
-    JWT_PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hour
-    
-    # Email settings
-    EMAILS_ENABLED: bool = False
-    SMTP_TLS: bool = True
-    SMTP_PORT: int = 587
-    SMTP_HOST: str = ""
-    SMTP_USER: str = ""
-    SMTP_PASSWORD: str = ""
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-    CONTACT_EMAIL: str = "noreply@example.com"
-    EMAILS_FROM_EMAIL: str = "noreply@example.com"
-    EMAILS_FROM_NAME: str = "NoteFusion AI"
-    
-    # OpenAI settings
-    OPENAI_API_KEY: str = ""
-    
-<<<<<<< HEAD
+
     # Redis settings (for caching and Celery)
-    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://redis:6379/0")
     REDIS_CACHE_TTL: int = 300  # 5 minutes default cache TTL
-    
-    # CORS settings
-    CORS_ORIGINS: list = ["*"]
-    CORS_METHODS: list = ["*"]
-    CORS_HEADERS: list = ["*"]
-=======
-    # Redis settings (for Celery)
-    REDIS_URL: str = "redis://localhost:6379/0"
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     
     # File upload settings
     UPLOAD_FOLDER: str = str(Path(__file__).parent / "uploads")

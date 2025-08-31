@@ -1,184 +1,136 @@
-# NoteFusion AI Backend
+# NoteFusion AI - Backend
 
-This is the backend service for the NoteFusion AI application, built with FastAPI and SQLAlchemy.
+This is the backend service for NoteFusion AI, a modern note-taking application with AI-powered features.
+
+## Features
+
+- RESTful API with FastAPI
+- JWT Authentication
+- File uploads with support for various file types
+- Database migrations with Alembic
+- Rate limiting and security headers
+- Health check endpoints
+- CORS support
+- Structured logging
+- Docker support
 
 ## Prerequisites
 
-- Python 3.9+
-- Redis (for background tasks)
-- SQLite (for development, can be changed to PostgreSQL for production)
+- Python 3.10+
+- PostgreSQL 13+
+- Redis (for rate limiting and caching)
+- Docker and Docker Compose (optional)
 
-## Setup
+## Local Development
 
-1. **Clone the repository**
-<<<<<<< HEAD
+### Setup
 
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+1. Clone the repository:
    ```bash
    git clone https://github.com/yourusername/notefusion-ai.git
    cd notefusion-ai/backend
    ```
 
-2. **Create a virtual environment**
-<<<<<<< HEAD
-
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+2. Create and activate a virtual environment:
    ```bash
+   # On Windows
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   .\venv\Scripts\activate
+   
+   # On macOS/Linux
+   python3 -m venv venv
+   source venv/bin/activate
    ```
 
-3. **Install dependencies**
-<<<<<<< HEAD
-
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
+   pip install -r requirements-dev.txt
    ```
 
-4. **Set up environment variables**
-<<<<<<< HEAD
-
-   Create a `.env` file in the backend directory with the following variables:
-
-   ```env
-=======
-   Create a `.env` file in the backend directory with the following variables:
-   ```
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-   # App
-   ENV=development
-   SECRET_KEY=your-secret-key
-   
-   # Database
-   DATABASE_URL=sqlite+aiosqlite:///./notefusion.db
-   
-   # Authentication
-   JWT_SECRET_KEY=your-jwt-secret
-   JWT_ALGORITHM=HS256
-   JWT_ACCESS_TOKEN_EXPIRE_MINUTES=1440  # 24 hours
-   
-   # OpenAI
-   OPENAI_API_KEY=your-openai-api-key
-   
-   # Redis (for Celery)
-   REDIS_URL=redis://localhost:6379/0
-   ```
-
-5. **Initialize the database**
-<<<<<<< HEAD
-
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+4. Create a `.env` file:
    ```bash
-   python scripts/init_db.py
+   cp .env.example .env
+   ```
+   Update the `.env` file with your configuration.
+
+5. Run database migrations:
+   ```bash
+   alembic upgrade head
    ```
 
-## Running the Application
+### Running the Application
 
-### Development Server
-<<<<<<< HEAD
-
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+#### Development Mode
 ```bash
-python scripts/run_dev.py
+./start.sh development
 ```
 
-<<<<<<< HEAD
-The API will be available at [http://localhost:8000](http://localhost:8000)
+#### Production Mode
+```bash
+./start.sh production
+```
 
-### Running Migrations
-
-To apply new migrations:
-
-=======
 The API will be available at `http://localhost:8000`
-
-### Running Migrations
-To apply new migrations:
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-```bash
-alembic upgrade head
-```
-
-To create a new migration:
-<<<<<<< HEAD
-
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-```bash
-alembic revision --autogenerate -m "Your migration message"
-```
-
-### Running Tests
-<<<<<<< HEAD
-
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-```bash
-pytest
-```
-
-## Project Structure
-
-<<<<<<< HEAD
-```text
-=======
-```
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-backend/
-├── alembic/                 # Database migrations
-├── app/
-│   ├── api/                 # API endpoints
-│   ├── core/                # Core functionality
-│   ├── models/              # Database models
-│   ├── schemas/             # Pydantic models
-│   ├── services/            # Business logic
-│   ├── main.py              # FastAPI application
-│   └── config.py            # Application configuration
-├── scripts/                 # Utility scripts
-├── tests/                   # Test files
-├── .env                    # Environment variables
-├── .gitignore
-├── alembic.ini             # Alembic configuration
-├── requirements.txt         # Python dependencies
-└── README.md               # This file
-```
 
 ## API Documentation
 
-Once the server is running, you can access:
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+- OpenAPI Schema: `http://localhost:8000/openapi.json`
 
-<<<<<<< HEAD
-- **Interactive API docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **Alternative API docs**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
-=======
-- **Interactive API docs**: http://localhost:8000/docs
-- **Alternative API docs**: http://localhost:8000/redoc
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+## Docker
+
+### Build and Run with Docker Compose
+
+```bash
+docker-compose up --build
+```
+
+### Run Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run tests with coverage
+pytest --cov=app --cov-report=term-missing
+```
 
 ## Deployment
 
-For production deployment, consider using:
+### Railway
 
-1. **Gunicorn** with Uvicorn workers
-2. **PostgreSQL** instead of SQLite
-3. **Redis** for Celery tasks
-4. **NGINX** as a reverse proxy
-5. **Docker** for containerization
+1. Install Railway CLI:
+   ```bash
+   npm install -g @railway/cli
+   ```
 
-Example Gunicorn command:
-<<<<<<< HEAD
+2. Deploy:
+   ```bash
+   railway up
+   ```
 
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-```bash
-gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
-```
+### Manual Deployment
+
+1. Set up a production server with Python 3.10+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Set up a PostgreSQL database and update the `DATABASE_URL` in your `.env` file
+4. Run migrations:
+   ```bash
+   alembic upgrade head
+   ```
+5. Start the application:
+   ```bash
+   gunicorn -k uvicorn.workers.UvicornWorker -w 4 -t 120 --log-level info --bind 0.0.0.0:8000 app.main:app
+   ```
+
+## Environment Variables
+
+See `.env.example` for all available environment variables.
 
 ## License
 

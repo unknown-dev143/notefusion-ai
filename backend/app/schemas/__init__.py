@@ -3,17 +3,16 @@
 from .ai_models import (
     AIProvider,
     AIModelStatus,
-    AIBase,
-    AICreate,
-    AIUpdate,
-    AIInDB,
+    AIModelBase as AIBase,
+    AIModelCreate as AICreate,
+    AIModelUpdate as AIUpdate,
+    AIModel as AIInDB,
     UserAIModelSettingsBase,
     UserAIModelSettingsCreate,
     UserAIModelSettingsUpdate,
-    UserAIModelSettingsInDB,
+    UserAIModelSettings as UserAIModelSettingsInDB,
 )
 
-<<<<<<< HEAD
 from .reminder import (
     ReminderBase,
     ReminderCreate,
@@ -34,8 +33,6 @@ from .flashcard import (
     FlashcardBatch,
 )
 
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 from .subscription import (
     SubscriptionTier,
     SubscriptionStatus,
@@ -65,7 +62,6 @@ __all__ = [
     'UserAIModelSettingsUpdate',
     'UserAIModelSettingsInDB',
     
-<<<<<<< HEAD
     # Reminder
     'ReminderBase',
     'ReminderCreate',
@@ -84,8 +80,6 @@ __all__ = [
     'FlashcardStats',
     'FlashcardBatch',
     
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     # Subscriptions
     'SubscriptionTier',
     'SubscriptionStatus',

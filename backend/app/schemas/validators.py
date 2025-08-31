@@ -3,7 +3,8 @@ Common validation patterns and utilities for Pydantic models.
 """
 import re
 from typing import Any, TypeVar, Type, Optional, Union, List, Dict
-from pydantic import BaseModel, Field, validator, root_validator, constr, conint, confloat
+from datetime import date, datetime
+from pydantic import BaseModel, Field, root_validator, validator, model_validator, constr, conint, confloat
 from datetime import datetime, date
 import uuid
 
@@ -36,7 +37,7 @@ class PaginationParams(BaseSchema):
 class SortingParams(BaseSchema):
     """Sorting parameters."""
     sort_by: Optional[str] = Field(None, description="Field to sort by")
-    sort_order: str = Field("asc", regex="^(asc|desc)$", description="Sort order (asc or desc)")
+    sort_order: str = Field("asc", pattern="^(asc|desc)$", description="Sort order (asc or desc)")
 
 class SearchParams(BaseSchema):
     """Search parameters."""
@@ -47,15 +48,11 @@ class TimeRangeParams(BaseSchema):
     start_date: Optional[date] = Field(None, description="Start date (inclusive)")
     end_date: Optional[date] = Field(None, description="End date (inclusive)")
 
-    @root_validator
-    def validate_date_range(cls, values):
-        start_date = values.get('start_date')
-        end_date = values.get('end_date')
-        
-        if start_date and end_date and start_date > end_date:
+    @model_validator(mode='after')
+    def validate_date_range(self):
+        if self.start_date and self.end_date and self.start_date > self.end_date:
             raise ValueError('start_date must be before or equal to end_date')
-            
-        return values
+        return self
 
 def validate_enum(enum_class: Type[Any]):
     """Create a validator for enum values."""
@@ -82,15 +79,15 @@ def validate_slug(value: str) -> str:
 
 class UsernameMixin:
     """Mixin for username validation."""
-    username: str = Field(..., min_length=3, max_length=50, regex=USERNAME_PATTERN)
+    username: str = Field(..., min_length=3, max_length=50, pattern=USERNAME_PATTERN)
 
 class EmailMixin:
     """Mixin for email validation."""
-    email: str = Field(..., regex=EMAIL_PATTERN)
+    email: str = Field(..., pattern=EMAIL_PATTERN)
 
 class PasswordMixin:
     """Mixin for password validation."""
-    password: str = Field(..., min_length=8, regex=PASSWORD_PATTERN)
+    password: str = Field(..., min_length=8, pattern=PASSWORD_PATTERN)
 
 class PaginatedResponse(BaseModel):
     """Generic paginated response schema."""

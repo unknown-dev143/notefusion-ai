@@ -6,7 +6,7 @@ from typing import Optional
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Enum as SQLEnum, Text, Boolean
 from sqlalchemy.orm import relationship
 
-from app.models.database import Base
+from .database_clean import Base
 
 
 class ReminderStatus(str, Enum):

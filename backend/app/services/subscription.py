@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from ..models import Subscription, Invoice, SubscriptionTier, SubscriptionStatus, get_subscription_features
 from ..schemas.subscription import SubscriptionCreate, SubscriptionUpdate, InvoiceCreate, SubscriptionPlan
-from ..models.database import get_db
+from ..models.database_clean import get_db
 
 logger = logging.getLogger(__name__)
 

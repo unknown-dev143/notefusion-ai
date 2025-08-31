@@ -1,57 +1,52 @@
-import sys
+import asyncio
 import os
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import text
+from app.config import settings
 
-# Add the current directory to the Python path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+async def test_db_connection():
+    """Test database connection with retry logic."""
+    max_retries = 5
+    retry_delay = 2  # seconds
+    
+    # Get database URL from settings
+    db_url = settings.DATABASE_URL
+    print(f"Testing database connection to: {db_url}")
+    
+    # Create async engine
+    engine = create_async_engine(
+        db_url,
+        echo=True,
+        pool_pre_ping=True,
+        pool_recycle=3600,
+    )
+    
+    async_session = sessionmaker(
+        engine, class_=AsyncSession, expire_on_commit=False
+    )
+    
+    for attempt in range(1, max_retries + 1):
+        try:
+            async with async_session() as session:
+                # Test the connection with a simple query
+                result = await session.execute(text("SELECT 1"))
+                value = result.scalar()
+                if value == 1:
+                    print("✅ Database connection successful!")
+                    return True
+                else:
+                    print(f"❌ Unexpected query result: {value}")
+        except Exception as e:
+            print(f"❌ Attempt {attempt}/{max_retries} failed: {str(e)}")
+            if attempt < max_retries:
+                print(f"Retrying in {retry_delay} seconds...")
+                await asyncio.sleep(retry_delay)
+            else:
+                print("❌ Max retries reached. Could not connect to database.")
+                return False
+    
+    return False
 
-print("Testing database connection and models...")
-
-try:
-    # Import SQLAlchemy components
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-    
-    # Import database configuration
-    from app.config import settings
-    
-    print(f"\nDatabase URL: {settings.DATABASE_URL}")
-    
-    # Create a synchronous engine for testing
-    engine = create_engine(settings.DATABASE_URL.replace("postgresql+asyncpg", "postgresql"))
-    
-    # Test the connection
-    with engine.connect() as conn:
-        print("✅ Successfully connected to the database")
-    
-    # Test model imports
-    print("\nTesting model imports...")
-    from app.models.task import Task, TaskStatus, TaskType
-    print("✅ Successfully imported Task models")
-    
-    from app.models.database import SessionLocal
-    print("✅ Successfully imported SessionLocal")
-    
-    # Test creating a session
-    print("\nTesting database session...")
-    Session = sessionmaker(bind=engine)
-    with Session() as session:
-        print("✅ Successfully created a database session")
-        
-        # Test querying tasks
-        tasks = session.query(Task).limit(5).all()
-        print(f"✅ Successfully queried {len(tasks)} tasks")
-    
-    print("\n✅ All database tests passed!")
-    
-except Exception as e:
-    print(f"\n❌ Error: {e}")
-    import traceback
-    traceback.print_exc()
-    
-    # Print Python path for debugging
-    print("\nPython path:")
-    for path in sys.path:
-        print(f"  - {path}")
-    
-    # Print current working directory
-    print(f"\nCurrent working directory: {os.getcwd()}")
+if __name__ == "__main__":
+    asyncio.run(test_db_connection())

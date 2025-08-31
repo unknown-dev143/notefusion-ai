@@ -5,8 +5,8 @@ from typing import Dict, Optional
 import openai
 from openai import OpenAI
 from ..config.ai_models import AIModel, MODEL_CONFIGS, get_available_models
-from ..models.database import get_db
-from ..models.ai_models import AIProvider, AIModel as DBAIModel
+from ..models.database_clean import get_db
+from ..models.ai_models import AIProvider, DBAIModel
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)

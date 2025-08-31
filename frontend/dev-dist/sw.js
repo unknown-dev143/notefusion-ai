@@ -78,18 +78,17 @@ define(['./workbox-e755d862'], (function (workbox) { 'use strict';
    * See https://goo.gl/S9QRab
    */
   workbox.precacheAndRoute([{
+    "url": "registerSW.js",
+    "revision": "3ca0b8505b4bec776b69afdba2768812"
+  }, {
     "url": "index.html",
-<<<<<<< HEAD
-    "revision": "0.kfu971aq3i8"
-=======
-    "revision": "0.p4ercur936o"
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+    "revision": "0.12jl2573i9"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
     allowlist: [/^\/$/]
   }));
-  workbox.registerRoute(/^https:\/\/api\.yourapi\.com\/.*/i, new workbox.NetworkFirst({
+  workbox.registerRoute(/^https?:\/\/api\.notefusion\.ai\/.*/i, new workbox.NetworkFirst({
     "cacheName": "api-cache",
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 10,
