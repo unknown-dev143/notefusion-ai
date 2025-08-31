@@ -28,6 +28,23 @@ class Database:
     
     def __init__(self, db_url: str, **kwargs):
         """Initialize the database connection"""
+        # Handle Railway's PostgreSQL connection string
+        if db_url.startswith('postgres://'):
+            db_url = db_url.replace('postgres://', 'postgresql+asyncpg://', 1)
+        
+        # Handle special characters in password
+        if '@' in db_url and '://' in db_url:
+            protocol, rest = db_url.split('://', 1)
+            if '@' in rest:
+                user_pass, host_port_db = rest.rsplit('@', 1)
+                if ':' in user_pass:
+                    user, password = user_pass.split(':', 1)
+                    # URL encode the password
+                    from urllib.parse import quote_plus
+                    password = quote_plus(password)
+                    user_pass = f"{user}:{password}"
+                    db_url = f"{protocol}://{user_pass}@{host_port_db}"
+        
         self.db_url = db_url
         self.engine: Optional[AsyncEngine] = None
         self.async_session_maker: Optional[async_sessionmaker] = None
@@ -41,6 +58,12 @@ class Database:
             'pool_recycle': 3600,
             'pool_pre_ping': True,
             'pool_use_lifo': True,
+            'connect_args': {
+                'server_settings': {
+                    'application_name': 'notefusion-ai',
+                    'statement_timeout': '30000'  # 30 seconds
+                }
+            },
             **kwargs.get('pool_options', {})
         }
     

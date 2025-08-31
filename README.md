@@ -1,52 +1,32 @@
 # NoteFusion AI
 
-<<<<<<< HEAD
-An intelligent note-taking and study assistant that transforms lectures, textbooks, and audio recordings into comprehensive, structured study materials using AI. Now with advanced file uploads and AI-powered content generation.
-=======
-An intelligent note-taking and study assistant that transforms lectures and textbooks into comprehensive, structured study materials using AI.
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+## Development Setup
 
-## 🚀 Features
+### Prerequisites
+- Docker Desktop
+- Git
 
-### Core Functionality
-<<<<<<< HEAD
-- **Multi-file Upload**: Support for PDFs, audio files (MP3, WAV, M4A), and text documents
-- **Live Recording**: Real-time audio recording with automatic transcription
-- **Smart Fusion**: AI-powered combination of lecture and textbook content
-- **Structured Notes**: Organized notes with source tagging ([Lecture] / [Book])
-- **AI-Powered Generation**: Automatically expand, summarize, or reformat notes
-- **Flashcard Generation**: Create study flashcards from your notes
-- **Audio Transcription**: Automatic transcription of audio files with speaker diarization
+### Getting Started
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd notefusion-ai
+   ```
 
-### Advanced Features
+2. Start the application:
+   ```bash
+   docker-compose up --build
+   ```
 
-=======
-- **Multi-file Upload**: Support for PDFs, audio/video files, and text documents
-- **Live Recording**: Real-time audio recording with automatic transcription
-- **Smart Fusion**: AI-powered combination of lecture and textbook content
-- **Structured Notes**: Organized notes with source tagging ([Lecture] / [Book])
-- **Practice Questions**: Auto-generated questions with detailed answers
-- **Study Time Estimation**: Intelligent time estimates based on content complexity
+3. Access the application:
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+   - API Docs: http://localhost:8000/docs
 
-### Advanced Features
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-- **Export Options**: Markdown, PDF, and Anki-style flashcards
-- **Search Functionality**: Full-text search across all content
-- **Version History**: Track changes to notes over time
-- **Diagram Support**: Drawing canvas for annotations and sketches
-- **Session Management**: Organize and browse study sessions
-- **Detail Levels**: Concise, Standard, and In-depth note generation
-
-### Technical Features
-<<<<<<< HEAD
-
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-- **Real-time Transcription**: Live audio processing with Whisper
-- **PDF Processing**: Text extraction and structural analysis
-- **WebSocket Support**: Live audio streaming and transcription
-- **Responsive Design**: Modern UI with Tailwind CSS
-- **Database Storage**: SQLite for session and content management
+## Development
+- Frontend runs on: http://localhost:3000
+- Backend runs on: http://localhost:8000
+- Database: PostgreSQL on port 5432
 
 <<<<<<< HEAD
 ## 🚀 Getting Started

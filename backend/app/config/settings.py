@@ -5,6 +5,7 @@ from pydantic import Field, validator, RedisDsn, PostgresDsn, AnyHttpUrl
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 from pathlib import Path
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -97,8 +98,11 @@ def get_settings() -> Settings:
     """Get application settings, cached for performance"""
     return Settings()
 
-# Initialize settings
-settings = get_settings()
+# Initialize settings based on environment
+if os.getenv('RAILWAY_ENVIRONMENT') == 'production':
+    from .production_settings import settings
+else:
+    settings = get_settings()
 
 def setup_logging():
     """Configure logging based on settings"""

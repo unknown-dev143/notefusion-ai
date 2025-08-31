@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from app.core.app_factory import create_app
 from app.core.logging_config import setup_logging
 
-# Import API router
+# Import routers
 from app.api.v1.api import api_router
 
 # Setup logging
