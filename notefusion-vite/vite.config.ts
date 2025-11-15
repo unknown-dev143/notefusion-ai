@@ -1,83 +1,89 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
-import type { UserConfig } from 'vite';
+import { fileURLToPath } from 'url';
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }): UserConfig => {
-  // Load env file based on `mode` in the current directory.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig(({ mode }) => {
+  // Load environment variables
   const env = loadEnv(mode, process.cwd(), '');
   
-  // Filter and stringify only the VITE_* environment variables
-  const envWithProcessPrefix = Object.entries(env).reduce(
-    (prev, [key, val]) => {
-      if (key.startsWith('VITE_')) {
-        return {
-          ...prev,
-          [`import.meta.env.${key}`]: JSON.stringify(val),
-        };
-      }
-      return prev;
-    },
-    {
-      'process.env.NODE_ENV': JSON.stringify(mode),
-    }
-  );
+  // Environment variables for the client
+  const envWithProcess = {
+    ...env,
+    VITE_WS_URL: env.VITE_WS_URL || 'ws://localhost:8006/ws',
+    VITE_API_URL: env.VITE_API_URL || 'http://localhost:8000'
+  };
 
   return {
     plugins: [
-      react({
-        jsxImportSource: '@emotion/react',
-        babel: {
-          plugins: ['@emotion/babel-plugin'],
+      react(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png', 'safari-pinned-tab.svg'],
+        manifest: {
+          name: 'NoteFusion AI',
+          short_name: 'NoteFusion',
+          description: 'AI-powered note taking application',
+          theme_color: '#ffffff',
+          background_color: '#ffffff',
+          display: 'standalone',
+          icons: [
+            {
+              src: 'pwa-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+            },
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+            },
+          ],
         },
       }),
     ],
-    server: {
-      port: 3000,
-      open: true,
-      host: true,
-      fs: {
-        strict: true,
-      },
+    
+    // Environment variables configuration
+    define: {
+      'process.env': Object.fromEntries(
+        Object.entries(envWithProcess)
+          .filter(([key]) => key.startsWith('VITE_'))
+          .map(([key, value]) => [key, JSON.stringify(value)])
+      )
     },
-    build: {
-      outDir: 'build',
-      sourcemap: mode !== 'production',
-      minify: 'esbuild',
-      cssCodeSplit: true,
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            react: ['react', 'react-dom', 'react-router-dom'],
-            antd: ['antd', '@ant-design/icons'],
-            vendor: ['@tanstack/react-query', 'react-hot-toast'],
-          },
-        },
-      },
-      chunkSizeWarningLimit: 1000,
-    },
-    define: envWithProcessPrefix,
-    optimizeDeps: {
-      esbuildOptions: {
-        loader: {
-          '.js': 'jsx',
-        },
-        // Add this to handle Node.js global variables
-        define: {
-          global: 'globalThis',
-        },
-      },
-    },
-    // Add this to handle process shim
+    
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, 'src'),
-        // Add process shim
-        process: 'process/browser',
-        util: 'util',
+        '@': path.resolve(__dirname, './src'),
       },
-      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
     },
+    
+    server: {
+      port: 5173,
+      strictPort: true,
+      host: true,
+      open: true,
+      hmr: {
+        clientPort: 5173,
+        protocol: 'ws',
+        host: 'localhost',
+      },
+    },
+    
+    preview: {
+      port: 5173,
+      strictPort: true,
+    },
+    
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+      sourcemap: true,
+    },
+    
+    root: __dirname,
   };
 });
