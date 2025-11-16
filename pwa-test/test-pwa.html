@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PWA Test</title>
+</head>
+<body>
+<h1>PWA Test Page</h1>
+  
+  <div class="test-section">
+    <h2>Service Worker Test</h2>
+    <div id="sw-status">Checking service worker support...</div>
+    <button id="register-sw">Register Service Worker</button>
+    <button id="unregister-sw">Unregister Service Worker</button>
+    <div id="sw-cache"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Installation Test</h2>
+    <button id="install-btn">Install PWA</button>
+    <div id="install-status"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Network Status</h2>
+    <div id="network-status">Checking network status...</div>
+    <button id="check-network">Check Network</button>
+  </div>
+
+  <script>
+    // Service Worker Registration
+    const swStatus = document.getElementById('sw-status');
+    const swCache = document.getElementById('sw-cache');
+    const installStatus = document.getElementById('install-status');
+    const networkStatus = document.getElementById('network-status');
+    let deferredPrompt;
+
+    // Check Service Worker support
+    if ('serviceWorker' in navigator) {
+      swStatus.innerHTML = 'Service Worker is supported in this browser.';
+      
+      // Register Service Worker
+      document.getElementById('register-sw').addEventListener('click', async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('sw.js');
+          swStatus.innerHTML += '<br>Service Worker registered with scope: ' + registration.scope;
+          checkServiceWorker();
+        } catch (error) {
+          swStatus.innerHTML += '<br>Service Worker registration failed: ' + error.message;
+        }
+      });
+
+      // Unregister Service Worker
+      document.getElementById('unregister-sw').addEventListener('click', async () => {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let registration of registrations) {
+          await registration.unregister();
+          swStatus.innerHTML += '<br>Service Worker unregistered.';
+        }
+        if (registrations.length === 0) {
+          swStatus.innerHTML += '<br>No Service Worker to unregister.';
+        }
+      });
+
+      // Check current Service Worker registration
+      async function checkServiceWorker() {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          swStatus.innerHTML += '<br>Active Service Worker found.';
+          if (registration.active) {
+            swStatus.innerHTML += '<br>Service Worker is active and controlling this page.';
+          }
+        } else {
+          swStatus.innerHTML += '<br>No active Service Worker found.';
+        }
+      }
+
+      // Initial check
+      checkServiceWorker();
+    } else {
+      swStatus.innerHTML = 'Service Worker is not supported in this browser.';
+    }
+
+    // PWA Installation
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installStatus.innerHTML = 'PWA can be installed.';
+      
+      document.getElementById('install-btn').addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        installStatus.innerHTML = `User ${outcome} the installation.`;
+        deferredPrompt = null;
+      });
+    });
+
+    // Network Status
+    function updateNetworkStatus() {
+      networkStatus.innerHTML = navigator.onLine ? 
+        '<span class="success">You are online.</span>' : 
+        '<span class="error">You are offline.</span>';
+    }
+
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+    document.getElementById('check-network').addEventListener('click', updateNetworkStatus);
+    
+    // Initial network status
+    updateNetworkStatus();
+  </script>
+</body>
+</html>

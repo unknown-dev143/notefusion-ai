@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Theme color with fallbacks for different browsers -->
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        // Add theme-color meta tags for supported browsers
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1a73e8';
+        lightTheme.media = '(prefers-color-scheme: light)';
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#1a1b2e';
+        darkTheme.media = '(prefers-color-scheme: dark)';
+        document.head.appendChild(darkTheme);
+      }
+      
+      // Add Microsoft-specific meta tags
+      const msTileColor = document.createElement('meta');
+      msTileColor.name = 'msapplication-TileColor';
+      msTileColor.content = '#1a73e8';
+      document.head.appendChild(msTileColor);
+      
+      const msNavButtonColor = document.createElement('meta');
+      msNavButtonColor.name = 'msapplication-navbutton-color';
+      msNavButtonColor.content = '#1a73e8';
+      document.head.appendChild(msNavButtonColor);
+    </script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>PWA Offline & Cache Test</title>
+    <link rel="apple-touch-icon" href="/icon-192x192.png">
+    <link rel="stylesheet" href="test-styles.css">
+</head>
+<body>
+<h1>PWA Offline & Cache Test</h1>
+    
+    <div class="test">
+        <h2>1. Network Status</h2>
+        <div id="network-status" class="status info">
+            Checking network status...
+        </div>
+        <button id="toggle-network">Go Offline</button>
+        <div id="connection-type"></div>
+    </div>
+
+    <div class="test">
+        <h2>2. Cache Management</h2>
+        <div class="cache-stats">
+            <div class="stat-box">
+                <div>Cache Status: <span id="cache-status">Checking...</span></div>
+                <div>Cache Size: <span id="cache-size">-</span></div>
+            </div>
+            <div class="stat-box">
+                <div>Total Caches: <span id="cache-count">-</span></div>
+                <div>Total Items: <span id="item-count">-</span></div>
+            </div>
+        </div>
+        <button id="refresh-cache">Refresh Cache Info</button>
+        <button id="clear-cache">Clear All Caches</button>
+        <button id="preload-cache">Preload Cache</button>
+        <div id="cached-files">
+            <h3>Cached Resources</h3>
+            <div id="cache-contents">Loading...</div>
+        </div>
+    </div>
+
+    <div class="test">
+        <h2>3. Offline Test</h2>
+        <p>Test loading resources while offline:</p>
+        <button id="test-fetch">Test Fetch (cached)</button>
+        <button id="test-fetch-new">Test Fetch (new)</button>
+        <div id="fetch-result"></div>
+        
+        <div class="offline-test-container">
+            <p>Test offline page:</p>
+            <a href="/offline.html" target="_blank">Open Offline Page</a>
+        </div>
+    </div>
+
+    <div class="test">
+        <h2>4. Background Sync Test</h2>
+        <div id="sync-status" class="status info">
+            Background Sync: Checking...
+        </div>
+        <button id="test-sync" disabled>Test Background Sync</button>
+        <div id="sync-result"></div>
+    </div>
+
+    <div class="test">
+        <h2>5. Test Log</h2>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        // Logging function
+        const log = (message, type = 'info') => {
+            const logElement = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        };
+
+        // Network status
+        function updateNetworkStatus() {
+            const isOnline = navigator.onLine;
+            const statusElement = document.getElementById('network-status');
+            const toggleButton = document.getElementById('toggle-network');
+            
+            if (isOnline) {
+                statusElement.innerHTML = '✅ You are <strong>online</strong>';
+                statusElement.className = 'status success';
+                toggleButton.textContent = 'Go Offline';
+                
+                // Get connection info if available
+                if (navigator.connection) {
+                    const conn = navigator.connection;
+                    const connectionInfo = `
+                        Type: ${conn.type || 'unknown'}<br>
+                        Effective Type: ${conn.effectiveType || 'unknown'}<br>
+                        Downlink: ${conn.downlink} Mbps<br>
+                        RTT: ${conn.rtt}ms<br>
+                        Save Data: ${conn.saveData ? 'enabled' : 'disabled'}
+                    `;
+                    document.getElementById('connection-type').innerHTML = connectionInfo;
+                }
+            } else {
+                statusElement.innerHTML = '⚠️ You are <strong>offline</strong>';
+                statusElement.className = 'status warning';
+                toggleButton.textContent = 'Go Online';
+                document.getElementById('connection-type').innerHTML = 'No network connection';
+            }
+            
+            log(`Network status: ${isOnline ? 'Online' : 'Offline'}`);
+        }
+
+        // Toggle network status (for testing)
+        document.getElementById('toggle-network').addEventListener('click', () => {
+            // This is just for simulation - in a real test, you'd use DevTools
+            const isOnline = navigator.onLine;
+            log(`Simulating ${isOnline ? 'offline' : 'online'} mode`);
+            
+            // In a real test, you'd use DevTools to toggle offline mode
+            if (isOnline) {
+                log('Note: In a real test, open DevTools and enable Offline mode');
+            } else {
+                log('Note: In a real test, disable Offline mode in DevTools');
+            }
+            
+            // Update the UI to reflect the change
+            updateNetworkStatus();
+        });
+
+        // Cache management
+        async function updateCacheInfo() {
+            if (!('caches' in window)) {
+                document.getElementById('cache-status').textContent = 'Cache API not supported';
+                return;
+            }
+
+            try {
+                const cacheNames = await caches.keys();
+                document.getElementById('cache-count').textContent = cacheNames.length;
+                
+                let totalSize = 0;
+                let totalItems = 0;
+                let cacheContents = [];
+                
+                for (const cacheName of cacheNames) {
+                    const cache = await caches.open(cacheName);
+                    const requests = await cache.keys();
+                    totalItems += requests.length;
+                    
+                    for (const request of requests) {
+                        const response = await cache.match(request);
+                        if (response) {
+                            const headers = Object.fromEntries(response.headers.entries());
+                            const size = headers['content-length'] || 0;
+                            totalSize += parseInt(size) || 0;
+                            
+                            cacheContents.push({
+                                url: request.url,
+                                method: request.method,
+                                status: response.status,
+                                size: formatBytes(size)
+                            });
+                        }
+                    }
+                }
+                
+                // Update UI
+                document.getElementById('cache-size').textContent = formatBytes(totalSize);
+                document.getElementById('item-count').textContent = totalItems;
+                
+                // Display cache contents
+                const cacheContentsElement = document.getElementById('cache-contents');
+                if (cacheContents.length > 0) {
+                    cacheContentsElement.innerHTML = cacheContents
+                        .map(item => `
+                            <div class="cache-item">
+                                <span>${new URL(item.url).pathname}</span>
+                                <span>${item.size} (${item.status})</span>
+                            </div>
+                        `)
+                        .join('');
+                } else {
+                    cacheContentsElement.textContent = 'No cached resources found.';
+                }
+                
+                log(`Cache info updated: ${cacheNames.length} caches, ${totalItems} items, ${formatBytes(totalSize)}`);
+                
+            } catch (error) {
+                log(`Error updating cache info: ${error.message}`, 'error');
+                document.getElementById('cache-status').textContent = 'Error reading cache';
+            }
+        }
+        
+        // Format bytes to human-readable format
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        // Clear all caches
+        document.getElementById('clear-cache').addEventListener('click', async () => {
+            if (!('caches' in window)) {
+                log('Cache API not supported', 'error');
+                return;
+            }
+            
+            try {
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                log('All caches cleared', 'success');
+                await updateCacheInfo();
+            } catch (error) {
+                log(`Error clearing caches: ${error.message}`, 'error');
+            }
+        });
+
+        // Preload cache with test data
+        document.getElementById('preload-cache').addEventListener('click', async () => {
+            try {
+                const cache = await caches.open('test-cache');
+                const testData = [
+                    { url: '/test1.txt', content: 'Test data 1' },
+                    { url: '/test2.txt', content: 'Test data 2' },
+                    { url: '/test3.json', content: JSON.stringify({ test: 'data' }) }
+                ];
+                
+                await Promise.all(testData.map(async item => {
+                    const response = new Response(item.content, {
+                        headers: { 'Content-Type': 'text/plain' }
+                    });
+                    await cache.put(item.url, response);
+                }));
+                
+                log('Test data cached successfully', 'success');
+                await updateCacheInfo();
+                
+            } catch (error) {
+                log(`Error preloading cache: ${error.message}`, 'error');
+            }
+        });
+
+        // Test fetch operations
+        document.getElementById('test-fetch').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/test1.txt');
+                const text = await response.text();
+                document.getElementById('fetch-result').innerHTML = 
+                    `<div class="status success">Fetch successful: ${text}</div>`;
+                log('Fetched test1.txt successfully');
+            } catch (error) {
+                document.getElementById('fetch-result').innerHTML = 
+                    `<div class="status error">Fetch failed: ${error.message}</div>`;
+                log(`Fetch failed: ${error.message}`, 'error');
+            }
+        });
+
+        document.getElementById('test-fetch-new').addEventListener('click', async () => {
+            const timestamp = new Date().getTime();
+            const url = `/test-${timestamp}.txt`;
+            
+            try {
+                // First try to get from cache
+                const cache = await caches.open('test-cache');
+                const cachedResponse = await cache.match(url);
+                
+                if (cachedResponse) {
+                    const text = await cachedResponse.text();
+                    document.getElementById('fetch-result').innerHTML = 
+                        `<div class="status success">From cache: ${text}</div>`;
+                    log(`Found in cache: ${url}`);
+                } else if (navigator.onLine) {
+                    // If online, fetch from network and cache
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        await cache.put(url, response.clone());
+                        const text = await response.text();
+                        document.getElementById('fetch-result').innerHTML = 
+                            `<div class="status success">Fetched from network: ${text}</div>`;
+                        log(`Fetched from network and cached: ${url}`);
+                    } else {
+                        throw new Error(`HTTP error: ${response.status}`);
+                    }
+                } else {
+                    throw new Error('You are offline and this resource is not cached');
+                }
+                
+                await updateCacheInfo();
+                
+            } catch (error) {
+                document.getElementById('fetch-result').innerHTML = 
+                    `<div class="status error">Error: ${error.message}</div>`;
+                log(`Error: ${error.message}`, 'error');
+            }
+        });
+
+        // Background Sync test
+        function setupBackgroundSync() {
+            if (!('serviceWorker' in navigator) || !('SyncManager' in window)) {
+                document.getElementById('sync-status').innerHTML = 
+                    'Background Sync API not supported in this browser';
+                return;
+            }
+            
+            document.getElementById('sync-status').innerHTML = 
+                'Background Sync: Supported';
+            document.getElementById('test-sync').disabled = false;
+            
+            document.getElementById('test-sync').addEventListener('click', async () => {
+                try {
+                    const registration = await navigator.serviceWorker.ready;
+                    
+                    // Register a sync event
+                    await registration.sync.register('test-sync');
+                    log('Background sync registered', 'success');
+                    document.getElementById('sync-result').innerHTML = 
+                        '<div class="status success">Sync registered. It will trigger when online.</div>';
+                        
+                } catch (error) {
+                    log(`Background sync registration failed: ${error.message}`, 'error');
+                    document.getElementById('sync-result').innerHTML = 
+                        `<div class="status error">Sync failed: ${error.message}</div>`;
+                }
+            });
+            
+            // Listen for sync events from service worker
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data && event.data.type === 'SYNC_COMPLETED') {
+                    log(`Background sync completed: ${event.data.message}`, 'success');
+                    document.getElementById('sync-result').innerHTML = 
+                        `<div class="status success">${event.data.message}</div>`;
+                }
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Offline & Cache Test initialized');
+            
+            // Set up network status monitoring
+            window.addEventListener('online', updateNetworkStatus);
+            window.addEventListener('offline', updateNetworkStatus);
+            updateNetworkStatus();
+            
+            // Set up cache management
+            if ('caches' in window) {
+                document.getElementById('cache-status').textContent = 'Supported';
+                document.getElementById('refresh-cache').addEventListener('click', updateCacheInfo);
+                updateCacheInfo();
+            } else {
+                document.getElementById('cache-status').textContent = 'Not supported';
+                document.getElementById('clear-cache').disabled = true;
+                document.getElementById('preload-cache').disabled = true;
+            }
+            
+            // Set up background sync
+            setupBackgroundSync();
+            
+            // Register service worker if not already registered
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        log(`Service Worker registration failed: ${error.message}`, 'error');
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

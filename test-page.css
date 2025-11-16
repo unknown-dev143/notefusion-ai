@@ -1,0 +1,203 @@
+/* Test Page Styles */
+:root {
+    --primary-color: #1890ff;
+    --text-color: #2c3e50;
+    --border-color: #e8e8e8;
+    --bg-color: #f5f7fa;
+    --card-bg: #ffffff;
+    --success-color: #52c41a;
+    --error-color: #f5222d;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text-color: #e1e4e8;
+        --bg-color: #1a1a1a;
+        --card-bg: #2d2d2d;
+        --border-color: #444;
+    }
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 2rem;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: var(--primary-color);
+    margin-top: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.test-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+h2 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    margin: 0.5rem 0.5rem 0.5rem 0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+#result {
+    margin-top: 1.5rem;
+    min-height: 100px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    white-space: pre-wrap;
+    overflow-x: auto;
+}
+
+.result-message {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-left: 4px solid var(--primary-color);
+}
+
+.result-message.success {
+    background-color: rgba(82, 196, 26, 0.1);
+    border-left-color: var(--success-color);
+}
+
+.result-message.error {
+    background-color: rgba(245, 34, 45, 0.1);
+    border-left-color: var(--error-color);
+}
+
+.result-message pre {
+    margin: 0.5rem 0 0;
+    padding: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+    overflow-x: auto;
+}
+
+.button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+/* Response styling */
+.response-meta {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-radius: 4px;
+    font-size: 0.9em;
+    line-height: 1.5;
+}
+
+.response-meta div {
+    margin: 0.25rem 0;
+}
+
+.response-details {
+    margin: 1rem 0;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.response-details summary {
+    padding: 0.75rem 1rem;
+    background-color: rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.response-details summary:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
+.response-details pre {
+    margin: 0;
+    padding: 1rem;
+    max-height: 400px;
+    overflow: auto;
+    background-color: var(--card-bg);
+}
+
+/* Message styling */
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.message-content {
+    line-height: 1.5;
+}
+
+/* Loading state */
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.loading-message {
+    animation: pulse 1.5s infinite;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    body {
+        padding: 1rem;
+    }
+    
+    .container {
+        padding: 1rem;
+    }
+    
+    button {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+}

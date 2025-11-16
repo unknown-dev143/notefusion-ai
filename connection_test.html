@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Connection test page for NoteFusion AI server">
+    <title>Server Connection Test - NoteFusion AI</title>
+    <link rel="stylesheet" href="connection_test.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Server Connection Test</h1>
+            <p>Testing connection to the NoteFusion AI server...</p>
+        </header>
+        
+        <main>
+            <div id="status" class="loading" role="status" aria-live="polite" aria-atomic="true">
+                Connecting to server...
+            </div>
+            
+            <div id="next-steps" class="hidden" aria-hidden="true">
+                <h2>Next Steps</h2>
+                <ol>
+                    <li>Open a terminal in the project directory</li>
+                    <li>Run: <code>python -m http.server 8000</code></li>
+                    <li>Refresh this page</li>
+                </ol>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // DOM elements
+        const statusElement = document.getElementById('status');
+        const nextStepsElement = document.getElementById('next-steps');
+        
+        // Update UI helper functions
+        function updateStatus(message, type = 'loading') {
+            statusElement.textContent = message;
+            statusElement.className = type;
+            
+            // Update ARIA live region
+            const statusMessage = type === 'success' ? 'Success: ' : 
+                                type === 'error' ? 'Error: ' : '';
+            statusElement.setAttribute('aria-label', statusMessage + message);
+        }
+        
+        function showNextSteps(show = true) {
+            nextStepsElement.classList.toggle('hidden', !show);
+            nextStepsElement.setAttribute('aria-hidden', !show);
+        }
+
+        // Test connection to the server
+        async function testConnection() {
+            updateStatus('Connecting to server...', 'loading');
+            showNextSteps(false);
+            
+            try {
+                const response = await fetch('http://localhost:8000', {
+                    method: 'HEAD',
+                    cache: 'no-store'
+                });
+                
+                if (response.ok) {
+                    updateStatus('✅ Successfully connected to the server!', 'success');
+                } else {
+                    throw new Error(`Server returned status: ${response.status}`);
+                }
+            } catch (error) {
+                updateStatus(
+                    `❌ Connection failed: ${error.message}. ` +
+                    'Make sure the server is running on port 8000.',
+                    'error'
+                );
+                showNextSteps(true);
+            }
+        }
+
+        // Run the test when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            testConnection();
+            
+            // Add retry button functionality
+            const retryButton = document.createElement('button');
+            retryButton.textContent = 'Retry Connection';
+            retryButton.className = 'retry-button';
+            retryButton.addEventListener('click', testConnection);
+            statusElement.after(retryButton);
+        });
+    </script>
+</body>
+</html>

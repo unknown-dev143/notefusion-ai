@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        const themeColor = document.createElement('meta');
+        themeColor.name = 'theme-color';
+        themeColor.content = '#4CAF50';
+        document.head.appendChild(themeColor);
+      }
+    </script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Offline Functionality Test</title>
+    <link rel="stylesheet" href="test-styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Offline Functionality Test</h1>
+        <p>This page tests the offline capabilities of the PWA.</p>
+        
+        <div class="button-group">
+            <button id="testBtn" class="btn">Run Offline Test</button>
+            <button id="clearBtn" class="btn btn-secondary">Clear Log</button>
+        </div>
+        
+        <div id="log" class="log">Click "Run Offline Test" to begin...</div>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        const testBtn = document.getElementById('testBtn');
+        const clearBtn = document.getElementById('clearBtn');
+
+        function addLog(message, isError = false) {
+            const entry = document.createElement('div');
+            entry.className = isError ? 'error' : '';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            console.log(`[${isError ? 'ERROR' : 'INFO'}] ${message}`);
+        }
+
+        async function testOffline() {
+            testBtn.disabled = true;
+            addLog('Starting offline test...');
+            
+            try {
+                // Register service worker if not already registered
+                if (!navigator.serviceWorker.controller) {
+                    addLog('Registering service worker...');
+                    const registration = await navigator.serviceWorker.register('test-sw-new.js', {
+                        scope: '/'
+                    });
+                    addLog(`Service Worker registered at scope: ${registration.scope}`);
+                    
+                    // Wait for the service worker to be ready
+                    if (registration.installing) {
+                        await new Promise(resolve => {
+                            registration.installing.addEventListener('statechange', function() {
+                                if (this.state === 'activated') {
+                                    resolve();
+                                }
+                            });
+                        });
+                    }
+                }
+
+                // Ensure the test file is cached
+                addLog('Caching test file...');
+                await caches.open('pwa-test-cache-v1')
+                    .then(cache => cache.add('test-offline.txt'));
+                
+                // Test online fetch
+                addLog('Testing online fetch...');
+                const onlineResponse = await fetch('test-offline.txt');
+                if (onlineResponse.ok) {
+                    const text = await onlineResponse.text();
+                    addLog(`✅ Online fetch successful: ${text.trim()}`);
+                    
+                    // Simulate offline mode
+                    addLog('Simulating offline mode...');
+                    const originalOnline = navigator.onLine;
+                    Object.defineProperty(navigator, 'onLine', {
+                        get: function() { return false; },
+                        configurable: true
+                    });
+                    
+                    // Test offline fetch
+                    try {
+                        const offlineResponse = await fetch('test-offline.txt');
+                        if (offlineResponse) {
+                            const offlineText = await offlineResponse.text();
+                            addLog(`✅ Offline fetch successful: ${offlineText.trim()}`);
+                            addLog('🎉 OFFLINE TEST PASSED!', false);
+                        } else {
+                            throw new Error('No response received');
+                        }
+                    } catch (error) {
+                        addLog(`❌ Offline fetch failed: ${error.message}`, true);
+                    } finally {
+                        // Restore online status
+                        Object.defineProperty(navigator, 'onLine', {
+                            get: function() { return originalOnline; },
+                            configurable: true
+                        });
+                    }
+                } else {
+                    throw new Error('Online fetch failed');
+                }
+            } catch (error) {
+                addLog(`❌ Test failed: ${error.message}`, true);
+            } finally {
+                testBtn.disabled = false;
+            }
+        }
+
+        testBtn.addEventListener('click', testOffline);
+        clearBtn.addEventListener('click', () => {
+            log.innerHTML = 'Log cleared. Click "Run Offline Test" to begin...';
+        });
+
+        // Initialize
+        if ('serviceWorker' in navigator && 'caches' in window) {
+            addLog('Service Worker and Cache API are supported.');
+        } else {
+            addLog('❌ Service Worker or Cache API not supported in this browser.', true);
+            testBtn.disabled = true;
+        }
+    </script>
+</body>
+</html>

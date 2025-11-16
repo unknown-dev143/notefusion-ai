@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Theme color with fallbacks for different browsers -->
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        // Add theme-color meta tags for supported browsers
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1a73e8';
+        lightTheme.media = '(prefers-color-scheme: light)';
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#1a1b2e';
+        darkTheme.media = '(prefers-color-scheme: dark)';
+        document.head.appendChild(darkTheme);
+      }
+      
+      // Add Microsoft-specific meta tags
+      const msTileColor = document.createElement('meta');
+      msTileColor.name = 'msapplication-TileColor';
+      msTileColor.content = '#1a73e8';
+      document.head.appendChild(msTileColor);
+      
+      const msNavButtonColor = document.createElement('meta');
+      msNavButtonColor.name = 'msapplication-navbutton-color';
+      msNavButtonColor.content = '#1a73e8';
+      document.head.appendChild(msNavButtonColor);
+    </script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>PWA Install Test</title>
+    <link rel="stylesheet" href="test-styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>PWA Installation Test</h1>
+        
+        <div class="test-card">
+            <h2>1. PWA Installation</h2>
+            <div id="install-status" class="status info">
+                Checking installability status...
+            </div>
+            <button id="install-button" class="btn hidden">Install NoteFusion AI</button>
+            <div id="install-result" class="log"></div>
+        </div>
+
+        <div class="test-card">
+            <h2>2. App Installed Status</h2>
+            <div id="app-installed-status" class="status info">
+                Checking if app is installed...
+            </div>
+            <div id="display-mode" class="status info">
+                Checking display mode...
+            </div>
+        </div>
+
+        <div class="test-card">
+            <h2>3. Update Test</h2>
+            <p>Current version: <strong id="version">1.0.0</strong></p>
+            <button id="check-update" class="btn">Check for Updates</button>
+            <div id="update-status" class="log">
+                No updates available.
+            </div>
+        </div>
+
+        <div class="test-card">
+            <h2>4. Test Log</h2>
+            <div id="log" class="log-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Logging function
+        const log = (message, type = 'info') => {
+            const logElement = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        };
+
+        // Check if the app is running in standalone mode
+        function checkDisplayMode() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                               window.navigator.standalone || 
+                               document.referrer.includes('android-app://');
+            
+            const displayMode = isStandalone ? 'standalone' : 'browser';
+            document.getElementById('display-mode').innerHTML = 
+                `Display mode: <strong>${displayMode}</strong>`;
+            
+            log(`Running in ${displayMode} mode`);
+            return isStandalone;
+        }
+
+        // Check if the app is installed
+        function checkInstalledStatus() {
+            const isInstalled = checkDisplayMode();
+            const statusElement = document.getElementById('app-installed-status');
+            
+            if (isInstalled) {
+                statusElement.innerHTML = '✅ App is installed and running in standalone mode.';
+                statusElement.className = 'status success';
+                document.getElementById('install-button').classList.add('hidden');
+            } else {
+                statusElement.innerHTML = 'ℹ️ App is not installed. You can install it using the install button.';
+                statusElement.className = 'status info';
+            }
+            
+            return isInstalled;
+        }
+
+        // Handle the beforeinstallprompt event
+        let deferredPrompt;
+        const installButton = document.getElementById('install-button');
+        const installStatus = document.getElementById('install-status');
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the default install prompt
+            e.preventDefault();
+            
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            
+            // Show the install button
+            installButton.classList.remove('hidden');
+            installStatus.innerHTML = 'You can install this app. Click the install button below.';
+            installStatus.className = 'status success';
+            
+            log('Install prompt available');
+            
+            // Handle install button click
+            installButton.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                
+                // Show the install prompt
+                deferredPrompt.prompt();
+                
+                // Wait for the user to respond to the prompt
+                const { outcome } = await deferredPrompt.userChoice;
+                log(`User response to install prompt: ${outcome}`);
+                
+                // Update the install status
+                if (outcome === 'accepted') {
+                    installStatus.innerHTML = '✅ App installation in progress...';
+                    installStatus.className = 'status success';
+                    installButton.classList.add('hidden');
+                } else {
+                    installStatus.innerHTML = '❌ User declined the install prompt.';
+                    installStatus.className = 'status warning';
+                }
+                
+                // Clear the deferredPrompt variable
+                deferredPrompt = null;
+            });
+        });
+
+        // Listen for app installation
+        window.addEventListener('appinstalled', (evt) => {
+            log('App was installed successfully');
+            installStatus.innerHTML = '🎉 App installed successfully!';
+            installStatus.className = 'status success';
+            installButton.classList.add('hidden');
+            checkInstalledStatus();
+        });
+
+        // Check for updates
+        document.getElementById('check-update').addEventListener('click', () => {
+            const updateStatus = document.getElementById('update-status');
+            
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistration().then(reg => {
+                    if (!reg) {
+                        updateStatus.innerHTML = 'No service worker registered.';
+                        updateStatus.className = 'status warning';
+                        return;
+                    }
+                    
+                    updateStatus.innerHTML = 'Checking for updates...';
+                    updateStatus.className = 'status info';
+                    
+                    reg.update().then(() => {
+                        updateStatus.innerHTML = 'App is up to date!';
+                        updateStatus.className = 'status success';
+                        log('Service Worker updated');
+                    }).catch(error => {
+                        updateStatus.innerHTML = `Error checking for updates: ${error.message}`;
+                        updateStatus.className = 'status error';
+                        log(`Update error: ${error.message}`, 'error');
+                    });
+                });
+            } else {
+                updateStatus.innerHTML = 'Service workers not supported in this browser.';
+                updateStatus.className = 'status error';
+            }
+        });
+
+        // Simulate an update by changing the version
+        function simulateUpdate() {
+            const versionElement = document.getElementById('version');
+            const currentVersion = versionElement.textContent;
+            const [major, minor, patch] = currentVersion.split('.').map(Number);
+            const newVersion = `${major}.${minor}.${patch + 1}`;
+            
+            versionElement.textContent = newVersion;
+            log(`Version updated to ${newVersion} (simulated)`);
+            
+            // In a real app, this would trigger the service worker update flow
+            document.getElementById('update-status').innerHTML = 
+                `New version ${newVersion} available! Refresh to update.`;
+            document.getElementById('update-status').className = 'status warning';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('PWA Test initialized');
+            checkInstalledStatus();
+            
+            // If not installed, check if we can prompt for installation
+            if (!checkDisplayMode() && !deferredPrompt) {
+                installStatus.innerHTML = 'Installation not available. Your browser may not support installation or the app is already installed.';
+                installStatus.className = 'status warning';
+            }
+            
+            // Simulate an update after 10 seconds for testing
+            setTimeout(simulateUpdate, 10000);
+        });
+
+        // Listen for controller changes (for updates)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                log('Controller changed - new service worker activated');
+                
+                // In a real app, you might want to show a "Refresh to update" button
+                const updateStatus = document.getElementById('update-status');
+                updateStatus.innerHTML = 'New version ready! <button id="reload-button">Refresh to update</button>';
+                updateStatus.className = 'status success';
+                
+                document.getElementById('reload-button')?.addEventListener('click', () => {
+                    window.location.reload();
+                });
+            });
+        }
+    </script>
+</body>
+</html>

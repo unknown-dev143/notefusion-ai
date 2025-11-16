@@ -1,0 +1,226 @@
+.settingsPage {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.settingsCard {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  background: var(--ant-component-background);
+  border: 1px solid var(--ant-border-color-split);
+}
+
+.sectionTitle {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ant-text-color);
+}
+
+.settingItem {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 12px;
+  border-radius: 4px;
+  background-color: var(--color-background-secondary);
+}
+
+.settingItem:last-child {
+  margin-bottom: 1.5rem;
+}
+
+.settingInfo {
+  flex: 1;
+}
+
+.settingTitle {
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--ant-text-color);
+  font-size: 1rem;
+}
+
+.settingDescription {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.settingAction {
+  margin-left: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.submitButton {
+  margin-top: 24px;
+  width: auto;
+}
+
+.profileForm,
+.passwordForm {
+  max-width: 500px;
+  padding: 1rem;
+}
+
+.dangerZone {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background-color: var(--color-background-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.dangerZoneTitle {
+  color: var(--color-error);
+  margin-bottom: 1rem;
+}
+
+.dangerAction {
+  margin-bottom: 1rem;
+}
+
+.dangerDescription {
+  color: var(--color-text-secondary);
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.languageSelect {
+  width: 100%;
+  max-width: 300px;
+}
+
+.timezoneSelect {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.settingsIcon {
+  color: var(--ant-primary-color);
+  font-size: 1.5rem;
+}
+
+.tabLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tabIcon {
+  font-size: 1rem;
+}
+
+.sectionSubtitle {
+  margin-bottom: 1.5rem !important;
+  color: var(--ant-text-color);
+}
+
+.optionTitle {
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--ant-text-color);
+}
+
+.optionDescription {
+  color: var(--ant-text-color-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.preferences {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.preference {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preferenceTitle {
+  font-weight: 500;
+  color: var(--ant-text-color);
+}
+
+.theme {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.themeIcon {
+  font-size: 1.25rem;
+  color: var(--ant-text-color-secondary);
+}
+
+.themeText {
+  color: var(--ant-text-color);
+}
+
+.notificationSection {
+  margin-bottom: 1.5rem;
+}
+
+.notificationSetting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ant-border-color-split);
+}
+
+.notificationItem {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 12px;
+  border-radius: 4px;
+  background-color: var(--color-background-secondary);
+}
+
+.notificationItem:last-child {
+  margin-bottom: 0;
+}
+
+.notificationInfo {
+  flex: 1;
+}
+
+.notificationTitle {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.notificationDescription {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.notificationToggle {
+  margin-left: 16px;
+  display: flex;
+  align-items: center;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .settingItem,
+  .notificationItem {
+    background-color: var(--color-background-secondary-dark);
+  }
+  
+  .settingDescription,
+  .notificationDescription,
+  .dangerDescription {
+    color: var(--color-text-secondary-dark);
+  }
+}

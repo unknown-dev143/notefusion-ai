@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="JavaScript environment test page for NoteFusion AI">
+    <title>JavaScript Environment Test | NoteFusion AI</title>
+    <link rel="stylesheet" href="js-test.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>JavaScript Environment Test</h1>
+            <p>This page tests various JavaScript features and browser capabilities.</p>
+        </header>
+        
+        <main>
+            <section id="test1" class="test" aria-labelledby="test1-heading">
+                <h3 id="test1-heading">1. Basic JavaScript</h3>
+                <div id="test1-output" class="test-output" role="status" aria-live="polite">
+                    Testing basic JavaScript functionality...
+                </div>
+            </section>
+            
+            <section id="test2" class="test" aria-labelledby="test2-heading">
+                <h3 id="test2-heading">2. Console Output</h3>
+                <div id="test2-output" class="test-output">
+                    Check the browser's developer console (F12) for detailed output.
+                </div>
+                <button id="run-console-test" aria-label="Run console test">
+                    Run Console Test
+                </button>
+                <div id="console-output" class="test-output" hidden></div>
+            </section>
+            
+            <section id="test3" class="test" aria-labelledby="test3-heading">
+                <h3 id="test3-heading">3. Local Storage</h3>
+                <div id="test3-output" class="test-output" role="status" aria-live="polite">
+                    Testing local storage functionality...
+                </div>
+                <div class="button-group">
+                    <button id="test-storage" aria-label="Test storage">
+                        Test Storage
+                    </button>
+                    <button id="clear-storage" aria-label="Clear storage">
+                        Clear Storage
+                    </button>
+                </div>
+            </section>
+            
+            <section id="test4" class="test" aria-labelledby="test4-heading">
+                <h3 id="test4-heading">4. Feature Detection</h3>
+                <div id="feature-test-output" class="test-output">
+                    Detecting browser features...
+                </div>
+            </section>
+        </main>
+
+    </div>
+
+    <script>
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Test 1: Basic JavaScript
+            runBasicJSTest();
+            
+            // Test 2: Console Output
+            setupConsoleTest();
+            
+            // Test 3: Local Storage
+            setupStorageTests();
+            
+            // Test 4: Feature Detection
+            runFeatureDetection();
+        });
+
+        function runBasicJSTest() {
+            const test1Output = document.getElementById('test1-output');
+            const test1Element = document.getElementById('test1');
+            
+            try {
+                // Test basic JavaScript operations
+                const result = {
+                    addition: 1 + 1,
+                    stringOps: 'Hello'.toUpperCase(),
+                    arrayOps: [1, 2, 3].map(x => x * 2).join(', '),
+                    date: new Date().toLocaleString()
+                };
+                
+                test1Output.innerHTML = `
+                    <p><strong>Basic Math:</strong> 1 + 1 = ${result.addition}</p>
+                    <p><strong>String Operations:</strong> 'Hello'.toUpperCase() = '${result.stringOps}'</p>
+                    <p><strong>Array Operations:</strong> [1, 2, 3].map(x => x * 2) = [${result.arrayOps}]</p>
+                    <p><strong>Date/Time:</strong> ${result.date}</p>
+                `;
+                
+                test1Element.classList.add('passed');
+                test1Output.setAttribute('aria-label', 'Basic JavaScript test passed');
+            } catch (e) {
+                test1Output.textContent = 'Error: ' + e.message;
+                test1Element.classList.add('failed');
+                test1Output.setAttribute('aria-label', 'Basic JavaScript test failed: ' + e.message);
+            }
+        }
+
+        function setupConsoleTest() {
+            const consoleOutput = document.getElementById('console-output');
+            const runButton = document.getElementById('run-console-test');
+            
+            if (!runButton) return;
+            
+            // Override console methods to capture output
+            const originalConsole = {
+                log: console.log,
+                error: console.error,
+                warn: console.warn,
+                info: console.info
+            };
+            
+            function captureConsoleOutput(method, ...args) {
+                // Call original console method
+                originalConsole[method](...args);
+                
+                // Format the output for display
+                const formatted = args.map(arg => {
+                    if (typeof arg === 'object') {
+                        try {
+                            return JSON.stringify(arg, null, 2);
+                        } catch (e) {
+                            return String(arg);
+                        }
+                    }
+                    return String(arg);
+                }).join(' ');
+                
+                // Update the display
+                const output = document.createElement('div');
+                output.className = `console-${method}`;
+                output.textContent = `[${method.toUpperCase()}] ${formatted}`;
+                
+                consoleOutput.appendChild(output);
+                consoleOutput.scrollTop = consoleOutput.scrollHeight;
+                
+                // Show the output area if it was hidden
+                consoleOutput.hidden = false;
+            }
+            
+            runButton.addEventListener('click', () => {
+                // Clear previous output
+                consoleOutput.innerHTML = '';
+                consoleOutput.hidden = false;
+                
+                // Override console methods
+                ['log', 'error', 'warn', 'info'].forEach(method => {
+                    console[method] = (...args) => captureConsoleOutput(method, ...args);
+                });
+                
+                // Run some tests that will produce console output
+                console.log('Console test started at', new Date().toLocaleTimeString());
+                console.info('This is an info message');
+                console.warn('This is a warning message');
+                
+                try {
+                    // This will cause an error to be logged
+                    const obj = { a: 1 };
+                    console.log('Testing object logging:', obj);
+                    
+                    // Test error handling
+                    throw new Error('This is a test error');
+                } catch (e) {
+                    console.error('Caught an error:', e);
+                }
+                
+                // Restore original console methods after a short delay
+                setTimeout(() => {
+                    Object.assign(console, originalConsole);
+                    console.log('Console test completed');
+                }, 100);
+                
+                document.getElementById('test2').classList.add('passed');
+            });
+        }
+        
+        function setupStorageTests() {
+            const storageOutput = document.getElementById('test3-output');
+            const testStorageBtn = document.getElementById('test-storage');
+            const clearStorageBtn = document.getElementById('clear-storage');
+            
+            if (!testStorageBtn || !clearStorageBtn) return;
+            
+            function updateStorageStatus() {
+                try {
+                    const testKey = 'noteFusionTestKey';
+                    const testValue = Date.now().toString();
+                    
+                    // Test writing to localStorage
+                    localStorage.setItem(testKey, testValue);
+                    const retrievedValue = localStorage.getItem(testKey);
+                    
+                    if (retrievedValue === testValue) {
+                        const storageInfo = [];
+                        let totalBytes = 0;
+                        
+                        // Calculate storage usage (approximate)
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const key = localStorage.key(i);
+                            const value = localStorage.getItem(key);
+                            const size = (key.length + value.length) * 2; // Approximate size in bytes
+                            totalBytes += size;
+                            
+                            if (i < 5) { // Only show first 5 items
+                                storageInfo.push(`- ${key}: ${value.length} chars`);
+                            }
+                        }
+                        
+                        const remainingItems = Math.max(0, localStorage.length - 5);
+                        if (remainingItems > 0) {
+                            storageInfo.push(`- ...and ${remainingItems} more items`);
+                        }
+                        
+                        const totalKB = (totalBytes / 1024).toFixed(2);
+                        
+                        storageOutput.innerHTML = `
+                            <p>✅ Local storage is working correctly</p>
+                            <p><strong>Storage Usage:</strong> ${totalKB} KB (${localStorage.length} items)</p>
+                            <details>
+                                <summary>View storage contents</summary>
+                                <pre>${storageInfo.join('\n')}</pre>
+                            </details>
+                        `;
+                        
+                        document.getElementById('test3').classList.add('passed');
+                        return true;
+                    } else {
+                        throw new Error('Storage test failed: Data mismatch');
+                    }
+                } catch (e) {
+                    storageOutput.innerHTML = `
+                        <p>&#x274C; Error: ${e.message}</p>
+                        <p>Your browser may be in private/incognito mode or storage may be disabled.</p>
+                    `;
+                    document.getElementById('test3').classList.add('failed');
+                    return false;
+                }
+            }
+            
+            testStorageBtn.addEventListener('click', () => {
+                if (updateStorageStatus()) {
+                    testStorageBtn.textContent = 'Test Again';
+                }
+            });
+            
+            clearStorageBtn.addEventListener('click', () => {
+                try {
+                    localStorage.clear();
+                    storageOutput.innerHTML = '<p>✅ Local storage has been cleared.</p>';
+                    document.getElementById('test3').classList.add('passed');
+                } catch (e) {
+                    storageOutput.innerHTML = `<p>❌ Failed to clear storage: ${e.message}</p>`;
+                    document.getElementById('test3').classList.add('failed');
+                }
+            });
+            
+            // Run initial test
+            updateStorageStatus();
+        }
+        
+        function runFeatureDetection() {
+            const featureOutput = document.getElementById('feature-test-output');
+            if (!featureOutput) return;
+            
+            const features = {
+                'Web Workers': typeof Worker !== 'undefined',
+                'Service Workers': 'serviceWorker' in navigator,
+                'IndexedDB': 'indexedDB' in window,
+                'WebSockets': 'WebSocket' in window,
+                'Fetch API': 'fetch' in window,
+                'Promises': 'Promise' in window,
+                'Async/Await': (() => {
+                    try {
+                        // Test async/await support
+                        // This is a simple test that won't actually run the code
+                        // It just checks if the syntax is supported
+                        // eslint-disable-next-line no-new-func
+                        new Function('async function test() { await 1; }');
+                        return true;
+                    } catch (e) {
+                        return false;
+                    }
+                })(),
+                'WebGL': (() => {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        return !!(window.WebGLRenderingContext && 
+                                (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+                    } catch (e) {
+                        return false;
+                    }
+                })(),
+                'Touch Events': 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+                'Geolocation': 'geolocation' in navigator,
+                'Notifications': 'Notification' in window,
+                'Local Storage': 'localStorage' in window,
+                'Session Storage': 'sessionStorage' in window
+            };
+            
+            const featureList = [];
+            let passedCount = 0;
+            
+            for (const [feature, supported] of Object.entries(features)) {
+                const status = supported ? '✅' : '❌';
+                featureList.push(`${status} ${feature}`);
+                if (supported) passedCount++;
+            }
+            
+            const passRate = Math.round((passedCount / Object.keys(features).length) * 100);
+            
+            featureOutput.innerHTML = `
+                <p><strong>Browser Features:</strong> ${passedCount} of ${Object.keys(features).length} features supported (${passRate}%)</p>
+                <details>
+                    <summary>View all features</summary>
+                    <pre>${featureList.join('\n')}</pre>
+                </details>
+                <p class="note">Note: Some features may be disabled by browser settings or extensions.</p>
+            `;
+            
+            document.getElementById('test4').classList.add(passRate > 90 ? 'passed' : 'warning');
+        }
+    </script>
+</body>
+</html>

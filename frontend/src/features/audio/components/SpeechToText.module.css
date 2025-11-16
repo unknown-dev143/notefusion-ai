@@ -1,0 +1,30 @@
+.selectContainer {
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.recordingButtonContainer {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.transcriptContainer {
+  margin-top: 20px;
+}
+
+.transcriptLabel {
+  margin-bottom: 8px;
+  display: block;
+}
+
+.transcriptCard {
+  min-height: 150px;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+}
+
+.saveButtonContainer {
+  text-align: right;
+  margin-top: 16px;
+}

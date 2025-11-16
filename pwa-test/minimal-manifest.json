@@ -1,0 +1,9 @@
+{
+  "name": "NoteFusion Test",
+  "short_name": "NoteFusion",
+  "description": "Test PWA for NoteFusion",
+  "start_url": "simple-test.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1677ff"
+}

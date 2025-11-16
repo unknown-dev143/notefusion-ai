@@ -1,0 +1,484 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Input, Button, Space, message, Tag, Select, Card, Popconfirm, Modal, Tooltip, Result } from 'antd';
+import { 
+  SaveOutlined, 
+  DeleteOutlined, 
+  CloseOutlined,
+  TagOutlined,
+  ArrowLeftOutlined,
+  StarOutlined,
+  StarFilled,
+  PictureOutlined
+} from '@ant-design/icons';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { Note } from '../types/note';
+import ErrorBoundary from '../../../components/ErrorBoundary';
+import DrawingPanel from '../../../components/drawing/DrawingPanel';
+
+// Custom toolbar with drawing button
+const CustomToolbar = ({ onDrawingClick }: { onDrawingClick: () => void }) => (
+  <div id="toolbar" className="ql-toolbar ql-snow">
+    <span className="ql-formats">
+      <select className="ql-header" defaultValue="">
+        <option value="1">Heading</option>
+        <option value="2">Subheading</option>
+        <option value="">Normal</option>
+      </select>
+      <button className="ql-bold" />
+      <button className="ql-italic" />
+      <button className="ql-underline" />
+      <button className="ql-strike" />
+    </span>
+    <span className="ql-formats">
+      <button className="ql-list" value="ordered" />
+      <button className="ql-list" value="bullet" />
+      <button className="ql-blockquote" />
+      <button className="ql-code-block" />
+    </span>
+    <span className="ql-formats">
+      <button className="ql-link" />
+      <button className="ql-image" />
+      <button 
+        className="ql-drawing" 
+        onClick={onDrawingClick}
+        title="Insert Drawing"
+      >
+        <PictureOutlined />
+      </button>
+    </span>
+  </div>
+);
+
+// Register the custom format for drawings
+const BlockEmbed = ReactQuill.Quill.import('blots/block/embed');
+
+class DrawingBlot extends BlockEmbed {
+  static blotName = 'drawing';
+  static tagName = 'div';
+  static className = 'ql-drawing';
+
+  static create(value: { url: string }) {
+    const node = super.create() as HTMLElement;
+    node.setAttribute('contenteditable', 'false');
+    node.innerHTML = `<img src="${value.url}" alt="Drawing" style="max-width: 100%;" />`;
+    return node;
+  }
+
+  static value(domNode: HTMLElement) {
+    const img = domNode.querySelector('img');
+    return { url: img?.getAttribute('src') || '' };
+  }
+}
+
+ReactQuill.Quill.register(DrawingBlot);
+
+const { Option } = Select;
+      </select>
+      <button className="ql-bold" />
+      <button className="ql-italic" />
+      <button className="ql-underline" />
+      <button className="ql-strike" />
+    </span>
+    <span className="ql-formats">
+      <button className="ql-list" value="ordered" />
+      <button className="ql-list" value="bullet" />
+      <button className="ql-blockquote" />
+      <button className="ql-code-block" />
+    </span>
+    <span className="ql-formats">
+      <button className="ql-link" />
+      <button className="ql-image" />
+      <button 
+        className="ql-drawing" 
+        onClick={onDrawingClick}
+        title="Insert Drawing"
+      >
+        <PictureOutlined />
+      </button>
+    </span>
+  </div>
+);
+
+// Register the custom format for drawings
+const BlockEmbed = ReactQuill.Quill.import('blots/block/embed');
+
+class DrawingBlot extends BlockEmbed {
+  static blotName = 'drawing';
+  static tagName = 'div';
+  static className = 'ql-drawing';
+
+  static create(value: { url: string }) {
+    const node = super.create() as HTMLElement;
+    node.setAttribute('contenteditable', 'false');
+    node.innerHTML = `<img src="${value.url}" alt="Drawing" style="max-width: 100%;" />`;
+    return node;
+  }
+
+  static value(domNode: HTMLElement) {
+    const img = domNode.querySelector('img');
+    return { url: img?.getAttribute('src') || '' };
+  }
+}
+
+ReactQuill.Quill.register(DrawingBlot);
+
+interface NoteEditorWithDrawingProps {
+  initialNote?: Note | null;
+  onSave: (note: { title: string; content: string; tags?: string[] }) => Promise<Note | void>;
+  onDelete?: () => void;
+  onCancel?: () => void;
+  onPinToggle?: () => void;
+  loading?: boolean;
+  availableTags?: string[];
+  isPinned?: boolean;
+}
+
+const NoteEditorWithDrawing: React.FC<NoteEditorWithDrawingProps> = ({ 
+  initialNote, 
+  onSave, 
+  onDelete, 
+  onCancel,
+  onPinToggle,
+  loading = false,
+  availableTags = [],
+  isPinned = false
+}) => {
+  const [title, setTitle] = useState(initialNote?.title || '');
+  const [content, setContent] = useState(initialNote?.content || '');
+  const [tags, setTags] = useState<string[]>(initialNote?.tags || []);
+  const [newTag, setNewTag] = useState('');
+  const [isTagInputVisible, setIsTagInputVisible] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [isDrawingOpen, setIsDrawingOpen] = useState(false);
+  const [drawingData, setDrawingData] = useState<string | null>(null);
+  const quillRef = useRef<ReactQuill>(null);
+
+  // Insert drawing into editor
+  const insertDrawing = useCallback((imageData: string) => {
+    if (quillRef.current) {
+      const quill = quillRef.current.getEditor();
+      const range = quill.getSelection(true);
+      quill.insertEmbed(range.index, 'drawing', { url: imageData }, 'user');
+      quill.setSelection(range.index + 1, 0, 'api');
+      setDrawingData(imageData);
+      setIsDrawingOpen(false);
+    }
+  }, []);
+
+  // Handle editor change
+  const handleContentChange = (value: string) => {
+    setContent(value);
+  };
+
+  // Update state when initialNote changes
+  useEffect(() => {
+    if (initialNote) {
+      setTitle(initialNote.title);
+      setContent(initialNote.content);
+      setTags(initialNote.tags || []);
+    } else {
+      setTitle('');
+      setContent('');
+      setTags([]);
+    }
+  }, [initialNote]);
+
+  const handleSave = async () => {
+    if (!title.trim()) {
+      message.error('Please enter a title');
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      await onSave({ 
+        title: title.trim(), 
+        content: content.trim(),
+        tags: tags
+      });
+    } catch (err) {
+      console.error('Error saving note:', err);
+      setError(err as Error);
+      message.error('Failed to save note');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (onDelete) {
+      try {
+        await onDelete();
+        message.success('Note deleted successfully');
+      } catch (err) {
+        setError(err as Error);
+        message.error('Failed to delete note');
+      }
+    }
+  };
+
+  const handleRemoveTag = (removedTag: string) => {
+    setTags(tags.filter(tag => tag !== removedTag));
+  };
+
+  const handleTagAdd = () => {
+    if (newTag && !tags.includes(newTag)) {
+      setTags([...tags, newTag]);
+      setNewTag('');
+      setIsTagInputVisible(false);
+    }
+  };
+
+  if (error) {
+    return (
+      <ErrorBoundary componentName="NoteEditorWithDrawing">
+        <Card style={{ margin: '16px' }}>
+          <Result
+            status="error"
+            title="Error"
+            subTitle={error.message || 'An error occurred while loading the note editor'}
+            extra={[
+              <Button type="primary" key="back" onClick={onCancel}>
+                Go Back
+              </Button>,
+            ]}
+          />
+        </Card>
+      </ErrorBoundary>
+    );
+  }
+
+  return (
+    <ErrorBoundary componentName="NoteEditorWithDrawing">
+      <div className="note-editor" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div className="note-editor-header" style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          padding: '16px',
+          borderBottom: '1px solid #f0f0f0',
+          backgroundColor: '#fff'
+        }}>
+          <Space>
+            <Button 
+              icon={<ArrowLeftOutlined />} 
+              onClick={onCancel}
+              disabled={isSaving}
+            >
+              Back
+            </Button>
+            <Tooltip title={isPinned ? 'Unpin note' : 'Pin note'}>
+              <Button
+                type={isPinned ? 'primary' : 'default'}
+                icon={isPinned ? <StarFilled /> : <StarOutlined />}
+                onClick={onPinToggle}
+                disabled={!onPinToggle || isSaving}
+              />
+            </Tooltip>
+          </Space>
+          <Space>
+            {onDelete && (
+              <Popconfirm
+                title="Are you sure you want to delete this note?"
+                onConfirm={onDelete}
+                okText="Yes"
+                cancelText="No"
+                disabled={isSaving}
+              >
+                <Button 
+                  danger 
+                  icon={<DeleteOutlined />}
+                  disabled={isSaving}
+                >
+                  Delete
+                </Button>
+              </Popconfirm>
+            )}
+            <Button 
+              type="primary" 
+              icon={<SaveOutlined />} 
+              onClick={handleSave}
+              loading={isSaving}
+              disabled={!title.trim()}
+            >
+              Save
+            </Button>
+          </Space>
+        </div>
+
+        <div className="note-editor-content" style={{ 
+          flex: 1, 
+          padding: '16px', 
+          overflowY: 'auto',
+          backgroundColor: '#fff'
+        }}>
+          <Input
+            placeholder="Note title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            style={{ 
+              fontSize: '1.75rem', 
+              fontWeight: 'bold', 
+              marginBottom: '1rem',
+              border: 'none',
+              boxShadow: 'none',
+              padding: '8px 0'
+            }}
+            disabled={isSaving}
+          />
+          
+          <div className="tags-section" style={{ marginBottom: '1rem' }}>
+            {tags.map(tag => (
+              <Tag 
+                key={tag} 
+                closable 
+                onClose={() => handleRemoveTag(tag)}
+                style={{ 
+                  marginBottom: '0.5rem',
+                  borderRadius: '4px',
+                  padding: '0 8px',
+                  height: '24px',
+                  lineHeight: '22px'
+                }}
+              >
+                {tag}
+              </Tag>
+            ))}
+            {isTagInputVisible ? (
+              <Select
+                autoFocus
+                size="small"
+                style={{ width: 150, marginBottom: '0.5rem' }}
+                placeholder="Select or create tag"
+                mode="tags"
+                value={tags}
+                onChange={(value) => setTags(value)}
+                onSearch={(value) => setNewTag(value)}
+                onBlur={() => {
+                  if (newTag && !tags.includes(newTag)) {
+                    setTags([...tags, newTag]);
+                    setNewTag('');
+                  }
+                  setIsTagInputVisible(false);
+                }}
+                dropdownRender={menu => (
+                  <div>
+                    {menu}
+                    {newTag && !availableTags.includes(newTag) && (
+                      <div 
+                        style={{ 
+                          padding: '8px 16px',
+                          cursor: 'pointer',
+                          backgroundColor: '#fafafa',
+                          borderTop: '1px solid #f0f0f0'
+                        }}
+                        onMouseDown={e => e.preventDefault()}
+                        onClick={() => {
+                          if (newTag && !tags.includes(newTag)) {
+                            setTags([...tags, newTag]);
+                            setNewTag('');
+                          }
+                          setIsTagInputVisible(false);
+                        }}
+                      >
+                        Create "{newTag}"
+                      </div>
+                    )}
+                  </div>
+                )}
+              >
+                {availableTags
+                  .filter(tag => !tags.includes(tag))
+                  .map(tag => (
+                    <Option key={tag} value={tag}>
+                      {tag}
+                    </Option>
+                  ))}
+              </Select>
+            ) : (
+              <Tag 
+                onClick={() => setIsTagInputVisible(true)}
+                style={{ 
+                  background: '#f5f5f5', 
+                  borderStyle: 'dashed', 
+                  cursor: 'pointer',
+                  borderRadius: '4px',
+                  padding: '0 8px',
+                  height: '24px',
+                  lineHeight: '22px'
+                }}
+              >
+                <TagOutlined /> Add Tag
+              </Tag>
+            )}
+          </div>
+
+          <div style={{ border: '1px solid #f0f0f0', borderRadius: '4px' }}>
+            <CustomToolbar onDrawingClick={() => setIsDrawingOpen(true)} />
+            <ReactQuill
+              ref={quillRef}
+              theme="snow"
+              value={content}
+              onChange={handleContentChange}
+              placeholder="Start writing your note here..."
+              modules={{
+                toolbar: {
+                  container: '#toolbar',
+                },
+                clipboard: {
+                  matchVisual: false,
+                },
+              }}
+              style={{ 
+                minHeight: '400px',
+                backgroundColor: '#fff',
+                border: 'none'
+              }}
+              readOnly={isSaving}
+            />
+          </div>
+        </div>
+      </div>
+
+      <Modal
+        title="Create Drawing"
+        open={isDrawingOpen}
+        onCancel={() => setIsDrawingOpen(false)}
+        footer={null}
+        width={800}
+        style={{ top: 20 }}
+      >
+        <DrawingPanel 
+          onSave={insertDrawing}
+          onCancel={() => setIsDrawingOpen(false)}
+        />
+      </Modal>
+    </ErrorBoundary>
+            <div className="p-4 bg-red-50 border border-red-200 rounded">
+              <p className="text-red-600">Error loading editor. Please refresh the page.</p>
+              <Button 
+                type="primary" 
+                danger 
+                className="mt-2"
+                onClick={() => window.location.reload()}
+              >
+                Reload Page
+              </Button>
+            </div>
+          }
+        >
+          <RichTextEditorWithDrawing 
+            value={content}
+            onChange={handleContentChange}
+            placeholder="Start writing your note here..."
+            className="h-[calc(100vh-400px)] min-h-[300px]"
+          />
+        </ErrorBoundary>
+      </Card>
+    </div>
+  );
+};
+
+export default NoteEditorWithDrawing;

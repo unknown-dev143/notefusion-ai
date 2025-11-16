@@ -1,0 +1,43 @@
+.notesList {
+  width: 100%;
+}
+
+.notesSearch {
+  margin-bottom: 16px;
+}
+
+.searchInput {
+  width: 100%;
+}
+
+.noteItem {
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  background-color: transparent;
+}
+
+.noteItem:hover {
+  background-color: #f5f5f5;
+}
+
+.noteItem.selectedNote {
+  background-color: #f0f7ff !important;
+}
+
+.noteDate {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.pinnedIcon {
+  color: #faad14;
+}
+
+.actionsContainer {
+  display: flex;
+  gap: 8px;
+}

@@ -1,0 +1,5 @@
+# This file is used to indicate the presence of the application for deployment or hosting platforms.
+# It can be empty or contain metadata as needed.
+
+visible: true
+created_at: 2025-08-05T16:42:25+04:00

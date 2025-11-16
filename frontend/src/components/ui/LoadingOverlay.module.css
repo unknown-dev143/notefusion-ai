@@ -1,0 +1,33 @@
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 1000;
+}
+
+.fullscreen {
+  position: fixed;
+}
+
+.loadingSpinner.small {
+  font-size: 20px;
+}
+
+.loadingSpinner.default {
+  font-size: 32px;
+}
+
+.loadingSpinner.large {
+  font-size: 48px;
+}
+
+.loadingText {
+  margin-top: 8px;
+  color: #1890ff;
+}

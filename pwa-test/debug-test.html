@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="PWA Debug Test Page for NoteFusion AI">
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        // Add theme-color meta tags for supported browsers
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1a73e8';
+        lightTheme.media = '(prefers-color-scheme: light)';
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#1a1b2e';
+        darkTheme.media = '(prefers-color-scheme: dark)';
+        document.head.appendChild(darkTheme);
+      }
+    </script>
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link rel="manifest" href="/manifest.json">
+    <title>PWA Debug Test - NoteFusion AI</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-hover: #1557b0;
+            --error: #db4437;
+            --success: #0f9d58;
+            --warning: #f4b400;
+            --text: #202124;
+            --bg: #ffffff;
+            --card-bg: #f8f9fa;
+            --border: #dadce0;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --text: #e8eaed;
+                --bg: #202124;
+                --card-bg: #2d2e30;
+                --border: #5f6368;
+            }
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        button:disabled {
+            background-color: #bdc1c6;
+            cursor: not-allowed;
+        }
+        
+        #log {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+        
+        .error {
+            color: var(--error);
+        }
+        
+        .success {
+            color: var(--success);
+        }
+        
+        .warning {
+            color: var(--warning);
+        }
+    </style>
+</head>
+<body>
+<h1>PWA Debug Test</h1>
+    <button id="test-sw">1. Test Service Worker</button>
+    <button id="test-offline">2. Test Offline</button>
+    <div id="log"></div>
+
+    <script>
+        const log = (msg, isError = false) => {
+            const logEl = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = isError ? 'error' : '';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(msg);
+        };
+
+        // 1. Test Service Worker
+        document.getElementById('test-sw').addEventListener('click', async () => {
+            log('Testing Service Worker...');
+            
+            if (!('serviceWorker' in navigator)) {
+                log('❌ Service Workers not supported', true);
+                return;
+            }
+
+            try {
+                // Unregister any existing service workers
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    log(`Unregistering service worker: ${registration.scope}`);
+                    await registration.unregister();
+                }
+
+                // Register new service worker
+                log('Registering service worker...');
+                const registration = await navigator.serviceWorker.register('test-sw.js', {
+                    scope: '/pwa-test/'
+                });
+
+                log(`✅ Service Worker registered with scope: ${registration.scope}`);
+                
+                // Check if the service worker is controlling the page
+                if (navigator.serviceWorker.controller) {
+                    log('✅ Service Worker is controlling this page');
+                } else {
+                    log('⚠️ Service Worker is not controlling this page');
+                    log('Try refreshing the page after registration');
+                }
+
+            } catch (error) {
+                log(`❌ Service Worker registration failed: ${error.message}`, true);
+                console.error(error);
+            }
+        });
+
+        // 2. Test Offline
+        document.getElementById('test-offline').addEventListener('click', async () => {
+            log('Testing Offline Functionality...');
+            
+            if (!('caches' in window)) {
+                log('❌ Cache API not supported', true);
+                return;
+            }
+
+            try {
+                // Test 1: Can we open the cache?
+                log('Opening cache...');
+                const cache = await caches.open('pwa-test-cache-v1');
+                log('✅ Cache opened successfully');
+
+                // Test 2: Can we add something to the cache?
+                const testUrl = '/pwa-test/test-offline';
+                log(`Adding test data to cache: ${testUrl}`);
+                await cache.put(testUrl, new Response('Test offline data', {
+                    headers: { 'Content-Type': 'text/plain' }
+                }));
+                log('✅ Test data added to cache');
+
+                // Test 3: Can we retrieve it?
+                const response = await cache.match(testUrl);
+                if (response) {
+                    const data = await response.text();
+                    log(`✅ Retrieved from cache: "${data}"`);
+                } else {
+                    log('❌ Failed to retrieve from cache', true);
+                }
+
+                // Test 4: Is the service worker controlling the page?
+                if (navigator.serviceWorker.controller) {
+                    log('✅ Service Worker is controlling the page');
+                } else {
+                    log('❌ Service Worker is NOT controlling the page', true);
+                }
+
+            } catch (error) {
+                log(`❌ Offline test failed: ${error.message}`, true);
+                console.error(error);
+            }
+        });
+
+        // Initial check
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistration().then(reg => {
+                if (reg) {
+                    log(`Service Worker registered: ${reg.scope}`);
+                    if (navigator.serviceWorker.controller) {
+                        log('Service Worker is controlling this page');
+                    } else {
+                        log('Service Worker is registered but not controlling this page');
+                    }
+                } else {
+                    log('No Service Worker is currently registered');
+                }
+            });
+        } else {
+            log('Service Workers are not supported in this browser', true);
+        }
+    </script>
+</body>
+</html>

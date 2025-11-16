@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        const themeColor = document.createElement('meta');
+        themeColor.name = 'theme-color';
+        themeColor.content = '#4CAF50';
+        document.head.appendChild(themeColor);
+      }
+    </script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>PWA Functionality Test</title>
+    <link rel="stylesheet" href="test-styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>PWA Functionality Test</h1>
+        
+        <div class="test-card">
+            <h2>1. Service Worker Test</h2>
+            <button id="testSw" class="btn">Test Service Worker</button>
+            <div id="swLog" class="log">Click to test service worker registration</div>
+        </div>
+
+        <div class="test-card">
+            <h2>2. Offline Functionality</h2>
+            <button id="testOffline" class="btn" disabled>Test Offline Mode</button>
+            <div id="offlineLog" class="log">Complete Service Worker test first</div>
+        </div>
+
+        <div class="test-card">
+            <h2>3. Caching Test</h2>
+            <button id="testCache" class="btn" disabled>Test Caching</button>
+            <div id="cacheLog" class="log">Complete Service Worker test first</div>
+        </div>
+
+        <div id="log" class="log hidden"></div>
+    </div>
+
+    <script>
+        const log = (targetId, msg, isError = false) => {
+            const logEl = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = isError ? 'error' : '';
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${msg}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(`[${targetId}] ${msg}`);
+            
+            // Update the test result display
+            const resultEl = document.getElementById(targetId + 'Log');
+            if (resultEl) {
+                resultEl.textContent = msg;
+                resultEl.className = 'test-result ' + (isError ? 'error' : 'success');
+            }
+        };
+
+        const updateButtonState = (buttonId, enabled) => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.disabled = !enabled;
+            }
+        };
+
+        // Service Worker Test
+        document.getElementById('testSw').addEventListener('click', async () => {
+            const log = (msg, isError) => logTo('swLog', msg, isError);
+            log('Testing Service Worker...');
+            
+            if (!('serviceWorker' in navigator)) {
+                log('❌ Service Workers not supported', true);
+                return;
+            }
+
+            try {
+                // Unregister any existing service workers
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    log(`Unregistering: ${registration.scope}`);
+                    await registration.unregister();
+                }
+                log('✅ Cleared existing service workers');
+
+                // Register new service worker
+                log('Registering service worker...');
+                const registration = await navigator.serviceWorker.register('test-sw-new.js', {
+                    scope: '/'
+                });
+                
+                log(`✅ Service Worker registered at scope: ${registration.scope}`);
+                
+                if (navigator.serviceWorker.controller) {
+                    log('✅ Service Worker is controlling this page');
+                    // Enable offline test button
+                    updateButtonState('testOffline', true);
+                    updateButtonState('testCache', true);
+                } else {
+                    log('⚠️ Service Worker registered but not controlling. Try refreshing the page.', true);
+                }
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, true);
+                console.error('Service Worker error:', error);
+            }
+        });
+
+        // Offline Test
+        document.getElementById('testOffline').addEventListener('click', async () => {
+            const log = (msg, isError) => logTo('offlineLog', msg, isError);
+            log('Testing offline functionality...');
+            
+            if (!navigator.serviceWorker.controller) {
+                log('❌ No active service worker found', true);
+                return;
+            }
+
+            try {
+                // First, ensure the file is cached
+                log('Caching test file...');
+                await caches.open('pwa-test-cache-v1')
+                    .then(cache => cache.add('test-offline.txt'));
+                
+                // Test online fetch
+                log('Testing online fetch...');
+                const onlineResponse = await fetch('test-offline.txt');
+                if (onlineResponse.status === 200) {
+                    log('✅ Online: Successfully fetched test file');
+                    
+                    // Simulate offline mode
+                    log('Simulating offline mode...');
+                    Object.defineProperty(navigator, 'onLine', {
+                        get: function() { return false; },
+                        configurable: true
+                    });
+                    window.dispatchEvent(new Event('offline'));
+                    
+                    // Test offline fetch
+                    try {
+                        const offlineResponse = await fetch('test-offline.txt');
+                        if (offlineResponse) {
+                            const text = await offlineResponse.text();
+                            if (text.includes('offline functionality')) {
+                                log('✅ Offline: Successfully served from cache');
+                            } else {
+                                log('⚠️ Got response but content mismatch', true);
+                            }
+                        } else {
+                            log('❌ No response while offline', true);
+                        }
+                    } catch (error) {
+                        log(`❌ Offline fetch failed: ${error.message}`, true);
+                    }
+                    
+                    // Restore online status
+                    Object.defineProperty(navigator, 'onLine', {
+                        get: function() { return true; },
+                        configurable: true
+                    });
+                    window.dispatchEvent(new Event('online'));
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, true);
+                console.error('Offline test error:', error);
+            }
+        });
+
+        // Cache Test
+        document.getElementById('testCache').addEventListener('click', async () => {
+            const log = (msg, isError) => logTo('cacheLog', msg, isError);
+            log('Testing cache functionality...');
+            
+            if (!navigator.serviceWorker.controller) {
+                log('❌ No active service worker found', true);
+                return;
+            }
+
+            try {
+                // Send a message to the service worker to cache a test file
+                const channel = new MessageChannel();
+                channel.port1.onmessage = (event) => {
+                    if (event.data.error) {
+                        log(`❌ Cache error: ${event.data.error}`, true);
+                    } else {
+                        log(`✅ ${event.data.message}`);
+                    }
+                };
+
+                navigator.serviceWorker.controller.postMessage({
+                    action: 'cacheTest',
+                    url: 'test-file.txt'
+                }, [channel.port2]);
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, true);
+            }
+        });
+
+        // Initial check
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistration().then(reg => {
+                if (reg) {
+                    logTo('swLog', `Found existing registration: ${reg.scope}`);
+                    updateButtonState('testOffline', true);
+                    updateButtonState('testCache', true);
+                }
+            });
+        }
+
+        // Helper function to log to a specific element
+        function logTo(targetId, msg, isError = false) {
+            const logEl = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = isError ? 'error' : '';
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] [${targetId}] ${msg}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+            
+            // Update the test result display
+            const resultEl = document.getElementById(targetId);
+            if (resultEl) {
+                resultEl.textContent = msg;
+                resultEl.className = 'test-result ' + (isError ? 'error' : 'success');
+            }
+            
+            console.log(`[${targetId}] ${msg}`);
+            return { log: (m, e) => logTo(targetId, m, e) };
+        }
+    </script>
+</body>
+</html>

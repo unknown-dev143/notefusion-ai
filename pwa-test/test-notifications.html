@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Theme color with fallbacks for different browsers -->
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        // Add theme-color meta tags for supported browsers
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1a73e8';
+        lightTheme.media = '(prefers-color-scheme: light)';
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#1a1b2e';
+        darkTheme.media = '(prefers-color-scheme: dark)';
+        document.head.appendChild(darkTheme);
+      }
+      
+      // Add Microsoft-specific meta tags
+      const msTileColor = document.createElement('meta');
+      msTileColor.name = 'msapplication-TileColor';
+      msTileColor.content = '#1a73e8';
+      document.head.appendChild(msTileColor);
+      
+      const msNavButtonColor = document.createElement('meta');
+      msNavButtonColor.name = 'msapplication-navbutton-color';
+      msNavButtonColor.content = '#1a73e8';
+      document.head.appendChild(msNavButtonColor);
+    </script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>PWA Notifications Test</title>
+    <link rel="stylesheet" href="test-styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>PWA Notifications Test</h1>
+        
+        <div class="test-card">
+            <h2>1. Notification Permission</h2>
+            <div id="permission-status" class="status info">
+                Checking notification permission...
+            </div>
+            <div class="button-group">
+                <button id="request-permission" class="btn">Request Permission</button>
+                <button id="check-permission" class="btn">Check Permission</button>
+            </div>
+        </div>
+
+        <div class="test-card">
+            <h2>2. Send Test Notification</h2>
+            <div class="form-group">
+                <label for="notification-title">Title:</label>
+                <input type="text" id="notification-title" class="form-control" value="Hello from NoteFusion AI!">
+            </div>
+            <div class="form-group">
+                <label for="notification-body">Message:</label>
+                <textarea id="notification-body" class="form-control" rows="3">This is a test notification from the NoteFusion AI PWA.</textarea>
+            </div>
+            <div class="form-group">
+                <label for="notification-tag">Tag (optional):</label>
+                <input type="text" id="notification-tag" class="form-control" placeholder="notification-1">
+            </div>
+            <div class="button-group">
+                <button id="send-notification" class="btn">Send Notification</button>
+                <button id="schedule-notification" class="btn">Schedule Notification (5s)</button>
+                <button id="close-notifications" class="btn btn-secondary">Close All Notifications</button>
+            </div>
+        </div>
+
+        <div class="test-card">
+            <h2>3. Push Notifications</h2>
+            <div id="push-status" class="status info">
+                Checking push notification support...
+            </div>
+            <div class="button-group">
+                <button id="subscribe-push" class="btn" disabled>Subscribe to Push Notifications</button>
+                <button id="unsubscribe-push" class="btn btn-secondary" disabled>Unsubscribe from Push</button>
+            </div>
+            <div id="push-details" class="log"></div>
+        </div>
+
+        <div class="test-card">
+            <h2>4. Test Log</h2>
+            <div id="log" class="log-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Logging function
+        const log = (message, type = 'info') => {
+            const logElement = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        };
+
+        // Check notification permission
+        async function checkNotificationPermission() {
+            const statusEl = document.getElementById('permission-status');
+            
+            if (!('Notification' in window)) {
+                statusEl.innerHTML = 'Notifications not supported in this browser';
+                statusEl.className = 'status error';
+                return false;
+            }
+            
+            const permission = Notification.permission;
+            
+            switch (permission) {
+                case 'granted':
+                    statusEl.innerHTML = '✅ Notifications are enabled';
+                    statusEl.className = 'status success';
+                    return true;
+                case 'denied':
+                    statusEl.innerHTML = '❌ Notifications are blocked. Please enable them in your browser settings.';
+                    statusEl.className = 'status error';
+                    return false;
+                default:
+                    statusEl.innerHTML = 'ℹ️ Notifications are not yet requested or permission was dismissed';
+                    statusEl.className = 'status warning';
+                    return false;
+            }
+        }
+
+        // Request notification permission
+        document.getElementById('request-permission').addEventListener('click', async () => {
+            try {
+                const permission = await Notification.requestPermission();
+                log(`Notification permission: ${permission}`);
+                checkNotificationPermission();
+            } catch (error) {
+                log(`Error requesting notification permission: ${error.message}`, 'error');
+            }
+        });
+
+        // Check permission button
+        document.getElementById('check-permission').addEventListener('click', () => {
+            checkNotificationPermission();
+        });
+
+        // Send notification
+        function sendNotification(title, options = {}) {
+            // Check if notifications are supported
+            if (!('Notification' in window)) {
+                log('This browser does not support notifications', 'error');
+                return;
+            }
+            
+            // Check if we have permission to show notifications
+            if (Notification.permission === 'granted') {
+                // Create and show the notification
+                const notification = new Notification(title, options);
+                
+                // Handle notification click
+                notification.onclick = (event) => {
+                    event.preventDefault();
+                    log('Notification clicked');
+                    // Focus the window if it's not already focused
+                    window.focus();
+                    // Close the notification
+                    notification.close();
+                };
+                
+                // Auto-close after 10 seconds
+                setTimeout(() => {
+                    notification.close();
+                }, 10000);
+                
+                return notification;
+            } else {
+                log('No permission to show notifications', 'error');
+                return null;
+            }
+        }
+
+        // Send notification button
+        document.getElementById('send-notification').addEventListener('click', () => {
+            const title = document.getElementById('notification-title').value || 'Hello!';
+            const body = document.getElementById('notification-body').value || '';
+            const tag = document.getElementById('notification-tag').value || undefined;
+            
+            const options = {
+                body: body,
+                tag: tag,
+                icon: '/icon-192x192.png',
+                badge: '/icon-192x192.png',
+                vibrate: [200, 100, 200],
+                data: {
+                    dateOfArrival: Date.now(),
+                    primaryKey: '1'
+                },
+                actions: [
+                    { action: 'view', title: 'View' },
+                    { action: 'dismiss', title: 'Dismiss' }
+                ]
+            };
+            
+            sendNotification(title, options);
+            log(`Notification sent: ${title}`);
+        });
+
+        // Schedule notification
+        document.getElementById('schedule-notification').addEventListener('click', () => {
+            const title = document.getElementById('notification-title').value || 'Scheduled Notification';
+            const body = document.getElementById('notification-body').value || 'This is a scheduled notification';
+            
+            log(`Notification scheduled to show in 5 seconds`);
+            
+            setTimeout(() => {
+                sendNotification(title, { 
+                    body: body,
+                    icon: '/icon-192x192.png'
+                });
+                log('Scheduled notification shown');
+            }, 5000);
+        });
+
+        // Close all notifications
+        document.getElementById('close-notifications').addEventListener('click', () => {
+            // This only works for notifications created by this page
+            // It won't close notifications created by service workers
+            if ('Notification' in window && Notification.permission === 'granted') {
+                // Get all open notifications and close them
+                navigator.serviceWorker.getRegistration().then(registration => {
+                    if (registration) {
+                        registration.getNotifications().then(notifications => {
+                            notifications.forEach(notification => {
+                                notification.close();
+                            });
+                            log(`Closed ${notifications.length} notifications`);
+                        });
+                    }
+                });
+            }
+        });
+
+        // Push notifications
+        async function setupPushNotifications() {
+            const statusEl = document.getElementById('push-status');
+            const subscribeBtn = document.getElementById('subscribe-push');
+            const unsubscribeBtn = document.getElementById('unsubscribe-push');
+            const pushDetails = document.getElementById('push-details');
+            
+            // Check if push notifications are supported
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                statusEl.innerHTML = 'Push notifications are not supported in this browser';
+                statusEl.className = 'status error';
+                return;
+            }
+            
+            // Check if the service worker is registered
+            let registration;
+            try {
+                registration = await navigator.serviceWorker.ready;
+            } catch (error) {
+                statusEl.innerHTML = 'Service worker not registered. Please refresh the page.';
+                statusEl.className = 'status error';
+                return;
+            }
+            
+            // Check current subscription
+            const subscription = await registration.pushManager.getSubscription();
+            updatePushUI(!!subscription);
+            
+            // Set up subscription button
+            subscribeBtn.addEventListener('click', async () => {
+                try {
+                    if (Notification.permission !== 'granted') {
+                        const permission = await Notification.requestPermission();
+                        if (permission !== 'granted') {
+                            throw new Error('Permission not granted for notifications');
+                        }
+                    }
+                    
+                    // Subscribe to push notifications
+                    const subscription = await subscribeToPush(registration);
+                    log('Subscribed to push notifications');
+                    updatePushUI(true);
+                    
+                    // In a real app, you would send the subscription to your server
+                    log('Subscription object:', 'info');
+                    log(JSON.stringify(subscription, null, 2), 'info');
+                    
+                } catch (error) {
+                    log(`Error subscribing to push: ${error.message}`, 'error');
+                }
+            });
+            
+            // Set up unsubscribe button
+            unsubscribeBtn.addEventListener('click', async () => {
+                try {
+                    const subscription = await registration.pushManager.getSubscription();
+                    if (subscription) {
+                        await subscription.unsubscribe();
+                        log('Unsubscribed from push notifications');
+                        updatePushUI(false);
+                    }
+                } catch (error) {
+                    log(`Error unsubscribing from push: ${error.message}`, 'error');
+                }
+            });
+            
+            // Update the UI based on subscription status
+            function updatePushUI(isSubscribed) {
+                if (isSubscribed) {
+                    statusEl.innerHTML = '✅ Subscribed to push notifications';
+                    statusEl.className = 'status success';
+                    subscribeBtn.disabled = true;
+                    unsubscribeBtn.disabled = false;
+                    
+                    // Show subscription details
+                    registration.pushManager.getSubscription().then(subscription => {
+                        if (subscription) {
+                            const key = subscription.getKey ? 
+                                btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh')))) : 
+                                'Not available';
+                            const auth = subscription.getKey ? 
+                                btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth')))) : 
+                                'Not available';
+                            
+                            pushDetails.innerHTML = `
+                                <div class="status info">
+                                    <h4>Subscription Details:</h4>
+                                    <p><strong>Endpoint:</strong> ${subscription.endpoint}</p>
+                                    <p><strong>P256DH Key:</strong> ${key.substring(0, 20)}...</p>
+                                    <p><strong>Auth Secret:</strong> ${auth.substring(0, 10)}...</p>
+                                </div>
+                            `;
+                        }
+                    });
+                } else {
+                    statusEl.innerHTML = 'Not subscribed to push notifications';
+                    statusEl.className = 'status info';
+                    subscribeBtn.disabled = false;
+                    unsubscribeBtn.disabled = true;
+                    pushDetails.innerHTML = '';
+                }
+            }
+            
+            // Helper function to subscribe to push notifications
+            async function subscribeToPush(registration) {
+                const existingSubscription = await registration.pushManager.getSubscription();
+                if (existingSubscription) {
+                    return existingSubscription;
+                }
+                
+                // This is a public key from a demo service - in production, use your own VAPID key
+                const vapidPublicKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHB24FLmSYFT7ZdD';
+                
+                // Convert the VAPID public key to a Uint8Array
+                const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+                
+                // Subscribe to push notifications
+                return await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: convertedVapidKey
+                });
+            }
+            
+            // Helper function to convert base64 URL to Uint8Array
+            function urlBase64ToUint8Array(base64String) {
+                const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                const base64 = (base64String + padding)
+                    .replace(/\-/g, '+')
+                    .replace(/_/g, '/');
+                
+                const rawData = window.atob(base64);
+                const outputArray = new Uint8Array(rawData.length);
+                
+                for (let i = 0; i < rawData.length; ++i) {
+                    outputArray[i] = rawData.charCodeAt(i);
+                }
+                return outputArray;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            log('Notifications Test initialized');
+            
+            // Check notification permission on load
+            checkNotificationPermission();
+            
+            // Set up service worker for push notifications
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('sw.js');
+                    log('Service Worker registered with scope:', registration.scope);
+                    
+                    // Set up push notifications
+                    setupPushNotifications();
+                    
+                } catch (error) {
+                    log(`Service Worker registration failed: ${error.message}`, 'error');
+                }
+            } else {
+                log('Service Workers are not supported in this browser', 'error');
+            }
+            
+            // Listen for notification click events
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data && event.data.type === 'NOTIFICATION_CLICK') {
+                    log(`Notification clicked: ${event.data.message}`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

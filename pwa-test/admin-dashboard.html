@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Admin Dashboard - NoteFusion AI</title>
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <style>
+        #loginError {
+            color: #ff4d4f;
+            margin: 10px 0;
+            min-height: 24px;
+        }
+        .btn {
+            width: 100%;
+        }
+        /* Add any additional styles here */
+    </style>
+</head>
+<body>
+<div class="admin-container">
+        <div id="adminLogin">
+            <h1>Admin Login</h1>
+            <p>Please enter the admin password to access the dashboard</p>
+            <input type="password" id="adminPassword" placeholder="Enter admin password">
+            <div id="loginError"></div>
+            <button onclick="login()" class="btn">Login</button>
+        </div>
+
+        <div id="dashboard" class="dashboard hidden">
+            <header class="dashboard-header">
+                <h1>Admin Dashboard</h1>
+                <div class="header-actions">
+                    <span id="lastUpdated">Last updated: Just now</span>
+                    <button onclick="loadDashboardData()" class="btn btn-outline">
+                        <span class="refresh-icon">↻</span> Refresh
+                    </button>
+                </div>
+            </header>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <p class="stat-value" id="totalUsers">0</p>
+                    <p class="stat-change" id="userChange">
+                        <span class="change-up">+12%</span> from last week
+                    </p>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Sessions</h3>
+                    <p class="stat-value" id="activeSessions">0</p>
+                    <p class="stat-change" id="sessionsChange">
+                        <span class="change-up">+5%</span> from last week
+                    </p>
+                </div>
+                <div class="stat-card">
+                    <h3>Top Tool</h3>
+                    <p class="stat-value" id="topTool">-</p>
+                    <p class="stat-change" id="topToolUsage"></p>
+                </div>
+                <div class="stat-card">
+                    <h3>Avg. Session</h3>
+                    <p class="stat-value" id="avgSession">0:00</p>
+                    <p class="stat-change">
+                        <span class="change-up">+2%</span> from last week
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Tool Usage</h2>
+                <div class="chart-container">
+                    <canvas id="toolUsageChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Recent Activity</h2>
+                <table id="recentActivity">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Tool</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTableBody">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <button id="prevPage" onclick="updatePagination(currentPage - 1)">Prev</button>
+                    <span id="pageInfo">Page 1 of 1</span>
+                    <button id="nextPage" onclick="updatePagination(currentPage + 1)">Next</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>User Statistics</h2>
+                <div class="chart-container">
+                    <canvas id="userStatsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Admin authentication
+        let authToken = '';
+        
+        function login() {
+            const password = document.getElementById('adminPassword').value;
+            authToken = btoa(`admin:${password}`);
+            
+            // Test the credentials by making an API call
+            fetch('/api/admin/stats', {
+                headers: {
+                    'Authorization': `Basic ${authToken}`
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('adminLogin').style.display = 'none';
+                    document.getElementById('dashboard').classList.remove('hidden');
+                    loadDashboardData();
+                } else {
+                    throw new Error('Invalid credentials');
+                }
+            })
+            .catch(error => {
+                console.error('Login failed:', error);
+                const errorElement = document.getElementById('loginError');
+                errorElement.textContent = 'Incorrect password. Please try again.';
+                errorElement.style.display = 'block';
+            });
+        }
+        
+        // Fetch data from the server
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch('/api/admin/stats', {
+                    headers: {
+                        'Authorization': `Basic ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch dashboard data');
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+                throw error;
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                // Show loading state
+                const dashboard = document.getElementById('dashboard');
+                dashboard.classList.add('loading');
+                
+                // Fetch data from server
+                const data = await fetchDashboardData();
+                
+                // Update last updated time
+                document.getElementById('lastUpdated').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+                
+                // Update stats
+                document.getElementById('totalUsers').textContent = data.totalUsers || 0;
+                document.getElementById('activeSessions').textContent = data.activeSessions || 0;
+                
+                // Update top tool
+                document.getElementById('topTool').textContent = data.topTool || '-';
+                document.getElementById('topToolUsage').textContent = data.topToolUsage ? `${data.topToolUsage} uses` : '';
+                
+                // Update activity table
+                updateActivityTable(data.recentActivity || []);
+                
+                // Update charts
+                if (toolUsageChart) {
+                    toolUsageChart.destroy();
+                }
+                if (userStatsChart) {
+                    userStatsChart.destroy();
+                }
+                
+                createToolUsageChart(data.toolUsage || {});
+                createUserStatsChart({
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    data: [data.activeSessions || 0, 0, 0, 0, 0, 0, 0]
+                });
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                const errorElement = document.createElement('div');
+                errorElement.className = 'error-message';
+                errorElement.textContent = 'Failed to load dashboard data. Please try again.';
+                document.getElementById('dashboard').appendChild(errorElement);
+            } finally {
+                dashboard.classList.remove('loading');
+            }
+        }
+        
+        function updateActivityTable(activities) {
+            const tbody = document.getElementById('activityTableBody');
+            tbody.innerHTML = '';
+            
+            if (!activities || activities.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="4" style="text-align: center; padding: 20px;">No recent activity</td>';
+                tbody.appendChild(row);
+                return;
+            }
+            
+            // Sort activities by timestamp (newest first)
+            activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            // Paginate activities
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const paginatedActivities = activities.slice(startIndex, startIndex + itemsPerPage);
+            
+            // Update pagination controls
+            updatePagination(activities.length);
+            
+            // Populate table rows
+            paginatedActivities.forEach(activity => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${activity.sessionId ? activity.sessionId.substring(0, 8) + '...' : 'Unknown'}</td>
+                    <td>${activity.action || 'viewed'}</td>
+                    <td>${activity.item || 'N/A'}</td>
+                    <td>${new Date(activity.timestamp).toLocaleString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function updatePagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const prevButton = document.getElementById('prevPage');
+            const nextButton = document.getElementById('nextPage');
+            const pageInfo = document.getElementById('pageInfo');
+            
+            // Update page info
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+            
+            // Update button states
+            prevButton.disabled = currentPage <= 1;
+            nextButton.disabled = currentPage >= totalPages;
+            
+            // Add event listeners
+            prevButton.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadDashboardData();
+                }
+            };
+            
+            nextButton.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    loadDashboardData();
+                }
+            };
+        }
+        
+        function createToolUsageChart(toolUsage) {
+            const ctx = document.getElementById('toolUsageChart').getContext('2d');
+            
+            // Sort tools by usage
+            const sortedTools = Object.entries(toolUsage)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10); // Show top 10
+                
+            toolUsageChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedTools.map(item => item[0]),
+                    datasets: [{
+                        label: 'Usage Count',
+                        data: sortedTools.map(item => item[1]),
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 205, 86, 0.7)',
+                            'rgba(201, 203, 207, 0.7)',
+                            'rgba(54, 162, 235, 0.5)',
+                            'rgba(255, 99, 132, 0.5)',
+                            'rgba(75, 192, 192, 0.5)',
+                            'rgba(75, 192, 192, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 205, 86, 1)',
+                            'rgba(201, 203, 207, 1)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(75, 192, 192, 0.8)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createUserStatsChart(userStats) {
+            const ctx = document.getElementById('userStatsChart').getContext('2d');
+            
+            userStatsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: userStats.labels,
+                    datasets: [{
+                        label: 'Active Users',
+                        data: userStats.data,
+                        fill: true,
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointHoverBorderColor: '#fff',
+                        pointHitRadius: 10,
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.parsed.y} active users`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Handle Enter key in password field
+        document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
+</body>
+</html>

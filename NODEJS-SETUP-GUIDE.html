@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>NoteFusion AI - Node.js Setup Guide</title>
+    <meta name="description" content="Guide to set up Node.js for NoteFusion AI">
+    <!-- Theme color with fallbacks for different browsers -->
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        // Add theme-color meta tags for supported browsers
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1a73e8';
+        lightTheme.media = '(prefers-color-scheme: light)';
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#1a1b2e';
+        darkTheme.media = '(prefers-color-scheme: dark)';
+        document.head.appendChild(darkTheme);
+      }
+    </script>
+    <meta name="msapplication-TileColor" content="#1a73e8">
+    <meta name="msapplication-navbutton-color" content="#1a73e8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+<div class="container">
+        <h1>NoteFusion AI - Node.js Setup Guide</h1>
+        
+        <div class="step warning">
+            <h2>1. Install Node.js</h2>
+            <p>It looks like Node.js might not be properly installed or configured on your system.</p>
+            <ol>
+                <li>Download Node.js LTS from: <a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer">https://nodejs.org/</a></li>
+                <li>Run the installer</li>
+                <li>Make sure to check <strong>"Automatically install the necessary tools"</strong> during installation</li>
+                <li>Complete the installation</li>
+                <li><strong>Restart your computer</strong> after installation</li>
+            </ol>
+            <a href="https://nodejs.org/" class="btn" target="_blank" rel="noopener noreferrer">Download Node.js</a>
+        </div>
+
+        <div class="step">
+            <h2>2. Verify Installation</h2>
+            <p>After restarting your computer, open a new Command Prompt and run:</p>
+            <pre><code>node -v
+npm -v</code></pre>
+            <p>You should see version numbers for both Node.js and npm if they are installed correctly.</p>
+        </div>
+
+        <div class="step">
+            <h2>3. Start the Application</h2>
+            <p>Once Node.js is installed, open Command Prompt and run these commands:</p>
+            <pre><code>cd c:\Users\User\notefusion-ai\notefusion-ai\frontend
+npm install --legacy-peer-deps
+npm run dev</code></pre>
+            <p>The application should open automatically in your browser at <a href="http://localhost:3000" target="_blank" rel="noopener noreferrer">http://localhost:3000</a></p>
+        </div>
+
+        <div class="step success">
+            <h2>4. Need Help?</h2>
+            <p>If you encounter any issues:</p>
+            <ul>
+                <li>Make sure you've restarted your computer after installing Node.js</li>
+                <li>Check that Node.js is in your system PATH</li>
+                <li>Take a screenshot of any error messages</li>
+                <li>Contact support with the error details</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

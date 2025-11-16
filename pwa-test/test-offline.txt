@@ -1,0 +1,3 @@
+This file is used to test offline functionality.
+
+When you go offline, the service worker should serve this file from the cache.

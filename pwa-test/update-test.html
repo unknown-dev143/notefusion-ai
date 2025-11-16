@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PWA Update Test - NoteFusion AI</title>
+</head>
+<body>
+<h1>PWA Update Test</h1>
+    
+    <div>
+        <h2>Current Version: <span id="app-version">1.0.0</span></h2>
+        <button id="check-update">Check for Updates</button>
+        <button id="apply-update" disabled>Apply Update</button>
+    </div>
+    
+    <div id="update-available" class="update-available">
+        <h3>Update Available!</h3>
+        <p>A new version of the app is available. Would you like to update now?</p>
+        <button id="update-now">Update Now</button>
+        <button id="update-later">Later</button>
+    </div>
+    
+    <div>
+        <h3>Test Log</h3>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const logElement = document.getElementById('log');
+        const checkUpdateBtn = document.getElementById('check-update');
+        const applyUpdateBtn = document.getElementById('apply-update');
+        const updateAvailable = document.getElementById('update-available');
+        const updateNowBtn = document.getElementById('update-now');
+        const updateLaterBtn = document.getElementById('update-later');
+        const appVersion = document.getElementById('app-version');
+        
+        let newWorker;
+        
+        // Log function
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Check for updates
+        function checkForUpdates() {
+            log('Checking for updates...');
+            
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistration()
+                    .then(registration => {
+                        if (registration) {
+                            registration.update().then(() => {
+                                log('Service Worker update check complete');
+                            }).catch(error => {
+                                log(`Error updating Service Worker: ${error.message}`, 'error');
+                            });
+                        } else {
+                            log('No Service Worker registered', 'error');
+                        }
+                    });
+            } else {
+                log('Service Workers not supported', 'error');
+            }
+        }
+        
+        // Apply update
+        function applyUpdate() {
+            if (newWorker) {
+                log('Applying update...');
+                newWorker.postMessage({ action: 'skipWaiting' });
+            }
+        }
+        
+        // Event Listeners
+        checkUpdateBtn.addEventListener('click', checkForUpdates);
+        applyUpdateBtn.addEventListener('click', applyUpdate);
+        updateNowBtn.addEventListener('click', () => {
+            applyUpdate();
+            updateAvailable.style.display = 'none';
+        });
+        updateLaterBtn.addEventListener('click', () => {
+            updateAvailable.style.display = 'none';
+        });
+        
+        // Listen for controllerchange event
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                log('Refreshing to apply update...');
+                refreshing = true;
+                window.location.reload();
+            }
+        });
+        
+        // Check for updates every 5 minutes
+        setInterval(checkForUpdates, 5 * 60 * 1000);
+        
+        // Initialize
+        if ('serviceWorker' in navigator) {
+            log('Service Worker API is supported');
+            
+            // Register Service Worker
+            navigator.serviceWorker.register('/test-sw-new.js')
+                .then(registration => {
+                    log(`Service Worker registered with scope: ${registration.scope}`);
+                    
+                    // Check for updates on page load
+                    checkForUpdates();
+                    
+                    // Listen for updates
+                    registration.addEventListener('updatefound', () => {
+                        newWorker = registration.installing;
+                        
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', () => {
+                                log(`Service Worker state: ${newWorker.state}`);
+                                
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    log('New version available!', 'success');
+                                    updateAvailable.style.display = 'block';
+                                    applyUpdateBtn.disabled = false;
+                                }
+                            });
+                        }
+                    });
+                })
+                .catch(error => {
+                    log(`Service Worker registration failed: ${error.message}`, 'error');
+                });
+        } else {
+            log('Service Workers are not supported in this browser', 'error');
+        }
+        
+        // Listen for messages from Service Worker
+        navigator.serviceWorker.addEventListener('message', event => {
+            if (event.data && event.data.type === 'NEW_VERSION_AVAILABLE') {
+                log('New version downloaded and ready to install', 'success');
+                updateAvailable.style.display = 'block';
+                applyUpdateBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

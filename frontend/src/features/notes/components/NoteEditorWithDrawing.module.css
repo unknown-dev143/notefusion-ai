@@ -1,0 +1,124 @@
+.editorContainer {
+  height: 400px;
+  margin-bottom: 20px;
+}
+
+.quillEditor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.quillEditor :global(.ql-container) {
+  flex: 1;
+  overflow: auto;
+}
+
+.toolbarContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.drawingModal :global(.ant-modal-body) {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.drawingCanvasContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.drawingTools {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.canvasWrapper {
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+}
+
+.canvas {
+  background-color: white;
+  cursor: crosshair;
+}
+
+.drawingImage {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.drawingPanel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.drawingArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.drawingCanvas {
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background-color: #fff;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.drawingText {
+  text-align: center;
+  color: #666;
+  margin: 0;
+}
+
+.drawingActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.tagInput {
+  width: 100px;
+}
+
+.cancelButton {
+  margin-right: 8px;
+}
+
+.noteTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid #f0f0f0;
+  border-radius: 0 0 8px 8px;
+  background: #fff;
+}

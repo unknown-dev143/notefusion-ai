@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        const themeColor = document.createElement('meta');
+        themeColor.name = 'theme-color';
+        themeColor.content = '#4CAF50';
+        document.head.appendChild(themeColor);
+      }
+    </script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Simple PWA test page for NoteFusion AI">
+    <title>Simple PWA Test</title>
+    <link rel="apple-touch-icon" href="/icon-192x192.png">
+    <link rel="stylesheet" href="test-styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Simple PWA Test</h1>
+        
+        <div id="status" class="status">Checking PWA support...</div>
+        
+        <div class="button-group">
+            <button id="installBtn" class="btn hidden" aria-label="Install PWA">Install PWA</button>
+            <button id="checkSw" class="btn" aria-label="Check Service Worker status">Check Service Worker</button>
+        </div>
+    </div>
+
+  <script>
+    // Check for service worker support
+    if ('serviceWorker' in navigator) {
+      document.getElementById('status').textContent = 'Service Worker is supported in this browser.';
+      
+      // Register service worker
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('simple-sw.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful');
+            document.getElementById('status').textContent += '\nService Worker registered successfully!';
+          })
+          .catch(err => {
+            console.error('ServiceWorker registration failed: ', err);
+            document.getElementById('status').textContent += '\nService Worker registration failed: ' + err;
+          });
+      });
+    } else {
+      document.getElementById('status').textContent = 'Service Worker is not supported in this browser.';
+    }
+
+    // Check for PWA install prompt
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'block';
+      document.getElementById('status').textContent += '\nPWA can be installed on this device.';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response to the install prompt: ${outcome}`);
+      deferredPrompt = null;
+      installBtn.style.display = 'none';
+    });
+
+    // Check service worker button
+    document.getElementById('checkSw').addEventListener('click', () => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration()
+          .then(registration => {
+            if (registration) {
+              document.getElementById('status').textContent += '\nService Worker is registered and active.';
+            } else {
+              document.getElementById('status').textContent += '\nNo active Service Worker found.';
+            }
+          });
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+.previousPrice {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.newPrice {
+  font-weight: bold;
+}

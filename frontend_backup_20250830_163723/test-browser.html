@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="JavaScript environment test page for NoteFusion AI">
+    <!-- Theme color with fallbacks for different browsers -->
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        // Add theme-color meta tags for supported browsers
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1a73e8';
+        lightTheme.media = '(prefers-color-scheme: light)';
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#1a1b2e';
+        darkTheme.media = '(prefers-color-scheme: dark)';
+        document.head.appendChild(darkTheme);
+      }
+    </script>
+    <meta name="msapplication-TileColor" content="#1a73e8">
+    <meta name="msapplication-navbutton-color" content="#1a73e8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>JavaScript Environment Test - NoteFusion AI</title>
+    <link rel="stylesheet" href="test-styles.css">
+    <style>
+        /* Specific styles for this test page */
+        .test {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: var(--test-bg, #f5f5f5);
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .test {
+                background-color: var(--test-bg-dark, #2a2a2a);
+            }
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .test {
+                background-color: #2d2e30;
+            }
+        }
+    </style>
+</head>
+<body>
+<h1>JavaScript Environment Test</h1>
+    <div id="results">
+        <div class="test" id="test1">1. Testing basic JavaScript...</div>
+        <div class="test" id="test2">2. Testing DOM manipulation...</div>
+        <div class="test" id="test3">3. Testing localStorage...</div>
+        <div class="test" id="test4">4. Testing fetch API...</div>
+    </div>
+
+    <script>
+        // Test 1: Basic JavaScript
+        try {
+            document.getElementById('test1').classList.add('pass');
+            document.getElementById('test1').innerHTML += ' <strong>✓ PASS</strong>';
+        } catch (e) {
+            document.getElementById('test1').classList.add('fail');
+            document.getElementById('test1').innerHTML += ' <strong>✗ FAIL: ' + e.message + '</strong>';
+        }
+
+        // Test 2: DOM Manipulation
+        try {
+            const el = document.createElement('div');
+            el.textContent = 'DOM manipulation works!';
+            document.body.appendChild(el);
+            document.getElementById('test2').classList.add('pass');
+            document.getElementById('test2').innerHTML += ' <strong>✓ PASS</strong>';
+        } catch (e) {
+            document.getElementById('test2').classList.add('fail');
+            document.getElementById('test2').innerHTML += ' <strong>✗ FAIL: ' + e.message + '</strong>';
+        }
+
+        // Test 3: localStorage
+        try {
+            localStorage.setItem('test', 'test-value');
+            const value = localStorage.getItem('test');
+            if (value === 'test-value') {
+                document.getElementById('test3').classList.add('pass');
+                document.getElementById('test3').innerHTML += ' <strong>✓ PASS</strong>';
+            } else {
+                throw new Error('localStorage not working');
+            }
+        } catch (e) {
+            document.getElementById('test3').classList.add('fail');
+            document.getElementById('test3').innerHTML += ' <strong>✗ FAIL: ' + e.message + '</strong>';
+        }
+
+        // Test 4: Fetch API
+        fetch('https://jsonplaceholder.typicode.com/todos/1')
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('test4').classList.add('pass');
+                document.getElementById('test4').innerHTML += ' <strong>✓ PASS</strong>';
+                console.log('Fetch test data:', data);
+            })
+            .catch(e => {
+                document.getElementById('test4').classList.add('fail');
+                document.getElementById('test4').innerHTML += ' <strong>✗ FAIL: ' + e.message + '</strong>';
+            });
+    </script>
+</body>
+</html>

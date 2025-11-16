@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="NoteFusion AI - Intelligent note-taking application">
+    <title>NoteFusion AI - Loading...</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main class="loading-container" role="main" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <h1>NoteFusion AI</h1>
+        <p>Loading application...</p>
+        <p class="sr-only">Please wait while the application loads.</p>
+    </main>
+
+    <script>
+        // This will be replaced by the actual app in development/production
+        console.log('Electron renderer process started');
+        
+        // Example of using the Electron API
+        if (window.electron) {
+            console.log('Electron API available:', Object.keys(window.electron));
+        } else {
+            console.warn('Electron API not available - running in browser mode');
+        }
+    </script>
+</body>
+</html>

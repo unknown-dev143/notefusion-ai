@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Background Sync Test - NoteFusion AI</title>
+</head>
+<body>
+<h1>Background Sync Test</h1>
+    
+    <div>
+        <h2>Background Sync Status: <span id="sync-status">Checking...</span></h2>
+        <button id="register-sync" disabled>Register Background Sync</button>
+        <button id="test-sync" disabled>Test Sync</button>
+        <button id="clear-data">Clear Test Data</button>
+    </div>
+    
+    <div>
+        <h3>Test Data to Sync</h3>
+        <div id="sync-queue">
+            <p>No items in sync queue</p>
+        </div>
+        <button id="add-test-data">Add Test Data</button>
+    </div>
+    
+    <div>
+        <h3>Sync Log</h3>
+        <div id="log"></div>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const syncStatus = document.getElementById('sync-status');
+        const registerSyncBtn = document.getElementById('register-sync');
+        const testSyncBtn = document.getElementById('test-sync');
+        const clearDataBtn = document.getElementById('clear-data');
+        const addTestDataBtn = document.getElementById('add-test-data');
+        const syncQueue = document.getElementById('sync-queue');
+        const logElement = document.getElementById('log');
+        
+        // Log function
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Check if Background Sync is supported
+        function checkBackgroundSyncSupport() {
+            if (!('serviceWorker' in navigator)) {
+                log('Service Workers not supported', 'error');
+                syncStatus.textContent = 'Service Workers not supported';
+                return false;
+            }
+            
+            if (!('SyncManager' in window)) {
+                log('Background Sync API not supported', 'error');
+                syncStatus.textContent = 'Background Sync not supported';
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Register Background Sync
+        async function registerBackgroundSync() {
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                
+                // Check if permission is granted
+                const permissionStatus = await navigator.permissions.query({
+                    name: 'periodic-background-sync'
+                });
+                
+                if (permissionStatus.state === 'denied') {
+                    log('Background Sync permission denied', 'error');
+                    syncStatus.textContent = 'Permission denied';
+                    return false;
+                }
+                
+                // Register sync event
+                await registration.sync.register('sync-data');
+                log('Background Sync registered', 'success');
+                syncStatus.textContent = 'Registered';
+                testSyncBtn.disabled = false;
+                return true;
+                
+            } catch (error) {
+                log(`Error registering Background Sync: ${error.message}`, 'error');
+                syncStatus.textContent = 'Registration failed';
+                return false;
+            }
+        }
+        
+        // Add test data to sync queue
+        function addTestData() {
+            const testData = {
+                id: Date.now(),
+                content: `Test item ${Math.floor(Math.random() * 1000)}`,
+                timestamp: new Date().toISOString(),
+                status: 'pending'
+            };
+            
+            // Add to IndexedDB or local storage
+            let queue = JSON.parse(localStorage.getItem('syncQueue') || '[]');
+            queue.push(testData);
+            localStorage.setItem('syncQueue', JSON.stringify(queue));
+            
+            // Update UI
+            updateSyncQueueUI();
+            log(`Added test data: ${testData.content}`, 'success');
+            
+            // Try to sync immediately if online
+            if (navigator.onLine) {
+                triggerSync();
+            }
+        }
+        
+        // Update sync queue UI
+        function updateSyncQueueUI() {
+            const queue = JSON.parse(localStorage.getItem('syncQueue') || '[]');
+            
+            if (queue.length === 0) {
+                syncQueue.innerHTML = '<p>No items in sync queue</p>';
+                return;
+            }
+            
+            syncQueue.innerHTML = '';
+            queue.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'sync-item';
+                itemEl.innerHTML = `
+                    <p><strong>ID:</strong> ${item.id}</p>
+                    <p><strong>Content:</strong> ${item.content}</p>
+                    <p><strong>Status:</strong> <span class="${item.status}">${item.status}</span></p>
+                    <p><small>${new Date(item.timestamp).toLocaleString()}</small></p>
+                `;
+                syncQueue.appendChild(itemEl);
+            });
+        }
+        
+        // Clear test data
+        function clearTestData() {
+            localStorage.removeItem('syncQueue');
+            updateSyncQueueUI();
+            log('Cleared all test data', 'success');
+        }
+        
+        // Trigger sync manually
+        async function triggerSync() {
+            if (!navigator.onLine) {
+                log('Device is offline. Sync will be attempted when online.', 'info');
+                return;
+            }
+            
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                
+                // Check if sync is registered
+                const tags = await registration.sync.getTags();
+                if (!tags.includes('sync-data')) {
+                    await registerBackgroundSync();
+                }
+                
+                // Trigger sync
+                await registration.sync.register('sync-data');
+                log('Background sync triggered', 'success');
+                
+            } catch (error) {
+                log(`Error triggering sync: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initialize
+        if (checkBackgroundSyncSupport()) {
+            log('Background Sync is supported', 'success');
+            registerSyncBtn.disabled = false;
+            addTestDataBtn.disabled = false;
+            clearDataBtn.disabled = false;
+            
+            // Check if already registered
+            navigator.serviceWorker.ready.then(registration => {
+                registration.sync.getTags().then(tags => {
+                    if (tags.includes('sync-data')) {
+                        syncStatus.textContent = 'Registered';
+                        testSyncBtn.disabled = false;
+                    } else {
+                        syncStatus.textContent = 'Not registered';
+                    }
+                });
+            });
+            
+            // Register Service Worker
+            navigator.serviceWorker.register('test-sw-new.js')
+                .then(registration => {
+                    log('Service Worker registered', 'success');
+                    
+                    // Listen for sync events
+                    navigator.serviceWorker.addEventListener('message', event => {
+                        if (event.data && event.data.type === 'SYNC_COMPLETED') {
+                            log('Background sync completed successfully', 'success');
+                            updateSyncQueueUI();
+                        } else if (event.data && event.data.type === 'SYNC_FAILED') {
+                            log(`Background sync failed: ${event.data.error}`, 'error');
+                        }
+                    });
+                })
+                .catch(error => {
+                    log(`Service Worker registration failed: ${error.message}`, 'error');
+                });
+            
+            // Event Listeners
+            registerSyncBtn.addEventListener('click', registerBackgroundSync);
+            testSyncBtn.addEventListener('click', triggerSync);
+            addTestDataBtn.addEventListener('click', addTestData);
+            clearDataBtn.addEventListener('click', clearTestData);
+            
+            // Initial UI update
+            updateSyncQueueUI();
+            
+        } else {
+            log('Background Sync is not supported in this browser', 'error');
+        }
+        
+        // Listen for online/offline events
+        window.addEventListener('online', () => {
+            log('Device is online. Checking for pending sync...', 'info');
+            triggerSync();
+        });
+        
+        window.addEventListener('offline', () => {
+            log('Device is offline. Sync will be attempted when online.', 'info');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="Electron test page for NoteFusion AI">
+    <title>Electron Test - NoteFusion AI</title>
+    <link rel="stylesheet" href="electron-test.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Electron Test Page</h1>
+        <div id="status" class="status">Initializing...</div>
+        <div class="version-info">
+            <div id="node-version">Node.js: Loading...</div>
+            <div id="electron-version">Electron: Loading...</div>
+            <div id="chrome-version">Chrome: Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${isError ? 'error' : 'success'}`;
+        }
+
+        function setInfo(id, label, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = `${label}: ${value}`;
+            }
+        }
+
+        try {
+            // Test Node.js integration
+            setInfo('node-version', 'Node.js Version', process.versions.node);
+            
+            // Test Electron integration
+            if (window.require) {
+                const { app } = window.require('electron');
+                setInfo('electron-version', 'Electron Version', process.versions.electron);
+                setInfo('chrome-version', 'Chrome Version', process.versions.chrome);
+                updateStatus('Electron is working correctly!');
+            } else {
+                updateStatus('Running in browser mode (not in Electron)', true);
+            }
+        } catch (error) {
+            updateStatus(`Error: ${error.message}`, true);
+            console.error('Test error:', error);
+        }
+    </script>
+</body>
+</html>

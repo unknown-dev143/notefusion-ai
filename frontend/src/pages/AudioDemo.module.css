@@ -1,0 +1,18 @@
+.audioDemo {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.audioTitle {
+  margin-bottom: 24px;
+}
+
+.transcriptionContainer {
+  margin-top: 4px;
+  display: block;
+}
+
+.transcriptionText {
+  display: block;
+}

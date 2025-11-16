@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Offline - NoteFusion AI</title>
+</head>
+<body>
+<div class="container">
+        <div class="offline-icon">📶</div>
+        <h1>You're Offline</h1>
+        <p>It seems you're not connected to the internet. Some features may not be available.</p>
+        <p>Please check your internet connection and try again.</p>
+        <button onclick="window.location.reload()">Retry Connection</button>
+    </div>
+    <script>
+        // Check if we're back online
+        function updateOnlineStatus() {
+            if (navigator.onLine) {
+                window.location.reload();
+            }
+        }
+
+        // Listen for online/offline events
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+    </script>
+</body>
+</html>

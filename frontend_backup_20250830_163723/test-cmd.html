@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Command execution test page">
+    <!-- Theme color with fallbacks for different browsers -->
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        // Add theme-color meta tags for supported browsers
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1a73e8';
+        lightTheme.media = '(prefers-color-scheme: light)';
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#1a1b2e';
+        darkTheme.media = '(prefers-color-scheme: dark)';
+        document.head.appendChild(darkTheme);
+      }
+    </script>
+    <meta name="msapplication-TileColor" content="#1a73e8">
+    <meta name="msapplication-navbutton-color" content="#1a73e8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Command Execution Test</title>
+    <link rel="stylesheet" href="test-styles.css">
+</head>
+<body>
+    <h1>Command Execution Test</h1>
+    <div class="command-buttons">
+        <button data-command="echo Hello World">Test Echo</button>
+        <button data-command="node -v">Test Node.js</button>
+        <button data-command="npm -v">Test NPM</button>
+        <button data-command="dir /b">List Files</button>
+        <button data-command="systeminfo | findstr /B /C:^"OS Name" /C:^"OS Version"">System Info</button>
+    </div>
+    
+    <div class="test">
+        <h3>Command Output:</h3>
+        <div id="output">No command executed yet. Click a button above to run a command.</div>
+    </div>
+    
+    <div class="test">
+        <h3>Custom Command:</h3>
+        <div class="command-input-container">
+            <input 
+                type="text" 
+                id="customCommand" 
+                class="command-input"
+                placeholder="Enter command..."
+            >
+            <button class="run-button">Run</button>
+        </div>
+    </div>
+
+    <script>
+        const output = document.getElementById('output');
+        const customCommand = document.getElementById('customCommand');
+        
+        function addToOutput(text, isError = false) {
+            const line = document.createElement('div');
+            line.textContent = text;
+            line.style.color = isError ? '#ff4444' : '';
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function clearOutput() {
+            output.innerHTML = '';
+        }
+        
+        function runCustomCommand() {
+            const cmd = customCommand.value.trim();
+            if (cmd) {
+                customCommand.value = '';
+                runCommand(cmd);
+            }
+        }
+        
+        async function runCommand(cmd) {
+            clearOutput();
+            addToOutput(`$ ${cmd}`);
+            
+            try {
+                const response = await fetch('/api/run-command', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ command: cmd })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(error || 'Command failed');
+                }
+                
+                const data = await response.text();
+                addToOutput(data);
+            } catch (error) {
+                addToOutput(`Error: ${error.message}`, true);
+                console.error('Command execution failed:', error);
+            }
+        }
+        
+        // Set up event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            const customCommand = document.getElementById('customCommand');
+            const runButton = document.querySelector('.run-button');
+            const commandButtons = document.querySelectorAll('.command-buttons button');
+            
+            // Focus the custom command input on page load
+            customCommand.focus();
+            
+            // Add click handlers for command buttons
+            commandButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    runCommand(button.dataset.command);
+                });
+            });
+            
+            // Add click handler for run button
+            runButton.addEventListener('click', () => {
+                runCustomCommand();
+            });
+            
+            // Add keyup handler for Enter key
+            customCommand.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    runCustomCommand();
+                }
+            });
+            
+            // Add command history
+            const commandHistory = [];
+            let historyIndex = -1;
+            
+            customCommand.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowUp' && commandHistory.length > 0) {
+                    e.preventDefault();
+                    if (historyIndex < commandHistory.length - 1) {
+                        historyIndex++;
+                        customCommand.value = commandHistory[commandHistory.length - 1 - historyIndex];
+                    }
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (historyIndex > 0) {
+                        historyIndex--;
+                        customCommand.value = commandHistory[commandHistory.length - 1 - historyIndex];
+                    } else if (historyIndex === 0) {
+                        historyIndex = -1;
+                        customCommand.value = '';
+                    }
+                } else if (e.key === 'Enter' && customCommand.value.trim()) {
+                    const cmd = customCommand.value.trim();
+                    if (!commandHistory.includes(cmd)) {
+                        commandHistory.push(cmd);
+                    }
+                    historyIndex = -1;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+steps:
+  # Build the Docker image with caching
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'build', 
+            '-t', 'gcr.io/$PROJECT_ID/notefusion-backend',
+            '--build-arg', 'PYTHON_VERSION=3.9',
+            '--build-arg', 'ENVIRONMENT=production',
+            '.' ]
+    dir: 'backend'
+    id: 'build'
+    waitFor: ['-']
+
+  # Push the Docker image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'push', 'gcr.io/$PROJECT_ID/notefusion-backend' ]
+    id: 'push'
+    waitFor: ['build']
+
+  # Deploy to Cloud Run with optimized settings
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'notefusion-backend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/notefusion-backend'
+      - '--platform'
+      - 'managed'
+      - '--region'
+      - 'us-central1'  # Using us-central1 for best pricing and feature availability
+      - '--allow-unauthenticated'
+      - '--cpu=1'
+      - '--memory=512Mi'
+      - '--min-instances=0'
+      - '--max-instances=3'
+      - '--concurrency=80'
+      - '--timeout=300s'
+      - '--set-env-vars'
+      - 'FIREBASE_PROJECT_ID=$_FIREBASE_PROJECT_ID,ENVIRONMENT=production'
+    id: 'deploy'
+    waitFor: ['push']
+
+# Timeout set to 10 minutes (default is 10m)
+timeout: 600s
+
+# Store the built image
+images: ['gcr.io/$PROJECT_ID/notefusion-backend']
+
+# Substitutions for the build
+substitutions:
+  # This will be replaced with your actual Firebase Project ID during deployment
+  _FIREBASE_PROJECT_ID: your-firebase-project-id  # Replace with your Firebase project ID

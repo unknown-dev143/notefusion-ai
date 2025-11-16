@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Test page for NoteFusion AI application">
+    <title>NoteFusion AI Test</title>
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --text-color: #2c3e50;
+            --bg-color: #f5f7fa;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+        }
+        
+        .status {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #ccc;
+        }
+        
+        .status.success {
+            background-color: #e8f5e9;
+            border-left-color: var(--success-color);
+        }
+        
+        #next-steps {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+        
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<h1>NoteFusion AI</h1>
+    <p>Testing frontend setup...</p>
+    
+    <div id="status" class="status">Running tests...</div>
+    
+    <div id="next-steps">
+        <h3>If you see this, the frontend is working!</h3>
+        <p>Next steps:</p>
+        <ol>
+            <li>Make sure the backend server is running</li>
+            <li>Check the browser's developer console for any errors (F12)</li>
+            <li>Try accessing the main application at: <a href="http://localhost:3000">http://localhost:3000</a></li>
+        </ol>
+    </div>
+
+    <script>
+        // Simple test to check if JavaScript is working
+        document.addEventListener('DOMContentLoaded', () => {
+            const status = document.getElementById('status');
+            status.textContent = '✅ Frontend is working!';
+            status.className = 'status success';
+            
+            // Test fetch to backend
+            fetch('http://localhost:8000/api/health')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Backend response:', data);
+                })
+                .catch(error => {
+                    console.error('Error connecting to backend:', error);
+                });
+        });
+    </script>
+</body>
+</html>

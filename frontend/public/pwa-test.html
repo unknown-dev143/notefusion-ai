@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="PWA Test Page for NoteFusion AI Progressive Web Application">
+    
+    <!-- Theme Color with dynamic fallback for different browsers -->
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        // Add theme-color meta tags for supported browsers
+        const lightTheme = document.createElement('meta');
+        lightTheme.name = 'theme-color';
+        lightTheme.content = '#1976d2';
+        lightTheme.media = '(prefers-color-scheme: light)';
+        document.head.appendChild(lightTheme);
+
+        const darkTheme = document.createElement('meta');
+        darkTheme.name = 'theme-color';
+        darkTheme.content = '#0d47a1';
+        darkTheme.media = '(prefers-color-scheme: dark)';
+        document.head.appendChild(darkTheme);
+      }
+    </script>
+    
+    <!-- Microsoft-specific -->
+    <meta name="msapplication-TileColor" content="#1976d2">
+    <meta name="msapplication-navbutton-color" content="#1976d2">
+    
+    <!-- Apple-specific -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- General PWA settings -->
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Icons -->
+    <link rel="apple-touch-icon" href="/logo192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/logo192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <title>PWA Test - NoteFusion AI</title>
+    <link rel="stylesheet" href="/pwa-test.css">
+</head>
+<body>
+    <main class="container">
+        <h1>PWA Test Page</h1>
+    
+    <div id="installContainer" class="hidden">
+        <h2>Install PWA</h2>
+        <button id="installButton">Install NoteFusion AI</button>
+    </div>
+
+    <div>
+        <h2>Service Worker</h2>
+        <div id="swStatus" class="status info">Checking service worker support...</div>
+        <button id="unregisterButton">Unregister Service Worker</button>
+    </div>
+
+    <div>
+        <h2>Offline Mode</h2>
+        <div id="offlineStatus" class="status info">Checking connection status...</div>
+        <button id="cacheButton">View Cached Resources</button>
+        <div id="cacheList" class="status hidden"></div>
+    </div>
+
+    <div id="notificationContainer" class="hidden">
+        <h2>Push Notifications</h2>
+        <button id="requestPermission">Request Notification Permission</button>
+        <button id="testNotification">Test Notification</button>
+        <div id="notificationStatus" class="status"></div>
+    </div>
+
+    <script>
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            const swStatus = document.getElementById('swStatus');
+            
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    swStatus.textContent = 'Service Worker registered successfully';
+                    swStatus.className = 'status success';
+                    console.log('ServiceWorker registration successful');
+                    
+                    // Check for updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                console.log('New content is available; please refresh.');
+                                swStatus.textContent = 'New version available! Please refresh.';
+                                swStatus.className = 'status info';
+                            }
+                        });
+                    });
+                })
+                .catch(error => {
+                    swStatus.textContent = `Service Worker registration failed: ${error}`;
+                    swStatus.className = 'status error';
+                    console.error('ServiceWorker registration failed: ', error);
+                });
+
+            // Unregister button
+            document.getElementById('unregisterButton').addEventListener('click', async () => {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                    await registration.unregister();
+                    console.log('ServiceWorker unregistered');
+                    swStatus.textContent = 'Service Worker has been unregistered. Refresh to test again.';
+                    swStatus.className = 'status info';
+                }
+            });
+        } else {
+            document.getElementById('swStatus').textContent = 'Service workers are not supported in this browser';
+            document.getElementById('swStatus').className = 'status error';
+        }
+
+        // Install PWA
+        let deferredPrompt;
+        const installButton = document.getElementById('installButton');
+        const installContainer = document.getElementById('installContainer');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installContainer.classList.remove('hidden');
+            
+            installButton.addEventListener('click', () => {
+                installContainer.classList.add('hidden');
+                deferredPrompt.prompt();
+                
+                deferredPrompt.userChoice.then(choiceResult => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            });
+        });
+
+        // Check if app is installed
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            installContainer.classList.add('hidden');
+        });
+
+        // Check connection status
+        const offlineStatus = document.getElementById('offlineStatus');
+        function updateOnlineStatus() {
+            if (navigator.onLine) {
+                offlineStatus.textContent = 'You are currently online.';
+                offlineStatus.className = 'status success';
+            } else {
+                offlineStatus.textContent = 'You are currently offline. Some features may be limited.';
+                offlineStatus.className = 'status info';
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+
+        // View cached resources
+        document.getElementById('cacheButton').addEventListener('click', async () => {
+            const cacheList = document.getElementById('cacheList');
+            cacheList.innerHTML = '<h3>Cached Resources:</h3>';
+            
+            if ('caches' in window) {
+                try {
+                    const cacheNames = await caches.keys();
+                    for (const cacheName of cacheNames) {
+                        const cache = await caches.open(cacheName);
+                        const requests = await cache.keys();
+                        const list = document.createElement('ul');
+                        
+                        for (const request of requests) {
+                            const item = document.createElement('li');
+                            item.textContent = request.url;
+                            list.appendChild(item);
+                        }
+                        
+                        const header = document.createElement('h4');
+                        header.textContent = `Cache: ${cacheName}`;
+                        cacheList.appendChild(header);
+                        cacheList.appendChild(list);
+                    }
+                    cacheList.classList.remove('hidden');
+                } catch (error) {
+                    console.error('Error accessing cache:', error);
+                    cacheList.textContent = 'Error accessing cache. Check console for details.';
+                    cacheList.className = 'status error';
+                }
+            } else {
+                cacheList.textContent = 'Cache API is not supported in this browser';
+                cacheList.className = 'status error';
+            }
+        });
+
+        // Notification handling
+        const notificationContainer = document.getElementById('notificationContainer');
+        const notificationStatus = document.getElementById('notificationStatus');
+        
+        if ('Notification' in window) {
+            notificationContainer.classList.remove('hidden');
+            
+            document.getElementById('requestPermission').addEventListener('click', () => {
+                Notification.requestPermission().then(permission => {
+                    notificationStatus.textContent = `Notification permission: ${permission}`;
+                    notificationStatus.className = `status ${permission === 'granted' ? 'success' : 'info'}`;
+                });
+            });
+            
+            document.getElementById('testNotification').addEventListener('click', () => {
+                if (Notification.permission === 'granted') {
+                    navigator.serviceWorker.ready.then(registration => {
+                        registration.showNotification('Test Notification', {
+                            body: 'This is a test notification from NoteFusion AI',
+                            icon: '/logo192.png',
+                            vibrate: [200, 100, 200],
+                            tag: 'test-notification'
+                        });
+                        notificationStatus.textContent = 'Test notification sent!';
+                        notificationStatus.className = 'status success';
+                    });
+                } else {
+                    notificationStatus.textContent = 'Please grant notification permission first';
+                    notificationStatus.className = 'status warning';
+                }
+            });
+        } else {
+            notificationContainer.classList.add('hidden');
+            console.log('This browser does not support notifications');
+        }
+    </script>
+</main>
+</body>
+</html>

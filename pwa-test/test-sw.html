@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        const themeColor = document.createElement('meta');
+        themeColor.name = 'theme-color';
+        themeColor.content = '#4CAF50';
+        document.head.appendChild(themeColor);
+      }
+    </script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Service Worker Test</title>
+    <link rel="apple-touch-icon" href="/icon-192x192.png">
+    <link rel="stylesheet" href="test-styles.css">
+</head>
+<body>
+<h1>Service Worker Test</h1>
+    
+    <div class="test">
+        <h2>1. Service Worker Registration</h2>
+        <div id="sw-status">Checking service worker support...</div>
+        <button id="register-sw">Register Service Worker</button>
+        <button id="unregister-sw">Unregister Service Worker</button>
+        <div id="registration-status"></div>
+    </div>
+
+    <div class="test">
+        <h2>2. Cache Test</h2>
+        <button id="test-cache">Test Cache</button>
+        <div id="cache-status"></div>
+    </div>
+
+    <div class="test">
+        <h2>3. Offline Test</h2>
+        <button id="go-offline">Go Offline</button>
+        <button id="go-online">Go Online</button>
+        <div id="network-status">Network status: <span id="online-status">checking...</span></div>
+    </div>
+
+    <div class="test">
+        <h2>4. Console Log</h2>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const log = (message, isError = false) => {
+            const logElement = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = isError ? 'error' : '';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        };
+
+        // Check service worker support
+        if ('serviceWorker' in navigator) {
+            document.getElementById('sw-status').innerHTML = 'Service Worker is supported in this browser.';
+            log('Service Worker API is available');
+            
+            // Register Service Worker
+            document.getElementById('register-sw').addEventListener('click', async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register('sw.js', {
+                        scope: '/'
+                    });
+                    
+                    log('Service Worker registered with scope: ' + registration.scope);
+                    document.getElementById('registration-status').innerHTML = 
+                        `<span class="success">Registered with scope: ${registration.scope}</span>`;
+                    
+                    // Check if the service worker is controlling the page
+                    if (navigator.serviceWorker.controller) {
+                        log('Service Worker is controlling the page');
+                    } else {
+                        log('Service Worker is registered but not controlling the page. Page may need a refresh.');
+                    }
+                    
+                    // Listen for updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        log('New service worker found, installing...');
+                        
+                        newWorker.addEventListener('statechange', () => {
+                            log(`Service Worker state changed to: ${newWorker.state}`);
+                            
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                log('New content is available; please refresh.');
+                                document.getElementById('registration-status').innerHTML += 
+                                    '<br><span class="success">Update available! Refresh to update.</span>';
+                            }
+                        });
+                    });
+                    
+                } catch (error) {
+                    const errorMsg = `Service Worker registration failed: ${error.message}`;
+                    log(errorMsg, true);
+                    document.getElementById('registration-status').innerHTML = 
+                        `<span class="error">${errorMsg}</span>`;
+                }
+            });
+
+            // Unregister Service Worker
+            document.getElementById('unregister-sw').addEventListener('click', async () => {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                if (registrations.length === 0) {
+                    log('No service workers to unregister.');
+                    return;
+                }
+                
+                for (let registration of registrations) {
+                    await registration.unregister();
+                    log('Service Worker unregistered: ' + registration.scope);
+                }
+                document.getElementById('registration-status').innerHTML = 
+                    '<span class="success">Service Worker unregistered</span>';
+            });
+
+            // Test Cache
+            document.getElementById('test-cache').addEventListener('click', async () => {
+                try {
+                    const cache = await caches.open('test-cache');
+                    await cache.put('/test-cache', new Response('Test cache data'));
+                    const response = await cache.match('/test-cache');
+                    const data = await response.text();
+                    log('Cache test successful: ' + data);
+                    document.getElementById('cache-status').innerHTML = 
+                        '<span class="success">Cache test successful!</span>';
+                } catch (error) {
+                    const errorMsg = `Cache test failed: ${error.message}`;
+                    log(errorMsg, true);
+                    document.getElementById('cache-status').innerHTML = 
+                        `<span class="error">${errorMsg}</span>`;
+                }
+            });
+
+            // Network status
+            function updateNetworkStatus() {
+                const isOnline = navigator.onLine;
+                const statusElement = document.getElementById('online-status');
+                statusElement.textContent = isOnline ? 'Online' : 'Offline';
+                statusElement.className = isOnline ? 'success' : 'error';
+                log(`Network status: ${isOnline ? 'Online' : 'Offline'}`);
+            }
+
+            window.addEventListener('online', updateNetworkStatus);
+            window.addEventListener('offline', updateNetworkStatus);
+            updateNetworkStatus();
+
+            document.getElementById('go-offline').addEventListener('click', () => {
+                log('Simulating offline mode');
+                // This is just for demonstration - in a real test, you'd use DevTools
+                updateNetworkStatus();
+            });
+
+            document.getElementById('go-online').addEventListener('click', () => {
+                log('Simulating online mode');
+                // This is just for demonstration - in a real test, you'd use DevTools
+                updateNetworkStatus();
+            });
+
+            // Initial check for existing service worker
+            if (navigator.serviceWorker.controller) {
+                log('Service Worker already controlling this page');
+                document.getElementById('registration-status').innerHTML = 
+                    '<span class="success">Service Worker is already controlling this page</span>';
+            }
+            
+        } else {
+            document.getElementById('sw-status').innerHTML = 
+                '<span class="error">Service Worker is not supported in this browser.</span>';
+            log('Service Worker API is not available', true);
+        }
+    </script>
+</body>
+</html>

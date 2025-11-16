@@ -1,0 +1,84 @@
+/* Admin Layout Styles */
+.admin-layout {
+  min-height: 100vh;
+}
+
+.admin-sider {
+  overflow: auto;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+}
+
+.admin-logo {
+  height: 64px;
+  margin: 16px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.admin-header {
+  padding: 0 16px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  z-index: 9;
+  position: fixed;
+  right: 0;
+  left: 200px;
+  transition: all 0.2s;
+}
+
+.admin-header.collapsed {
+  left: 0;
+}
+
+.admin-content {
+  margin: 64px 16px 24px 216px;
+  padding: 24px;
+  min-height: calc(100vh - 88px);
+  background: #fff;
+  transition: all 0.2s;
+}
+
+.admin-content.collapsed {
+  margin-left: 16px;
+}
+
+.user-avatar {
+  margin-right: 8px;
+  background-color: #1890ff;
+}
+
+.trigger {
+  font-size: 18px;
+  line-height: 64px;
+  padding: 0 24px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.trigger:hover {
+  color: #1890ff;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.user-info:hover {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+.user-name {
+  margin-left: 8px;
+  font-weight: 500;
+}

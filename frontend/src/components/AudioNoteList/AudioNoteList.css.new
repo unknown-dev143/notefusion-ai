@@ -1,0 +1,111 @@
+.audio-note-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.note-item {
+  padding: 12px;
+}
+
+.note-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  transition: all 0.3s ease;
+}
+
+.note-card.playing {
+  border-left: 4px solid #1890ff;
+  background-color: #f0f7ff;
+}
+
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.note-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.note-title {
+  margin: 0 0 8px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note-meta {
+  margin-bottom: 8px;
+}
+
+.note-date {
+  font-size: 12px;
+}
+
+.transcript-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+
+.note-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pagination-container {
+  padding: 16px;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: center;
+}
+
+.loading-container {
+  padding: 24px;
+}
+
+.loading-skeleton {
+  margin-bottom: 16px;
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom scrollbar */
+.audio-note-list ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.audio-note-list ::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.audio-note-list ::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.audio-note-list ::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+      // Check if browser supports theme-color meta tag
+      const supportsThemeColor = !/firefox|fxios|opr/i.test(navigator.userAgent);
+      if (supportsThemeColor) {
+        const themeColor = document.createElement('meta');
+        themeColor.name = 'theme-color';
+        themeColor.content = '#4CAF50';
+        document.head.appendChild(themeColor);
+      }
+    </script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>PWA Test Runner</title>
+    <link rel="stylesheet" href="test-styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>PWA Test Runner</h1>
+        
+        <div class="test-card">
+            <h2>1. Service Worker Test</h2>
+            <button id="test-sw" class="btn">Run Test</button>
+            <div id="sw-log" class="log"></div>
+        </div>
+        
+        <div class="test-card">
+            <h2>2. Install Prompt Test</h2>
+            <button id="test-install" class="btn">Run Test</button>
+            <div id="install-log" class="log"></div>
+        </div>
+        
+        <div class="test-card">
+            <h2>3. Offline Test</h2>
+            <button id="test-offline" class="btn">Run Test</button>
+            <div id="offline-log" class="log"></div>
+        </div>
+        
+        <div class="test-card">
+            <h2>4. Notifications Test</h2>
+            <button id="test-notifications" class="btn">Run Test</button>
+            <div id="notifications-log" class="log"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Log to a specific element
+        function logToElement(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            const entry = document.createElement('div');
+            entry.className = isError ? 'error' : '';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            element.appendChild(entry);
+            element.scrollTop = element.scrollHeight;
+            console.log(message);
+        }
+
+        // Test Service Worker
+        document.getElementById('test-sw').addEventListener('click', async () => {
+            const logId = 'sw-log';
+            logToElement(logId, 'Testing Service Worker...');
+            
+            if (!('serviceWorker' in navigator)) {
+                logToElement(logId, 'Service Worker not supported in this browser', true);
+                return;
+            }
+            
+            try {
+                const registration = await navigator.serviceWorker.register('sw.js');
+                logToElement(logId, 'Service Worker registered with scope: ' + registration.scope);
+                
+                if (navigator.serviceWorker.controller) {
+                    logToElement(logId, 'Service Worker is controlling this page');
+                } else {
+                    logToElement(logId, 'Service Worker is registered but not controlling this page');
+                }
+                
+            } catch (error) {
+                logToElement(logId, 'Service Worker registration failed: ' + error.message, true);
+            }
+        });
+
+        // Test Install Prompt
+        document.getElementById('test-install').addEventListener('click', () => {
+            const logId = 'install-log';
+            logToElement(logId, 'Testing Install Prompt...');
+            
+            if ('onbeforeinstallprompt' in window) {
+                logToElement(logId, 'Install prompt is supported in this browser');
+                
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    logToElement(logId, 'Install prompt triggered');
+                    
+                    // In a real app, you would show your custom install button here
+                    // and call e.prompt() when the user clicks it
+                    logToElement(logId, 'Showing install prompt (simulated)');
+                    
+                    // For testing purposes, we'll just log the event
+                    logToElement(logId, 'Install prompt event:', e);
+                });
+                
+                // Simulate the beforeinstallprompt event for testing
+                const event = new Event('beforeinstallprompt');
+                event.preventDefault = () => {};
+                window.dispatchEvent(event);
+                
+            } else {
+                logToElement(logId, 'Install prompt not supported in this browser', true);
+            }
+        });
+
+        // Test Offline Functionality
+        document.getElementById('test-offline').addEventListener('click', async () => {
+            const logId = 'offline-log';
+            logToElement(logId, 'Testing Offline Functionality...');
+            
+            if (!('caches' in window)) {
+                logToElement(logId, 'Cache API not supported in this browser', true);
+                return;
+            }
+            
+            try {
+                // Test if we can access the cache
+                const cache = await caches.open('test-cache');
+                await cache.put('/test-offline', new Response('Test offline data'));
+                
+                // Try to retrieve the data
+                const response = await cache.match('/test-offline');
+                if (response) {
+                    const data = await response.text();
+                    logToElement(logId, 'Successfully stored and retrieved data from cache: ' + data);
+                } else {
+                    throw new Error('Failed to retrieve data from cache');
+                }
+                
+                // Test if we can detect offline mode
+                logToElement(logId, 'Online status: ' + (navigator.onLine ? 'Online' : 'Offline'));
+                
+            } catch (error) {
+                logToElement(logId, 'Offline test failed: ' + error.message, true);
+            }
+        });
+
+        // Test Notifications
+        document.getElementById('test-notifications').addEventListener('click', async () => {
+            const logId = 'notifications-log';
+            logToElement(logId, 'Testing Notifications...');
+            
+            if (!('Notification' in window)) {
+                logToElement(logId, 'Notifications not supported in this browser', true);
+                return;
+            }
+            
+            try {
+                // Request permission
+                const permission = await Notification.requestPermission();
+                logToElement(logId, 'Notification permission: ' + permission);
+                
+                if (permission === 'granted') {
+                    // Create a notification
+                    const notification = new Notification('Test Notification', {
+                        body: 'This is a test notification from the PWA Test Runner',
+                        icon: '/icon-192x192.png',
+                        vibrate: [200, 100, 200]
+                    });
+                    
+                    notification.onclick = () => {
+                        logToElement(logId, 'Notification clicked');
+                        window.focus();
+                        notification.close();
+                    };
+                    
+                    logToElement(logId, 'Test notification shown');
+                } else {
+                    logToElement(logId, 'Notification permission denied', true);
+                }
+                
+            } catch (error) {
+                logToElement(logId, 'Notification test failed: ' + error.message, true);
+            }
+        });
+    </script>
+</body>
+</html>

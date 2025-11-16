@@ -1,0 +1,205 @@
+import React, { Suspense, lazy, useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { Spin, ConfigProvider, App as AntdApp, Modal } from 'antd';
+
+// PWA and Service Worker
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import pwaManager from './utils/pwaUtils';
+
+// Context Providers
+import { AuthProvider } from './features/auth/context/AuthContext';
+import { AdminProvider } from './features/admin/context/AdminContext';
+import { SearchProvider } from './contexts/SearchContext';
+import { AIOrganizationProvider } from './features/ai/context/AIOrganizationContext';
+import { RbacProvider } from './features/auth/rbac/RbacContext';
+import { FolderProvider } from './features/folders';
+import { FeatureFlagProvider } from './features/feature-flags';
+
+// Components
+import ErrorBoundary from './components/ErrorBoundary';
+import BackupManager from './features/backup/components/BackupManager';
+import { NotesPage } from './features/notes';
+import FeatureFlagsPage from './pages/FeatureFlagsPage';
+import { theme } from './theme';
+
+// Lazy load pages
+const withSuspense = <T extends object>(
+  Component: React.ComponentType<T>,
+  fallback?: React.ReactNode
+) => (props: T) => (
+  <Suspense fallback={fallback || <LoadingFallback />}>
+    <ErrorBoundary>
+      <Component {...props} />
+    </ErrorBoundary>
+  </Suspense>
+);
+
+const LoginPage = withSuspense(lazy(() => import('./features/auth/pages/LoginPage')));
+const SignupPage = withSuspense(lazy(() => import('./features/auth/pages/SignupPage')));
+const ForgotPasswordPage = withSuspense(lazy(() => import('./features/auth/pages/ForgotPasswordPage')));
+const ResetPasswordPage = withSuspense(lazy(() => import('./features/auth/pages/ResetPasswordPage')));
+const VerifyEmailPage = withSuspense(lazy(() => import('./features/auth/pages/VerifyEmailPage')));
+
+const AUTH_PATH = '/auth';
+
+const AuthLayout: React.FC = () => (
+  <div className="auth-layout" data-testid="auth-layout">
+    <div className="auth-container">
+      <ErrorBoundary>
+        <Outlet />
+      </ErrorBoundary>
+    </div>
+  </div>
+);
+
+const LoadingFallback: React.FC<{ message?: string }> = ({ message = 'Loading...' }) => (
+  <div 
+    role="status" 
+    aria-live="polite"
+    aria-busy="true"
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '100vh',
+      backgroundColor: '#f0f2f5',
+      padding: '1rem',
+      textAlign: 'center'
+    }}
+  >
+    <Spin size="large" />
+    <p style={{ marginTop: '1rem', color: '#666' }}>{message}</p>
+  </div>
+);
+
+const isRunningAsPWA = (): boolean => {
+  return window.matchMedia('(display-mode: standalone)').matches || 
+         (window.navigator as any).standalone === true;
+};
+
+const App: React.FC = () => {
+  const [updateAvailable, setUpdateAvailable] = useState<boolean>(false);
+  const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
+
+  // Check for updates when the app loads
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      try {
+        const reg = await pwaManager.registerServiceWorker();
+        setRegistration(reg);
+        
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          setUpdateAvailable(true);
+        });
+        
+        const interval = setInterval(() => {
+          pwaManager.checkForUpdates();
+        }, 60 * 60 * 1000);
+        
+        return () => clearInterval(interval);
+      } catch (error) {
+        console.error('Service Worker registration failed:', error);
+        return undefined;
+      }
+    };
+    
+    checkForUpdates();
+    
+    // Initialize mocks in development
+    if (process.env.NODE_ENV === 'development') {
+      import('./mocks/browser')
+        .then(({ worker }) => worker.start({ onUnhandledRequest: 'bypass' }))
+        .catch(console.error);
+    }
+  }, []);
+
+  const updateServiceWorker = () => {
+    if (registration?.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      window.location.reload();
+    }
+  };
+
+  useEffect(() => {
+    if (updateAvailable) {
+      Modal.confirm({
+        title: 'Update Available',
+        content: 'A new version is available. Would you like to update now?',
+        onOk: updateServiceWorker,
+        okText: 'Update',
+        cancelText: 'Later',
+      });
+    }
+  }, [updateAvailable]);
+
+  return (
+    <ConfigProvider theme={theme}>
+      <AntdApp>
+        <BrowserRouter>
+          <AuthProvider>
+            <RbacProvider>
+              <AdminProvider>
+                <SearchProvider>
+                  <AIOrganizationProvider>
+                    <FolderProvider>
+                      <BackupManager>
+                        <FeatureFlagProvider>
+                          <Toaster position="top-right" />
+                          {!isRunningAsPWA() && <PWAInstallPrompt />}
+                          
+                          <Routes>
+                            <Route path={AUTH_PATH} element={<AuthLayout />}>
+                              <Route index element={<Navigate to="login" replace />} />
+                              <Route path="login" element={<LoginPage />} />
+                              <Route path="signup" element={<SignupPage />} />
+                              <Route path="verify-email" element={<VerifyEmailPage />} />
+                              <Route path="forgot-password" element={<ForgotPasswordPage />} />
+                              <Route path="reset-password" element={<ResetPasswordPage />} />
+                            </Route>
+                            
+                            <Route path="/" element={<Navigate to="/notes" replace />} />
+                            
+                            <Route 
+                              path="/notes/*" 
+                              element={
+                                <ErrorBoundary componentName="NotesPage">
+                                  <NotesPage />
+                                </ErrorBoundary>
+                              } 
+                            />
+                            
+                            <Route 
+                              path="/feature-flags" 
+                              element={
+                                <ErrorBoundary componentName="FeatureFlagsPage">
+                                  <FeatureFlagsPage />
+                                </ErrorBoundary>
+                              } 
+                            />
+                            
+                            <Route 
+                              path="/backups" 
+                              element={
+                                <ErrorBoundary componentName="BackupManager">
+                                  <BackupManager />
+                                </ErrorBoundary>
+                              } 
+                            />
+                          </Routes>
+                        </FeatureFlagProvider>
+                      </BackupManager>
+                    </FolderProvider>
+                  </AIOrganizationProvider>
+                </SearchProvider>
+              </AdminProvider>
+            </RbacProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </AntdApp>
+    </ConfigProvider>
+  );
+};
+
+export default App;

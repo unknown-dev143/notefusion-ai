@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Admin Settings - NoteFusion AI</title>
+</head>
+<body>
+<div class="admin-container">
+        <header class="admin-header">
+            <h1>Admin Settings</h1>
+            <button id="logoutBtn" class="btn btn-logout">Logout</button>
+        </header>
+        
+        <div id="alerts"></div>
+        
+        <div class="settings-section">
+            <h2>Application Settings</h2>
+            <div class="form-group">
+                <label for="appName">Application Name</label>
+                <input type="text" id="appName" class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label for="sessionTimeout">Session Timeout (minutes)</label>
+                <input type="number" id="sessionTimeout" class="form-control" min="1">
+            </div>
+            
+            <div class="form-group">
+                <label for="maxFileSize">Max File Upload Size (MB)</label>
+                <input type="number" id="maxFileSize" class="form-control" min="1">
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h2>Feature Flags</h2>
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="enableAnalytics">
+                <label for="enableAnalytics">Enable Analytics</label>
+            </div>
+            
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="maintenanceMode">
+                <label for="maintenanceMode">Maintenance Mode</label>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button id="saveSettings" class="btn btn-primary">Save Settings</button>
+        </div>
+    </div>
+</body>
+</html>

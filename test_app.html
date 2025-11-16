@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>NoteFusion AI Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #e6f4ea;
+            color: #0f9d58;
+            border: 1px solid #0f9d58;
+        }
+        .error {
+            background-color: #fce8e6;
+            color: #db4437;
+            border: 1px solid #db4437;
+        }
+        .next-steps {
+            margin-top: 30px;
+            text-align: left;
+            max-width: 600px;
+            margin: 30px auto 0;
+        }
+        .next-steps ol {
+            padding-left: 20px;
+        }
+        code {
+            background-color: #f1f3f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <h1>NoteFusion AI</h1>
+        <p>Testing application setup...</p>
+        
+        <div id="nodeStatus" class="status">
+            Checking Node.js installation...
+        </div>
+        
+        <div id="serverStatus" class="status">
+            Checking server connection...
+        </div>
+        
+        <div id="nextSteps" class="next-steps">
+            <h3>Next Steps:</h3>
+            <ol>
+                <li>Open a terminal in the project directory</li>
+                <li>Run: <code>cd frontend && npm install</code></li>
+                <li>Then run: <code>npm start</code></li>
+                <li>The application should open in your browser automatically</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Check Node.js version
+        const nodeStatus = document.getElementById('nodeStatus');
+        try {
+            nodeStatus.textContent = '✓ Node.js is installed';
+            nodeStatus.className = 'status success';
+        } catch (e) {
+            nodeStatus.textContent = '❌ Node.js is not installed or not in PATH';
+            nodeStatus.className = 'status error';
+        }
+
+        // Check server connection
+        const serverStatus = document.getElementById('serverStatus');
+        fetch('http://localhost:8000/api/health')
+            .then(response => response.json())
+            .then(data => {
+                serverStatus.textContent = '✓ Backend server is running';
+                serverStatus.className = 'status success';
+            })
+            .catch(error => {
+                serverStatus.innerHTML = `
+                    ❌ Could not connect to backend server<br>
+                    <small>${error}</small>
+                `;
+                serverStatus.className = 'status error';
+            });
+
+        // Show next steps
+        document.getElementById('nextSteps').style.display = 'block';
+    </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+/* Node.js Check Page Styles */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 2rem;
+    color: #2c3e50;
+    background-color: #f5f7fa;
+}
+
+#result {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    color: #2c3e50;
+    margin-top: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e1e4e8;
+}
+
+.status-message {
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 4px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.status-success {
+    background-color: #e6ffed;
+    border-left: 4px solid #2ea043;
+    color: #2c3e50;
+}
+
+.status-error {
+    background-color: #ffebe9;
+    border-left: 4px solid #cf222e;
+    color: #2c3e50;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a1a1a;
+        color: #e1e4e8;
+    }
+    
+    #result {
+        background: #2d2d2d;
+        color: #e1e4e8;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    h2 {
+        color: #ffffff;
+        border-bottom-color: #444;
+    }
+    
+    .status-success {
+        background-color: #1b4b21;
+        color: #e1e4e8;
+    }
+    
+    .status-error {
+        background-color: #4a1a1a;
+        color: #ffc9c9;
+    }
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    body {
+        padding: 1rem;
+    }
+    
+    #result {
+        padding: 1rem;
+    }
+}

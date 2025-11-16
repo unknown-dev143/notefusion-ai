@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Service Worker Test</title>
+</head>
+<body>
+<h1>Service Worker Test Page</h1>
+    
+    <div class="container">
+        <h2>Service Worker Status</h2>
+        <div id="swStatus" class="status">Checking service worker status...</div>
+        
+        <h3>Actions</h3>
+        <div>
+            <button id="registerBtn">Register Service Worker</button>
+            <button id="unregisterBtn">Unregister Service Worker</button>
+            <button id="updateBtn">Check for Updates</button>
+        </div>
+        
+        <h3>Cached Resources</h3>
+        <button id="listCacheBtn">List Cached Resources</button>
+        <pre id="cacheList">Click the button above to list cached resources</pre>
+        
+        <h3>Test Offline</h3>
+        <button id="offlineBtn">Go Offline</button>
+        <button id="onlineBtn" disabled>Go Online</button>
+    </div>
+
+    <script>
+        // DOM Elements
+        const swStatus = document.getElementById('swStatus');
+        const registerBtn = document.getElementById('registerBtn');
+        const unregisterBtn = document.getElementById('unregisterBtn');
+        const updateBtn = document.getElementById('updateBtn');
+        const listCacheBtn = document.getElementById('listCacheBtn');
+        const cacheList = document.getElementById('cacheList');
+        const offlineBtn = document.getElementById('offlineBtn');
+        const onlineBtn = document.getElementById('onlineBtn');
+
+        // Check if service workers are supported
+        if ('serviceWorker' in navigator) {
+            updateSWStatus();
+        } else {
+            swStatus.textContent = 'Service Workers are not supported in this browser';
+            swStatus.className = 'status offline';
+        }
+
+        // Register Service Worker
+        registerBtn.addEventListener('click', async () => {
+            try {
+                const registration = await navigator.serviceWorker.register('/sw-offline.js');
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                updateSWStatus();
+            } catch (error) {
+                console.error('ServiceWorker registration failed: ', error);
+                swStatus.textContent = 'Registration failed: ' + error.message;
+                swStatus.className = 'status offline';
+            }
+        });
+
+        // Unregister Service Worker
+        unregisterBtn.addEventListener('click', async () => {
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (registration) {
+                const result = await registration.unregister();
+                if (result) {
+                    console.log('ServiceWorker unregistered');
+                    updateSWStatus();
+                } else {
+                    console.error('Failed to unregister ServiceWorker');
+                }
+            }
+        });
+
+        // Check for updates
+        updateBtn.addEventListener('click', async () => {
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (registration) {
+                try {
+                    await registration.update();
+                    console.log('ServiceWorker update check complete');
+                    updateSWStatus();
+                } catch (error) {
+                    console.error('ServiceWorker update failed:', error);
+                }
+            }
+        });
+
+        // List cached resources
+        listCacheBtn.addEventListener('click', async () => {
+            try {
+                const cache = await caches.open('notefusion-offline-v1');
+                const keys = await cache.keys();
+                cacheList.textContent = `Found ${keys.length} cached resources:\n\n`;
+                keys.forEach((request, index) => {
+                    cacheList.textContent += `${index + 1}. ${request.url}\n`;
+                });
+            } catch (error) {
+                cacheList.textContent = 'Error accessing cache: ' + error.message;
+            }
+        });
+
+        // Toggle offline mode
+        offlineBtn.addEventListener('click', () => {
+            window.dispatchEvent(new Event('offline'));
+            updateOnlineStatus(false);
+            offlineBtn.disabled = true;
+            onlineBtn.disabled = false;
+        });
+
+        onlineBtn.addEventListener('click', () => {
+            window.dispatchEvent(new Event('online'));
+            updateOnlineStatus(true);
+            offlineBtn.disabled = false;
+            onlineBtn.disabled = true;
+        });
+
+        // Update service worker status
+        async function updateSWStatus() {
+            try {
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration) {
+                    if (registration.active) {
+                        swStatus.textContent = `Service Worker is active and controlling this page (${registration.scope})`;
+                        swStatus.className = 'status online';
+                    } else if (registration.installing) {
+                        swStatus.textContent = 'Service Worker is installing...';
+                        swStatus.className = 'status';
+                    } else if (registration.waiting) {
+                        swStatus.textContent = 'Service Worker is waiting to activate';
+                        swStatus.className = 'status';
+                    }
+                } else {
+                    swStatus.textContent = 'No Service Worker is currently registered';
+                    swStatus.className = 'status offline';
+                }
+            } catch (error) {
+                swStatus.textContent = 'Error checking Service Worker status: ' + error.message;
+                swStatus.className = 'status offline';
+            }
+        }
+
+        // Update online status
+        function updateOnlineStatus(online) {
+            const status = document.createElement('div');
+            status.className = 'status ' + (online ? 'online' : 'offline');
+            status.textContent = online ? 'You are now ONLINE' : 'You are now OFFLINE';
+            document.querySelector('.container').prepend(status);
+            
+            // Remove the status after 3 seconds
+            setTimeout(() => {
+                status.remove();
+            }, 3000);
+        }
+
+        // Listen for controller changes
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('Controller changed, reloading...');
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

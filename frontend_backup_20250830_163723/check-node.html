@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<<<<<<< HEAD
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Node.js environment check for NoteFusion AI">
+    <title>Node.js Environment Check - NoteFusion AI</title>
+    <link rel="stylesheet" href="check-node.css">
+</head>
+<body>
+    <main id="result" role="main">
+        <h2>Checking Node.js Installation...</h2>
+        <div id="status" class="status-message" role="status" aria-live="polite" aria-atomic="true">
+            Verifying Node.js environment...
+        </div>
+        <div id="details" class="status-message" aria-live="polite" aria-atomic="true">
+            <!-- Dynamic content will be inserted here by JavaScript -->
+        </div>
+    </main>
+</body>
+</html>
+=======
+<html>
+<head>
+    <title>Node.js Check</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const result = document.getElementById('result');
+            try {
+                // Try to use a Node.js specific feature
+                const os = require('os');
+                result.innerHTML = `
+                    <h2>✅ Node.js is installed!</h2>
+                    <p>Version: ${process.version}</p>
+                    <p>Platform: ${process.platform}</p>
+                    <p>Architecture: ${process.arch}</p>
+                `;
+            } catch (e) {
+                result.innerHTML = `
+                    <h2>❌ Node.js is not properly installed or accessible</h2>
+                    <p>Error: ${e.message}</p>
+                    <p>Please install Node.js from <a href="https://nodejs.org/" target="_blank">https://nodejs.org/</a></p>
+                `;
+            }
+        });
+    </script>
+</head>
+<body>
+    <div id="result" style="font-family: Arial, sans-serif; padding: 20px;">
+        <h2>Checking Node.js installation...</h2>
+    </div>
+</body>
+</html>
+>>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e

@@ -1,0 +1,33 @@
+/* ImportExportMenu.css */
+.import-export-menu {
+  display: inline-block;
+  position: relative;
+}
+
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.export-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.export-button:hover,
+.export-button:focus {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.export-button:focus-visible {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}

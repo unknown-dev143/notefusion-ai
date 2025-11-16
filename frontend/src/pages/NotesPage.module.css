@@ -1,0 +1,64 @@
+.pageContainer {
+  padding: 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.searchContainer {
+  margin-bottom: 1.5rem;
+}
+
+.searchInput {
+  max-width: 500px;
+}
+
+.noteCard {
+  height: 100%;
+  cursor: pointer;
+  transition: box-shadow 0.3s;
+}
+
+.noteCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.noteTitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.noteContent {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 4.5em;
+  line-height: 1.5;
+  max-height: 4.5em;
+}
+
+.noteFooter {
+  margin-top: 1rem;
+  color: #8c8c8c;
+  font-size: 0.8rem;
+}
+
+.skeletonContainer {
+  padding: 2rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.emptyStateButton {
+  margin-top: 1rem;
+}

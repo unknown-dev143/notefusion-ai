@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="404 Page Not Found - The requested page could not be found">
+    <title>404 Page Not Found | NoteFusion AI</title>
+    <link rel="stylesheet" href="404.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>404 - Page Not Found</h1>
+            <p>We couldn't find the page you were looking for.</p>
+            <a href="/" class="nav-link" aria-label="Go to homepage">
+                Go to Homepage
+            </a>
+        </header>
+
+        <main>
+            <div class="debug-info" role="region" aria-labelledby="debug-heading">
+                <h2 id="debug-heading">Debug Information</h2>
+                <p><strong>Current URL:</strong> <span id="current-url" aria-live="polite"></span></p>
+                <p><strong>Available files in the root directory:</strong></p>
+                <div class="file-list-container">
+                    <ul id="file-list" role="list" aria-label="Available files"></ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Show current URL
+        const currentUrlElement = document.getElementById('current-url');
+        if (currentUrlElement) {
+            currentUrlElement.textContent = window.location.href;
+        }
+
+        // Sample file list (fallback if server doesn't support directory listing)
+        const sampleFiles = [
+            { name: 'index.html', type: 'file' },
+            { name: 'css/', type: 'directory' },
+            { name: 'js/', type: 'directory' },
+            { name: 'images/', type: 'directory' },
+            { name: 'favicon.ico', type: 'file' }
+        ];
+
+        // Function to render file list
+        function renderFileList(files) {
+            const fileList = document.getElementById('file-list');
+            if (!fileList) return;
+
+            // Clear loading message if present
+            fileList.innerHTML = '';
+
+            // Add files to the list
+            files.forEach(file => {
+                const li = document.createElement('li');
+                li.setAttribute('role', 'listitem');
+                
+                const icon = document.createElement('span');
+                icon.className = 'file-icon';
+                icon.setAttribute('aria-hidden', 'true');
+                icon.textContent = file.type === 'directory' ? '📁' : '📄';
+                
+                const name = document.createElement('span');
+                name.className = 'file-name';
+                name.textContent = file.name;
+                
+                li.appendChild(icon);
+                li.appendChild(document.createTextNode(' '));
+                li.appendChild(name);
+                
+                // Make directories clickable
+                if (file.type === 'directory') {
+                    li.classList.add('directory-item');
+                    li.setAttribute('tabindex', '0');
+                    li.setAttribute('role', 'link');
+                    li.setAttribute('aria-label', `Open directory ${file.name}`);
+                    
+                    li.addEventListener('click', () => {
+                        window.location.href = `/${file.name}`;
+                    });
+                    
+                    li.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            window.location.href = `/${file.name}`;
+                        }
+                    });
+                }
+                
+                fileList.appendChild(li);
+            });
+            
+            // Add a message if no files are found
+            if (files.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'No files found in the root directory.';
+                fileList.appendChild(li);
+            }
+        }
+
+        // Try to fetch and list files (this will only work if the server supports it)
+        fetch('/?list-files=1')
+            .then(response => {
+                if (!response.ok) throw new Error('Directory listing not supported');
+                return response.json();
+            })
+            .then(files => {
+                // Render the file list
+                renderFileList(files);
+            })
+            .catch(error => {
+                console.log('Falling back to sample file list:', error.message);
+                renderFileList(sampleFiles);
+                
+                // Show a note that this is a sample list
+                const fileList = document.getElementById('file-list');
+                if (fileList) {
+                    const note = document.createElement('li');
+                    note.className = 'note';
+                    note.textContent = 'Note: Showing sample file list. Server directory listing is not available.';
+                    fileList.appendChild(note);
+                }
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+.container {
+  width: 100%;
+}
+
+.controlsContainer {
+  margin-bottom: 16px;
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.button {
+  margin-right: 8px;
+}
+
+.recordButton {
+  margin-right: 8px;
+}
+
+.timer {
+  margin-left: auto;
+}
+
+.audioPlayer {
+  display: none; /* Hidden audio element */
+}
+
+.noteInputContainer {
+  margin-bottom: 16px;
+}
+
+.noteInput {
+  width: 100%;
+}
+
+.noteList {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.noteContent {
+  word-break: break-word;
+}
