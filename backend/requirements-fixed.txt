@@ -1,0 +1,9 @@
+fastapi>=0.95.0,<0.96.0
+uvicorn[standard]
+python-multipart
+openai
+PyMuPDF
+WeasyPrint
+git+https://github.com/openai/whisper.git
+pydantic>=1.10.0,<2.0.0
+python-dotenv
