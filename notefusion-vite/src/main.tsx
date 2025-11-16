@@ -5,10 +5,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import { Toaster } from 'react-hot-toast';
 import ErrorBoundary from './components/ErrorBoundary';
-<<<<<<< HEAD
 import styles from './styles/ErrorBoundary.module.css';
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import './index.css';
 import App from './App';
 

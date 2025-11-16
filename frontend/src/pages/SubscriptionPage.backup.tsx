@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Button, Row, Col, Divider, Skeleton, message, Space } from 'antd';
-import { CheckCircleOutlined, RocketOutlined } from '@ant-design/icons';
+import { Card, Typography, Button, Row, Col, Divider, Skeleton, message } from 'antd';
+import { CheckCircleOutlined, RocketOutlined, CrownOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
@@ -192,29 +192,32 @@ const SubscriptionPage: React.FC = () => {
               
               <Divider className="plan-divider" />
               
-              <Space direction="vertical" size="middle" className="plan-features">
-                {plan.features.map((feature, index) => (
+              <div className="plan-features">
+                {plan.features.map((feature: string, index: number) => (
                   <div key={index} className="feature-item">
                     <CheckCircleOutlined className="feature-icon" />
                     <Text>{feature}</Text>
                   </div>
                 ))}
-              </Space>
-
+              </div>
+              
               <div className="plan-actions">
-                <Button 
-                  type={plan.id === currentPlan ? 'default' : 'primary'} 
+                <Button
+                  type={plan.id === currentPlan ? 'default' : plan.isPopular ? 'primary' : 'default'}
                   size="large"
                   block
+                  icon={plan.id === 'business' ? <CrownOutlined /> : null}
                   onClick={() => handleSubscribe(plan.id)}
+                  disabled={plan.id === currentPlan || processing}
                   loading={processing}
-                  disabled={plan.id === currentPlan}
+                  className="plan-button"
                 >
                   {plan.id === currentPlan 
                     ? 'Current Plan' 
                     : plan.id === 'free' 
                       ? 'Get Started' 
-                      : 'Upgrade'}
+                      : 'Upgrade Now'
+                  }
                 </Button>
               </div>
             </Card>
@@ -222,10 +225,12 @@ const SubscriptionPage: React.FC = () => {
         ))}
       </Row>
 
-      <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+      <div className="contact-support">
         <Text type="secondary">
           Need a custom plan for your team?{' '}
-          <a href="mailto:support@notefusion.ai">Contact us</a>
+          <a href="mailto:support@notefusion.ai" target="_blank" rel="noopener noreferrer">
+            Contact our sales team
+          </a>
         </Text>
       </div>
     </div>

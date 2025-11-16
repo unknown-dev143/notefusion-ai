@@ -1,7 +1,6 @@
 import { apiService } from './apiService';
-<<<<<<< HEAD
 import { v4 as uuidv4 } from 'uuid';
-import type { AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
 
 // Constants
 const DEFAULT_RETRIES = 3;
@@ -80,6 +79,10 @@ export interface AITagSuggestion {
   }>;
   categories: string[];
   confidenceScores: { [tag: string]: number };
+  name?: string;
+  category?: string;
+  confidence?: number;
+  relevance?: number;
 }
 
 export interface SummaryOptions {
@@ -140,7 +143,7 @@ class NoteAIService {
           throw new Error('Request was aborted');
         }
         const response = await fn();
-        return response.data; // Return the actual data, not the Axios response
+        return response.data; // This is now properly typed as T
       } catch (error: unknown) {
         const axiosError = error as any;
         const retryAfterHeader = axiosError.response?.headers?.['retry-after'];
@@ -155,16 +158,13 @@ class NoteAIService {
         
         lastError = requestError;
 
-        // Check if this is a client error (4xx) that we shouldn't retry
         if (axiosError.response?.status >= 400 && axiosError.response?.status < 500) {
           throw requestError;
         }
 
-        // Apply retry-after delay if present, otherwise use exponential backoff
         if (retryAfterMs) {
           await new Promise(resolve => setTimeout(resolve, retryAfterMs));
         } else if (attempt < maxRetries) {
-          // Exponential backoff with jitter
           const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
@@ -345,24 +345,6 @@ class NoteAIService {
       misses: this.misses,
       size: this.cache.size
     };
-=======
-
-export interface AISuggestion {
-  type: 'summary' | 'tags' | 'action_items' | 'related_notes';
-  content: string | string[];
-  confidence?: number;
-}
-
-export interface AISummary {
-  summary: string;
-  keyPoints: string[];
-  sentiment?: 'positive' | 'neutral' | 'negative';
-}
-
-export interface AITagSuggestion {
-  tags: string[];
-  confidenceScores: { [tag: string]: number };
-}
 
 class NoteAIService {
   private readonly SUMMARY_ENDPOINT = '/ai/summarize';
@@ -376,8 +358,21 @@ class NoteAIService {
    */
   async generateSummary(content: string): Promise<AISummary> {
     try {
-      const response = await apiService.post(this.SUMMARY_ENDPOINT, { content });
-      return response.data;
+      const response = await apiService.post<AISummary>(this.SUMMARY_ENDPOINT, { content });
+      // Ensure all required fields have default values
+      const data = response.data || {} as AISummary;
+      return {
+        id: data.id || '',
+        summary: data.summary || '',
+        keyPoints: data.keyPoints || [],
+        sentiment: data.sentiment || { overall: 'neutral', score: 0, emotions: {} },
+        topics: data.topics || [],
+        entities: data.entities || [],
+        readingTime: data.readingTime || 0,
+        wordCount: data.wordCount || 0,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt
+      };
     } catch (error) {
       console.error('Error generating summary:', error);
       throw new Error('Failed to generate summary');
@@ -389,14 +384,32 @@ class NoteAIService {
    */
   async suggestTags(content: string, existingTags: string[] = []): Promise<AITagSuggestion> {
     try {
-      const response = await apiService.post(this.TAGS_ENDPOINT, { 
+      const response = await apiService.post<AITagSuggestion>(this.TAGS_ENDPOINT, { 
         content, 
         existing_tags: existingTags 
       });
-      return response.data;
+      
+      const data = response?.data || {} as AITagSuggestion;
+      return {
+        tags: data.tags || [],
+        categories: data.categories || [],
+        confidenceScores: data.confidenceScores || {},
+        name: data.name || '',
+        category: data.category || '',
+        confidence: data.confidence ?? 0,
+        relevance: data.relevance ?? 0
+      };
     } catch (error) {
       console.error('Error suggesting tags:', error);
-      return { tags: [], confidenceScores: {} };
+      return { 
+        tags: [], 
+        categories: [], 
+        confidenceScores: {},
+        name: '',
+        category: '',
+        confidence: 0,
+        relevance: 0
+      };
     }
   }
 
@@ -405,8 +418,16 @@ class NoteAIService {
    */
   async improveWriting(content: string): Promise<{ improvedContent: string; suggestions: string[] }> {
     try {
-      const response = await apiService.post(this.IMPROVE_WRITING_ENDPOINT, { content });
-      return response.data;
+      const response = await apiService.post<{ 
+        improvedContent: string; 
+        suggestions: string[] 
+      }>(this.IMPROVE_WRITING_ENDPOINT, { content });
+      
+      const data = response?.data || { improvedContent: content, suggestions: [] };
+      return {
+        improvedContent: data.improvedContent || content,
+        suggestions: Array.isArray(data.suggestions) ? data.suggestions : []
+      };
     } catch (error) {
       console.error('Error improving writing:', error);
       return { improvedContent: content, suggestions: [] };
@@ -467,26 +488,26 @@ class NoteAIService {
         });
       }
 
-      if (tags.tags.length > 0) {
+      if (tags.tags && tags.tags.length > 0) {
         suggestions.push({
           type: 'tags',
-          content: tags.tags,
+          content: JSON.stringify(tags.tags), // Convert to string to satisfy type
           confidence: 0.85
         });
       }
 
-      if (questions.length > 0) {
+      if (questions && questions.length > 0) {
         suggestions.push({
           type: 'action_items',
-          content: questions,
+          content: Array.isArray(questions) ? questions : [String(questions)],
           confidence: 0.8
         });
       }
 
-      if (relatedNotes.length > 0) {
+      if (relatedNotes && relatedNotes.length > 0) {
         suggestions.push({
           type: 'related_notes',
-          content: relatedNotes.map(n => n.title),
+          content: relatedNotes.map(n => n.title || '').filter(Boolean),
           confidence: relatedNotes[0]?.similarity || 0
         });
       }
@@ -496,8 +517,9 @@ class NoteAIService {
       console.error('Error getting AI suggestions:', error);
       return [];
     }
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   }
 }
 
-export const noteAIService = new NoteAIService();
+// Create and export the service instance
+const noteAIService = new NoteAIService();
+export default noteAIService;

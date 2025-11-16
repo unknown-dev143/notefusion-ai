@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
   // Environment variables for the client
   const envWithProcess = {
     ...env,
-    VITE_WS_URL: env.VITE_WS_URL || 'ws://localhost:8006/ws',
+    VITE_WS_URL: env.VITE_WS_URL || 'ws://localhost:8007/ws',
     VITE_API_URL: env.VITE_API_URL || 'http://localhost:8000'
   };
 
@@ -34,16 +34,16 @@ export default defineConfig(({ mode }) => {
             {
               src: 'pwa-192x192.png',
               sizes: '192x192',
-              type: 'image/png',
+              type: 'image/png'
             },
             {
               src: 'pwa-512x512.png',
               sizes: '512x512',
-              type: 'image/png',
-            },
-          ],
-        },
-      }),
+              type: 'image/png'
+            }
+          ]
+        }
+      })
     ],
     
     // Environment variables configuration
@@ -57,8 +57,8 @@ export default defineConfig(({ mode }) => {
     
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src'),
-      },
+        '@': path.resolve(__dirname, './src')
+      }
     },
     
     server: {
@@ -69,21 +69,21 @@ export default defineConfig(({ mode }) => {
       hmr: {
         clientPort: 5173,
         protocol: 'ws',
-        host: 'localhost',
-      },
+        host: 'localhost'
+      }
     },
     
     preview: {
       port: 5173,
-      strictPort: true,
+      strictPort: true
     },
     
     build: {
       outDir: 'dist',
       emptyOutDir: true,
-      sourcemap: true,
+      sourcemap: true
     },
     
-    root: __dirname,
+    root: __dirname
   };
 });

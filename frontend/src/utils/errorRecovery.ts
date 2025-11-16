@@ -1,7 +1,8 @@
+import * as React from 'react';
+
 /**
  * Error recovery strategies for different types of errors
  */
-
 type RecoveryStrategy = 'retry' | 'refresh' | 'clearData' | 'navigateAway';
 
 interface RecoveryOptions {
@@ -9,6 +10,31 @@ interface RecoveryOptions {
   retryDelay?: number;
   onSuccess?: () => void;
   onFailure?: (error: Error) => void;
+}
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  onError: (error: Error, errorInfo: React.ErrorInfo) => void;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, { hasError: boolean }> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    this.props.onError(error, errorInfo);
+  }
+
+  render() {
+    return this.props.children;
+  }
 }
 
 /**
@@ -43,7 +69,7 @@ export function createRetryHandler<T extends (...args: any[]) => Promise<any>>(
 /**
  * Handles different types of errors with appropriate recovery strategies
  */
-export class ErrorRecoveryHandler {
+class ErrorRecoveryHandler {
   private static instance: ErrorRecoveryHandler;
   private recoveryHandlers: Map<string, (error: Error) => Promise<boolean>>;
 
@@ -61,38 +87,20 @@ export class ErrorRecoveryHandler {
 
   private initializeDefaultHandlers(): void {
     // Network error handler
-    this.registerHandler(
-      'network',
-      async (error: Error) => {
-        if (!navigator.onLine) {
-          // Wait for network to come back online
-          await new Promise<void>((resolve) => {
-            const handleOnline = () => {
-              window.removeEventListener('online', handleOnline);
-              resolve();
-            };
-            window.addEventListener('online', handleOnline);
-          });
-          return true;
-        }
-        return false;
-      },
-      { priority: 'high' }
-    );
+    this.recoveryHandlers.set('NetworkError', async (error) => {
+      console.log('Handling network error:', error.message);
+      // Try to refresh the page
+      window.location.reload();
+      return true;
+    });
 
     // Authentication error handler
-    this.registerHandler(
-      'auth',
-      async (error: Error) => {
-        // Redirect to login page or refresh token
-        if (error.message.includes('401') || error.message.includes('unauthorized')) {
-          window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
-          return true;
-        }
-        return false;
-      },
-      { priority: 'high' }
-    );
+    this.recoveryHandlers.set('AuthError', async (error) => {
+      console.log('Handling auth error:', error.message);
+      // Redirect to login
+      window.location.href = '/login';
+      return true;
+    });
   }
 
   public registerHandler(
@@ -104,37 +112,58 @@ export class ErrorRecoveryHandler {
   }
 
   public async handleError(error: Error, context: Record<string, unknown> = {}): Promise<boolean> {
-    // Try specific handlers first
-    for (const [errorType, handler] of this.recoveryHandlers) {
+    console.error('Error occurred:', error, 'Context:', context);
+    
+    // Try specific handler first
+    const handler = this.recoveryHandlers.get(error.constructor.name);
+    if (handler) {
       try {
-        const handled = await handler(error);
-        if (handled) return true;
-      } catch (e) {
-        console.error(`Error in ${errorType} recovery handler:`, e);
+        return await handler(error);
+      } catch (handlerError) {
+        console.error('Error in recovery handler:', handlerError);
       }
     }
 
-    // Fallback to generic strategies
+    // Fallback to generic recovery
     return this.tryGenericRecovery(error, context);
   }
 
-  private async tryGenericRecovery(error: Error, context: any): Promise<boolean> {
+  private async tryGenericRecovery(error: Error, context: unknown): Promise<boolean> {
     // Try to recover from common error patterns
-    if (error.message.includes('NetworkError')) {
-      return this.recoveryHandlers.get('network')?.(error) ?? false;
+    if (error.message.includes('network')) {
+      const handler = this.recoveryHandlers.get('NetworkError');
+      return handler ? await handler(error) : false;
     }
-
-    if (error.message.includes('401') || error.message.includes('unauthorized')) {
-      return this.recoveryHandlers.get('auth')?.(error) ?? false;
+    if (error.message.includes('auth') || error.message.includes('unauthorized')) {
+      const handler = this.recoveryHandlers.get('AuthError');
+      return handler ? await handler(error) : false;
     }
-
-    // Add more generic recovery strategies here
     return false;
   }
 }
 
 // Export a singleton instance
 export const errorRecovery = ErrorRecoveryHandler.getInstance();
+
+interface ErrorFallbackProps {
+  error: Error;
+  resetError: () => void;
+}
+
+const DefaultErrorFallback: React.FC<ErrorFallbackProps> = (props: ErrorFallbackProps) => {
+  const { error, resetError } = props;
+  return React.createElement(
+    'div',
+    { className: 'default-error-fallback' },
+    React.createElement('h2', null, 'Something went wrong'),
+    React.createElement('p', null, error.message),
+    React.createElement(
+      'button',
+      { onClick: resetError, type: 'button' },
+      'Try again'
+    )
+  );
+};
 
 /**
  * Higher-order component for error recovery
@@ -144,52 +173,59 @@ export function withErrorRecovery<T extends React.ComponentType>(
   options: {
     errorBoundary?: boolean;
     recoveryHandler?: (error: Error) => Promise<boolean>;
-    fallback?: React.ComponentType<{ error: Error; reset: () => void }>;
+    fallback?: React.ComponentType<ErrorFallbackProps>;
   } = {}
 ): React.FC<React.ComponentProps<T>> {
-  const { errorBoundary = true, recoveryHandler, fallback: Fallback } = options;
+  const { errorBoundary = true, recoveryHandler, fallback: Fallback = DefaultErrorFallback } = options;
 
-  return function ErrorRecoveryWrapper(props: React.ComponentProps<T>) {
+  return function ErrorBoundaryWrapper(props: React.ComponentProps<T>) {
     const [error, setError] = React.useState<Error | null>(null);
 
-    const resetError = () => setError(null);
+    const resetError = React.useCallback(() => {
+      setError(null);
+    }, []);
 
-    const handleError = async (err: Error) => {
-      setError(err);
-      
-      if (recoveryHandler) {
-        const recovered = await recoveryHandler(err);
-        if (recovered) {
-          resetError();
+    const handleError = React.useCallback(
+      async (err: Error) => {
+        setError(err);
+        
+        if (recoveryHandler) {
+          const recovered = await recoveryHandler(err);
+          if (recovered) {
+            resetError();
+          }
+        } else {
+          const recovered = await errorRecovery.handleError(err, { component: WrappedComponent.name });
+          if (recovered) {
+            resetError();
+          }
         }
-      } else {
-        const recovered = await errorRecovery.handleError(err, { component: WrappedComponent.name });
-        if (recovered) {
-          resetError();
-        }
-      }
-    };
+      },
+      [recoveryHandler, resetError]
+    );
 
     if (error) {
-      return Fallback ? (
-        <Fallback error={error} reset={resetError} />
-      ) : (
-        <div>
-          <h2>Something went wrong</h2>
-          <p>{error.message}</p>
-          <button onClick={resetError}>Try again</button>
-        </div>
+      return React.createElement(
+        'div',
+        { className: 'error-boundary' },
+        React.createElement(Fallback, { error, resetError })
       );
     }
 
-    const component = <WrappedComponent {...props} />;
+    const component = React.createElement(WrappedComponent, props);
     
-    return errorBoundary ? (
-      <ErrorBoundary onError={handleError}>
-        {component}
-      </ErrorBoundary>
-    ) : (
-      component
-    );
+    if (errorBoundary) {
+      return React.createElement(
+        ErrorBoundary, 
+        { 
+          onError: handleError,
+          children: component
+        },
+        component
+      );
+    }
+    return component;
   };
 }
+
+export default withErrorRecovery;

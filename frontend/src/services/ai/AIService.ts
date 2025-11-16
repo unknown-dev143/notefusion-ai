@@ -1,6 +1,5 @@
-<<<<<<< HEAD
 import axios, { AxiosRequestConfig, CancelTokenSource } from 'axios';
-import { aiCache, withCache } from '../../utils/cache';
+import { aiCache } from '../../utils/cache';
 import { debounce } from 'lodash';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -14,13 +13,6 @@ const CACHE_TTL = {
   MEDIUM: 30 * 60 * 1000, // 30 minutes
   LONG: 24 * 60 * 60 * 1000, // 24 hours
 };
-
-=======
-import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 export interface AISuggestion {
   id: string;
   type: 'summarize' | 'improve' | 'expand' | 'simplify' | 'action_items' | 'custom';
@@ -38,7 +30,6 @@ export interface AITemplate {
   isPremium: boolean;
 }
 
-<<<<<<< HEAD
 // Extended interfaces for AI responses
 export interface AISummary {
   id: string;
@@ -67,16 +58,11 @@ export interface AIContentStructure {
 
 class AIService {
   // Get AI suggestions for a note with caching and request cancellation
-=======
-class AIService {
-  // Get AI suggestions for a note
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   static async getSuggestions(
     noteId: string,
     context: string,
     type?: AISuggestion['type']
   ): Promise<AISuggestion[]> {
-<<<<<<< HEAD
     const cacheKey = `suggestions_${noteId}_${type || 'all'}`;
     
     // Cancel previous request if it exists
@@ -180,13 +166,8 @@ class AIService {
   ): Promise<{ content: string }> {
     try {
       const response = await axios.post(`${API_BASE_URL}/ai/templates/apply`, {
-        templateId,
-        variables,
-        noteId
-      });
-      return response.data;
     } catch (error) {
-      console.error('Error applying AI template:', error);
+      console.error('Error generating content from template:', error);
       throw error;
     }
   }
@@ -194,21 +175,43 @@ class AIService {
   // Get available AI templates
   static async getTemplates(category?: string): Promise<AITemplate[]> {
     try {
-      const params = category ? { category } : {};
-      const response = await axios.get(`${API_BASE_URL}/ai/templates`, { params });
-      return response.data;
+      const cacheKey = `templates_${category || 'all'}`;
+      const cached = aiCache.get<AITemplate[]>(cacheKey);
+
+      if (cached) {
+        return cached;
+      }
+
+      const response = await axios.get(`${API_BASE_URL}/ai/templates`, {
+        params: { category },
+      });
+
+      const templates = response.data.templates;
+      aiCache.set(cacheKey, templates, CACHE_TTL.LONG);
+
+      return templates;
     } catch (error) {
       console.error('Error getting AI templates:', error);
       throw error;
     }
   }
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+
+  // Cancel all pending requests
+  static cancelAllRequests(): void {
+    Object.values(pendingRequests).forEach((source) => {
+      source.cancel('Operation canceled by user');
+    });
+  }
+
+  // Clear all caches
+  static clearCaches(): void {
+    aiCache.clear();
+  }
 
   // Generate content using AI
   static async generateContent(
     prompt: string,
     context: string,
-<<<<<<< HEAD
     options: {
       maxLength?: number;
       temperature?: number;
@@ -216,19 +219,11 @@ class AIService {
       format?: 'text' | 'markdown' | 'html';
       tone?: 'professional' | 'casual' | 'academic' | 'creative';
     } = {}
-=======
-    options?: {
-      maxLength?: number;
-      temperature?: number;
-      creativity?: number;
-    }
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   ): Promise<{ content: string }> {
     try {
       const response = await axios.post(`${API_BASE_URL}/ai/generate`, {
         prompt,
         context,
-<<<<<<< HEAD
         options: {
           maxLength: 1000,
           temperature: 0.7,
@@ -236,9 +231,6 @@ class AIService {
           tone: 'professional',
           ...options
         }
-=======
-        options
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       });
       return response.data;
     } catch (error) {
@@ -246,7 +238,6 @@ class AIService {
       throw error;
     }
   }
-<<<<<<< HEAD
 
   // Summarize content
   static async summarizeContent(
@@ -299,34 +290,22 @@ class AIService {
     }
   }
 
-  // Generate content using a template
-  static async generateFromTemplate(
+  // Apply an AI template to generate content
+  static async applyTemplate(
     templateId: string,
-    variables: Record<string, any>,
-    options: {
-      temperature?: number;
-      maxTokens?: number;
-    } = {}
+    variables: Record<string, string>,
+    noteId?: string
   ): Promise<{ content: string }> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/ai/templates/generate`, {
-        templateId,
-        variables,
-        options: {
-          temperature: 0.7,
-          maxTokens: 1000,
-          ...options
-        }
-      });
-      return response.data;
+      const response = await axios.post(`${API_BASE_URL}/ai/templates/apply`, {
     } catch (error) {
-      console.error('Error generating from template:', error);
+      console.error('Error generating content from template:', error);
       throw error;
     }
   }
 
-  // Get content structure
-  static async getContentStructure(content: string): Promise<{
+  // Get available AI templates
+  static async getTemplates(category?: string): Promise<AITemplate[]> {
     headings: Array<{ level: number; text: string; id: string }>;
     sections: Array<{ title: string; content: string }>;
     wordCount: number;
@@ -356,8 +335,6 @@ class AIService {
       throw error;
     }
   }
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 }
 
 export default AIService;

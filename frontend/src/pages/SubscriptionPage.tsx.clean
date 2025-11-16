@@ -1,0 +1,235 @@
+import React, { useEffect, useState } from 'react';
+import { Card, Typography, Button, Row, Col, Divider, Skeleton, message, Space } from 'antd';
+import { CheckCircleOutlined, RocketOutlined } from '@ant-design/icons';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../lib/api';
+import './SubscriptionPage.css';
+
+const { Title, Text } = Typography;
+
+interface Plan {
+  id: string;
+  name: string;
+  price: number;
+  interval: 'month' | 'year';
+  features: string[];
+  isPopular?: boolean;
+}
+
+const plans: Plan[] = [
+  {
+    id: 'free',
+    name: 'Free',
+    price: 0,
+    interval: 'month',
+    features: [
+      '120 minutes of transcription/month',
+      'Basic AI summaries',
+      'Single user',
+      'Basic integrations'
+    ]
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: 14.99,
+    interval: 'month',
+    isPopular: true,
+    features: [
+      '1,800 minutes of transcription/month',
+      '100+ AI summaries/month',
+      'Export options',
+      'Speaker identification',
+      'File recordings',
+      'Extended integrations'
+    ]
+  },
+  {
+    id: 'business',
+    name: 'Business',
+    price: 29.99,
+    interval: 'month',
+    features: [
+      'Unlimited transcription',
+      'Unlimited AI summaries',
+      'Advanced file handling',
+      'Admin dashboard',
+      'Multi-user control',
+      'Priority support'
+    ]
+  }
+];
+
+const SubscriptionPage: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [usage, setUsage] = useState<{ used: number; total: number } | null>(null);
+  const [processing, setProcessing] = useState(false);
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        setLoading(true);
+        const [subscriptionResponse, usageResponse] = await Promise.all([
+          api.get('/subscription/current'),
+          api.get('/subscription/usage')
+        ]);
+        
+        setCurrentPlan(subscriptionResponse.data.planId || 'free');
+        setUsage({
+          used: usageResponse.data.used || 0,
+          total: usageResponse.data.total || 120
+        });
+      } catch (error) {
+        console.error('Failed to fetch subscription:', error);
+        message.error('Failed to load subscription information');
+        setCurrentPlan('free');
+        setUsage({ used: 0, total: 120 });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchSubscription();
+    } else {
+      navigate('/login', { state: { from: '/subscription' } });
+    }
+  }, [user, navigate]);
+
+  const handleSubscribe = async (planId: string) => {
+    if (!user) {
+      navigate('/login', { state: { from: '/subscription' } });
+      return;
+    }
+
+    try {
+      setProcessing(true);
+      
+      if (planId === 'free') {
+        await api.post('/subscription/downgrade');
+        setCurrentPlan('free');
+        message.success('Successfully downgraded to Free plan');
+        return;
+      }
+
+      const response = await api.post('/subscription/checkout', { planId });
+      window.location.href = response.data.url;
+    } catch (error) {
+      console.error('Error processing subscription:', error);
+      message.error('Failed to process subscription. Please try again.');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="subscription-page">
+        <Skeleton active paragraph={{ rows: 10 }} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="subscription-page">
+      <div className="page-header">
+        <Title level={2}>Subscription Plans</Title>
+        <Text type="secondary">
+          Choose the plan that's right for you. Upgrade, downgrade, or cancel anytime.
+        </Text>
+      </div>
+
+      {currentPlan && usage && (
+        <Card className="usage-card">
+          <div className="usage-header">
+            <Title level={4}>Current Plan: {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}</Title>
+            <Text type="secondary">Your monthly usage</Text>
+          </div>
+          <div className="usage-container">
+            <div className="usage-stats">
+              <Text strong>{usage.used}</Text>
+              <Text type="secondary"> of {usage.total} minutes used</Text>
+            </div>
+            <div className="usage-progress">
+              <div 
+                className="usage-progress-bar" 
+                style={{ 
+                  width: `${Math.min((usage.used / usage.total) * 100, 100)}%` 
+                }} 
+              />
+            </div>
+          </div>
+        </Card>
+      )}
+
+      <Row gutter={[24, 24]} className="plans-container">
+        {plans.map((plan) => (
+          <Col xs={24} md={8} key={plan.id}>
+            <Card
+              hoverable
+              className={`plan-card ${plan.isPopular ? 'popular' : ''}`}
+              bodyStyle={{ padding: 0, height: '100%', display: 'flex', flexDirection: 'column' }}
+            >
+              {plan.isPopular && (
+                <div className="popular-badge">
+                  <RocketOutlined /> Popular
+                </div>
+              )}
+              <div className="plan-header">
+                <Title level={3} className="plan-name">{plan.name}</Title>
+                <div className="plan-price-container">
+                  <Text className="plan-price">${plan.price}</Text>
+                  <Text type="secondary" className="plan-interval">/month</Text>
+                </div>
+                {plan.price === 0 && (
+                  <Text type="secondary">No credit card required</Text>
+                )}
+              </div>
+              
+              <Divider className="plan-divider" />
+              
+              <Space direction="vertical" size="middle" className="plan-features">
+                {plan.features.map((feature, index) => (
+                  <div key={index} className="feature-item">
+                    <CheckCircleOutlined className="feature-icon" />
+                    <Text>{feature}</Text>
+                  </div>
+                ))}
+              </Space>
+
+              <div className="plan-actions">
+                <Button 
+                  type={plan.id === currentPlan ? 'default' : 'primary'} 
+                  size="large"
+                  block
+                  onClick={() => handleSubscribe(plan.id)}
+                  loading={processing}
+                  disabled={plan.id === currentPlan}
+                >
+                  {plan.id === currentPlan 
+                    ? 'Current Plan' 
+                    : plan.id === 'free' 
+                      ? 'Get Started' 
+                      : 'Upgrade'}
+                </Button>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+        <Text type="secondary">
+          Need a custom plan for your team?{' '}
+          <a href="mailto:support@notefusion.ai">Contact us</a>
+        </Text>
+      </div>
+    </div>
+  );
+};
+
+export default SubscriptionPage;
