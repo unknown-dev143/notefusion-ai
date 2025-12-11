@@ -1,6 +1,7 @@
 ﻿import React from 'react';
-import { Button, Card, Typography, Space, Row, Col, Avatar } from 'antd';
+import { Button, Card, Typography, Space, Row, Col, Avatar, Modal, Select } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../contexts/ThemeContext';
 import {
   PlusOutlined,
   RobotOutlined,
@@ -28,13 +29,18 @@ import {
   SoundOutlined,
   DatabaseOutlined,
   BranchesOutlined,
-  ApiOutlined
+  ApiOutlined,
+  DownloadOutlined,
+  CloudSyncOutlined,
+  GlobalOutlined
 } from '@ant-design/icons';
 
 const { Title, Paragraph, Text } = Typography;
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { themeMode, setThemeMode, availableThemes } = useTheme();
+  const [themeModalVisible, setThemeModalVisible] = React.useState(false);
 
   const quickActions = [
     { title: 'Create Note', icon: <PlusOutlined />, path: '/notes', type: 'primary' },
@@ -137,6 +143,64 @@ const HomePage: React.FC = () => {
   return (
     <div className="home-page">
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
+        {/* Top Features Bar */}
+        <Card style={{ marginBottom: '2rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+          <Row gutter={[16, 16]} align="middle">
+            <Col xs={24} sm={12} md={6}>
+              <Space direction="vertical" size="small" style={{ color: 'white' }}>
+                <Text strong style={{ color: 'white', fontSize: '16px' }}>
+                  <DownloadOutlined /> Desktop App
+                </Text>
+                <Text style={{ color: 'rgba(255,255,255,0.9)' }}>
+                  Download for offline access
+                </Text>
+                <Button size="small" ghost icon={<DownloadOutlined />} onClick={() => window.open('/download', '_blank')}>
+                  Download Now
+                </Button>
+              </Space>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Space direction="vertical" size="small" style={{ color: 'white' }}>
+                <Text strong style={{ color: 'white', fontSize: '16px' }}>
+                  <CloudSyncOutlined /> Auto Updates
+                </Text>
+                <Text style={{ color: 'rgba(255,255,255,0.9)' }}>
+                  Always stay up to date
+                </Text>
+                <Button size="small" ghost icon={<CloudSyncOutlined />} onClick={() => alert('Auto-updates enabled!')}>
+                  Enable Updates
+                </Button>
+              </Space>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Space direction="vertical" size="small" style={{ color: 'white' }}>
+                <Text strong style={{ color: 'white', fontSize: '16px' }}>
+                  <GlobalOutlined /> Web & App
+                </Text>
+                <Text style={{ color: 'rgba(255,255,255,0.9)' }}>
+                  Seamlessly sync across devices
+                </Text>
+                <Button size="small" ghost icon={<GlobalOutlined />} onClick={() => alert('Sync enabled!')}>
+                  Sync Now
+                </Button>
+              </Space>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Space direction="vertical" size="small" style={{ color: 'white' }}>
+                <Text strong style={{ color: 'white', fontSize: '16px' }}>
+                  <BulbOutlined /> Enhanced Themes
+                </Text>
+                <Text style={{ color: 'rgba(255,255,255,0.9)' }}>
+                  Beautiful dark/light modes
+                </Text>
+                <Button size="small" ghost icon={<BulbOutlined />} onClick={() => setThemeModalVisible(true)}>
+                  Customize Theme
+                </Button>
+              </Space>
+            </Col>
+          </Row>
+        </Card>
+
         {/* Hero Section */}
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
           <Title level={1} style={{ marginBottom: '1rem', background: 'linear-gradient(45deg, #1890ff, #722ed1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -297,6 +361,39 @@ const HomePage: React.FC = () => {
             </Space>
           </div>
         </Card>
+
+        {/* Theme Customization Modal */}
+        <Modal
+          title="Customize Theme"
+          open={themeModalVisible}
+          onCancel={() => setThemeModalVisible(false)}
+          footer={[
+            <Button key="cancel" onClick={() => setThemeModalVisible(false)}>
+              Cancel
+            </Button>,
+            <Button key="apply" type="primary" onClick={() => setThemeModalVisible(false)}>
+              Apply Theme
+            </Button>,
+          ]}
+        >
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <Text strong>Select Theme:</Text>
+            <Select
+              value={themeMode}
+              onChange={setThemeMode}
+              style={{ width: '100%' }}
+              options={availableThemes.map(theme => ({
+                label: theme.charAt(0).toUpperCase() + theme.slice(1),
+                value: theme,
+              }))}
+            />
+            <div style={{ marginTop: 16 }}>
+              <Text type="secondary">
+                Current theme: <Text strong>{themeMode}</Text>
+              </Text>
+            </div>
+          </Space>
+        </Modal>
       </div>
     </div>
   );
