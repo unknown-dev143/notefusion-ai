@@ -1,0 +1,66 @@
+/* Mobile Layout Styles */
+
+.mobile-layout {
+  min-height: 100vh;
+  background: #f5f7fa;
+  position: relative;
+}
+
+.mobile-layout.landscape {
+  /* Landscape-specific styles */
+  max-height: 100vh;
+}
+
+.mobile-layout.portrait {
+  /* Portrait-specific styles */
+  min-height: 100vh;
+}
+
+.mobile-main-content {
+  padding: 16px 12px 80px 12px;
+  min-height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Safe area insets */
+@supports (padding: max(0px)) {
+  .mobile-main-content {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-bottom: max(80px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .mobile-layout {
+    background: #141414;
+  }
+  
+  .mobile-main-content {
+    background: #141414;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .mobile-main-content {
+    padding: 12px 8px 80px 8px;
+  }
+}
+
+/* Touch optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .mobile-main-content {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-main-content {
+    scroll-behavior: auto;
+  }
+}
