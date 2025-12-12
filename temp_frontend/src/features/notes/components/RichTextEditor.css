@@ -1,0 +1,62 @@
+/* Rich Text Editor Styles */
+.quill-container {
+  height: 400px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.rich-text-editor {
+  height: 350px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.rich-text-editor .ql-container {
+  flex: 1;
+  min-height: 300px;
+  font-size: 16px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.rich-text-editor .ql-toolbar {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: white;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Ensure proper spacing and layout */
+.rich-text-editor .ql-editor {
+  min-height: 200px;
+  padding: 12px 15px;
+}
+
+/* Improve the look of the editor content */
+.rich-text-editor .ql-editor p {
+  margin-bottom: 1em;
+}
+
+.rich-text-editor .ql-editor h1,
+.rich-text-editor .ql-editor h2,
+.rich-text-editor .ql-editor h3 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+/* Style for the container */
+.quill-container {
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background: #fff;
+}
+
+/* Make sure the editor takes full width */
+.quill-container .ql-editor-container {
+  width: 100%;
+}

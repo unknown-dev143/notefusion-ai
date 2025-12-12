@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     # File upload settings
     UPLOAD_FOLDER: str = str(Path(__file__).parent.parent.parent / "uploads")
     MAX_CONTENT_LENGTH: int = 100 * 1024 * 1024  # 100MB max upload size
-    ALLOWED_EXTENSIONS: set = {"wav", "mp3", "m4a", "ogg", "flac", "pdf", "txt"}
+    ALLOWED_EXTENSIONS: List[str] = ["wav", "mp3", "m4a", "ogg", "flac", "pdf", "txt"]
     
     # Redis settings
     REDIS_URL: str = "redis://localhost:6379/0"

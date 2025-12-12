@@ -1,0 +1,70 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.textArea {
+  margin-bottom: 20px;
+  min-height: 150px;
+  resize: vertical;
+}
+
+.controls {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.controlGroup {
+  margin-bottom: 16px;
+}
+
+.controlLabel {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.playbackControls {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0;
+}
+
+.playButton, .pauseButton {
+  min-width: 120px;
+}
+
+.sliderContainer {
+  margin-bottom: 16px;
+}
+
+.sliderLabel {
+  display: block;
+  margin-bottom: 8px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.voiceSelector {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.voiceLabel {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.sliderContainer .ant-slider {
+  margin: 10px 6px;
+}
+
+.controlSection {
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}

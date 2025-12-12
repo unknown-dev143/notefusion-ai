@@ -1,0 +1,50 @@
+/* AppHeader.css */
+
+.header-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 120px;
+  height: 31px;
+  margin-right: 16px;
+}
+
+.logo h1 {
+  color: #1890ff;
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.nav-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.nav-menu {
+  flex: 1;
+  border-bottom: none;
+  line-height: 64px;
+}
+
+.actions-container {
+  margin-right: 24px;
+}
+
+.user-dropdown {
+  padding: 0 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar {
+  margin-right: 8px;
+}
+
+.notification-icon {
+  font-size: 18px;
+}

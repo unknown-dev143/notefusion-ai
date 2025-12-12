@@ -1,0 +1,19 @@
+.card {
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+.featureItem {
+  margin-bottom: 16px;
+}
+
+.featureToggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footerText {
+  margin-top: 24px;
+  color: #666;
+}

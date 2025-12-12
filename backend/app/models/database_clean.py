@@ -5,6 +5,8 @@ from sqlalchemy.orm import DeclarativeBase, declared_attr
 import os
 
 # Define metadata object
+metadata = MetaData()
+
 class Base(AsyncAttrs, DeclarativeBase):
     """Base class for all models."""
     pass

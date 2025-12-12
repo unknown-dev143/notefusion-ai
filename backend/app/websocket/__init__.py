@@ -101,3 +101,6 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str, user_id: str)
         logger.info(f"WebSocket disconnected: {client_id}")
     finally:
         manager.disconnect(client_id, user_id)
+
+# Import collaboration manager
+from .collaboration import collaboration_manager, websocket_collaboration

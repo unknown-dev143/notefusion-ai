@@ -1,0 +1,451 @@
+/* Mobile Dashboard Styles */
+
+.mobile-dashboard {
+  padding: 16px 12px 80px 12px;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+/* Header Section */
+.mobile-dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding: 20px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  color: white;
+}
+
+.welcome-section h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.welcome-section p {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.streak-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.streak-badge .anticon {
+  font-size: 16px;
+}
+
+/* Stats Grid */
+.mobile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.mobile-stat-card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.mobile-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.mobile-stat-card .ant-card-body {
+  padding: 0;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px;
+  text-align: center;
+}
+
+.stat-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Stat card colors */
+.mobile-stat-card.notes .stat-icon {
+  color: #1890ff;
+}
+
+.mobile-stat-card.ai .stat-icon {
+  color: #52c41a;
+}
+
+.mobile-stat-card.time .stat-icon {
+  color: #fa8c16;
+}
+
+.mobile-stat-card.achievements .stat-icon {
+  color: #722ed1;
+}
+
+/* Progress Card */
+.mobile-progress-card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 20px;
+}
+
+.mobile-progress-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 20px;
+}
+
+.mobile-progress-card .ant-card-head-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.mobile-progress-card .ant-card-body {
+  padding: 20px;
+}
+
+.progress-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.progress-text span:first-child {
+  font-weight: 600;
+  color: #1890ff;
+}
+
+.progress-text span:last-child {
+  color: #666;
+}
+
+/* Actions Card */
+.mobile-actions-card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 20px;
+}
+
+.mobile-actions-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 20px;
+}
+
+.mobile-actions-card .ant-card-body {
+  padding: 20px;
+}
+
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quick-actions .ant-btn {
+  height: 48px;
+  border-radius: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.quick-actions .ant-btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+}
+
+.quick-actions .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+/* Activity Card */
+.mobile-activity-card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 20px;
+}
+
+.mobile-activity-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 20px;
+}
+
+.mobile-activity-card .ant-card-body {
+  padding: 0;
+}
+
+.activity-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f5f5f5;
+  transition: background-color 0.3s ease;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-item:hover {
+  background-color: #f8f9fa;
+}
+
+.activity-item .ant-list-item-meta-avatar {
+  margin-right: 12px;
+}
+
+.activity-item .ant-list-item-meta-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.activity-item .ant-list-item-meta-description {
+  font-size: 12px;
+  color: #666;
+}
+
+.activity-time {
+  font-size: 12px;
+  color: #999;
+  white-space: nowrap;
+}
+
+/* Insights Card */
+.mobile-insights-card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 20px;
+}
+
+.mobile-insights-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 20px;
+}
+
+.mobile-insights-card .ant-card-body {
+  padding: 20px;
+}
+
+.insights-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.insight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 3px solid #1890ff;
+}
+
+.insight-icon {
+  font-size: 16px;
+  color: #1890ff;
+  margin-top: 2px;
+}
+
+.insight-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #333;
+}
+
+.insight-text strong {
+  color: #1890ff;
+  font-weight: 600;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .mobile-dashboard {
+    background: #141414;
+  }
+  
+  .mobile-stat-card,
+  .mobile-progress-card,
+  .mobile-actions-card,
+  .mobile-activity-card,
+  .mobile-insights-card {
+    background: #1f1f1f;
+    border-color: #434343;
+  }
+  
+  .mobile-stat-card .ant-card-head,
+  .mobile-progress-card .ant-card-head,
+  .mobile-actions-card .ant-card-head,
+  .mobile-activity-card .ant-card-head,
+  .mobile-insights-card .ant-card-head {
+    border-bottom-color: #434343;
+  }
+  
+  .mobile-stat-card .ant-card-head-title,
+  .mobile-progress-card .ant-card-head-title,
+  .mobile-actions-card .ant-card-head-title,
+  .mobile-activity-card .ant-card-head-title,
+  .mobile-insights-card .ant-card-head-title {
+    color: #fff;
+  }
+  
+  .stat-label {
+    color: #999;
+  }
+  
+  .activity-item:hover {
+    background-color: #2a2a2a;
+  }
+  
+  .insight-item {
+    background: #2a2a2a;
+  }
+  
+  .insight-text {
+    color: #fff;
+  }
+  
+  .activity-item {
+    border-bottom-color: #434343;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .mobile-dashboard {
+    padding: 12px 8px 80px 8px;
+  }
+  
+  .mobile-dashboard-header {
+    padding: 16px 12px;
+  }
+  
+  .welcome-section h1 {
+    font-size: 20px;
+  }
+  
+  .welcome-section p {
+    font-size: 13px;
+  }
+  
+  .mobile-stats-grid {
+    gap: 8px;
+  }
+  
+  .stat-content {
+    padding: 16px 12px;
+  }
+  
+  .stat-number {
+    font-size: 24px;
+  }
+  
+  .stat-icon {
+    font-size: 20px;
+  }
+  
+  .mobile-progress-card .ant-card-body,
+  .mobile-actions-card .ant-card-body,
+  .mobile-activity-card .ant-card-body,
+  .mobile-insights-card .ant-card-body {
+    padding: 16px;
+  }
+  
+  .quick-actions .ant-btn {
+    height: 44px;
+    font-size: 14px;
+  }
+}
+
+/* Touch optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .mobile-stat-card:active {
+    transform: scale(0.95);
+  }
+  
+  .quick-actions .ant-btn:active {
+    transform: scale(0.98);
+  }
+  
+  .activity-item:active {
+    background-color: #e6f7ff;
+  }
+  
+  .insight-item:active {
+    background-color: #e6f7ff;
+  }
+}
+
+/* Animation classes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-stat-card,
+.mobile-progress-card,
+.mobile-actions-card,
+.mobile-activity-card,
+.mobile-insights-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.mobile-stat-card:nth-child(1) { animation-delay: 0.1s; }
+.mobile-stat-card:nth-child(2) { animation-delay: 0.2s; }
+.mobile-stat-card:nth-child(3) { animation-delay: 0.3s; }
+.mobile-stat-card:nth-child(4) { animation-delay: 0.4s; }
+.mobile-progress-card { animation-delay: 0.5s; }
+.mobile-actions-card { animation-delay: 0.6s; }
+.mobile-activity-card { animation-delay: 0.7s; }
+.mobile-insights-card { animation-delay: 0.8s; }

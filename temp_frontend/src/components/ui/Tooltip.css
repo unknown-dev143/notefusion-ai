@@ -1,0 +1,83 @@
+.tooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  background-color: #333;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.4;
+  max-width: 300px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
+}
+
+/* Position the tooltip using CSS variables */
+.tooltip {
+  --tooltip-top: 0;
+  --tooltip-left: 0;
+  transform: translate3d(
+    var(--tooltip-left, 0),
+    var(--tooltip-top, 0),
+    0
+  );
+}
+
+.tooltip.visible {
+  opacity: 1;
+}
+
+.tooltip-arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #333;
+  transform: rotate(45deg);
+}
+
+/* Position variants */
+.tooltip.top .tooltip-arrow {
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.tooltip.right .tooltip-arrow {
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.tooltip.bottom .tooltip-arrow {
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.tooltip.left .tooltip-arrow {
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+/* Accessibility focus styles */
+.tooltip-trigger:focus-visible {
+  outline: 2px solid #1890ff;
+  outline-offset: 2px;
+}
+
+/* Dark mode support */
+[data-theme='dark'] .tooltip {
+  background-color: #434343;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.48), 0 6px 16px 0 rgba(0, 0, 0, 0.32), 0 9px 28px 8px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme='dark'] .tooltip-arrow {
+  background-color: #434343;
+}

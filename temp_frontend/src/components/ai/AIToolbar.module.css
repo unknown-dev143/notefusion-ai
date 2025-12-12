@@ -1,0 +1,48 @@
+.toolbar-container {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.modal-content {
+  margin-bottom: 16px;
+}
+
+.input-field {
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.select-field {
+  width: 100%;
+}
+
+/* Ensure proper spacing for the dropdown menu */
+.ant-dropdown-menu {
+  min-width: 180px;
+}
+
+/* Add hover effect for menu items */
+.ant-dropdown-menu-item {
+  transition: background-color 0.3s;
+}
+
+/* Add focus styles for better keyboard navigation */
+.ant-btn:focus-visible,
+.ant-input:focus-visible,
+.ant-select-selector:focus-visible {
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  outline: none;
+}
+
+/* Loading state for buttons */
+.ant-btn-loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .toolbar-container {
+    margin-bottom: 8px;
+  }
+}

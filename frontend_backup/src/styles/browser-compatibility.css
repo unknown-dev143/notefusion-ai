@@ -1,0 +1,117 @@
+/**
+ * Browser compatibility styles
+ * These styles address browser-specific issues and workarounds
+ */
+
+/* Fallback for browsers that don't support theme-color meta tag */
+.theme-color-fallback {
+  /* Use CSS variable with fallback */
+  background-color: var(--fallback-theme-color, #1890ff);
+}
+
+/* Text size adjustment for mobile browsers */
+.mobile-browser {
+  /* Prevent font boosting in mobile browsers */
+  max-height: 100%;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Standard font size for better mobile rendering */
+  font-size: 16px; /* Explicit base font size */
+  
+  /* Ensure consistent box sizing */
+  box-sizing: border-box;
+  
+  /* Prevent text selection on tap */
+  -webkit-tap-highlight-color: transparent;
+  
+  /* Text size adjustment for mobile devices */
+  @media screen and (max-width: 1024px) {
+    /* Use relative units for better text scaling */
+    font-size: 1rem;
+    line-height: 1.5;
+    max-width: 100%;
+    
+    /* Standardize font rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    
+    /* Text size adjustment */
+    /* Using font-size and max-width for better cross-browser compatibility */
+    
+    /* Improve text rendering */
+    text-rendering: optimizeLegibility;
+    width: 100%;
+  }
+  
+  /* Force hardware acceleration */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Firefox specific fixes */
+@supports (-moz-appearance:none) {
+  /* Fix for Firefox scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  }
+  
+  /* Fix for Firefox button padding */
+  button, 
+  input[type="button"], 
+  input[type="submit"], 
+  input[type="reset"] {
+    padding: 0.25em 0.75em;
+  }
+  
+  /* Ensure consistent form element styling */
+  input, button, textarea, select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none; /* Standard property */
+  }
+}
+
+/* Safari specific fixes */
+@media not all and (min-resolution: 0.001dpcm) {
+  @supports (-webkit-appearance: none) and (stroke-color: transparent) {
+    /* Fix for Safari's button styling */
+    button,
+    [type="button"],
+    [type="reset"],
+    [type="submit"] {
+      -webkit-appearance: none;
+      appearance: none;
+    }
+  }
+}
+
+/* Edge/IE specific fixes */
+@supports (-ms-ime-align: auto) {
+  /* Fix for Edge/IE specific issues */
+  body {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+  }
+}
+
+/* Print styles */
+@media print {
+  /* Ensure proper printing */
+  *,
+  *:before,
+  *:after {
+    background: transparent !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  /* Prevent page breaks inside elements */
+  .no-break-inside {
+    page-break-inside: avoid;
+  }
+}

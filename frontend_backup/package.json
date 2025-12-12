@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "notefusion-ai-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "start": "vite preview --port 3000 --host"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.6.1",
+    "@tanstack/react-query": "^4.29.5",
+    "@types/uuid": "^10.0.0",
+    "antd": "^5.27.1",
+    "axios": "^1.6.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.3",
+    "uuid": "^13.0.0",
+    "zustand": "^4.5.1"
+  },
+  "devDependencies": {
+    "@tsconfig/vite-react": "^7.0.0",
+    "@types/i18next": "^12.1.0",
+    "@types/node": "^20.19.11",
+    "@types/react": "^18.3.24",
+    "@types/react-dom": "^18.3.7",
+    "@types/react-helmet": "^6.1.11",
+    "@types/react-helmet-async": "^1.0.1",
+    "@types/react-i18next": "^7.8.3",
+    "@types/testing-library__jest-dom": "^5.14.9",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.3.3",
+    "vite": "^7.1.3",
+    "vite-plugin-pwa": "^1.0.3",
+    "vite-tsconfig-paths": "^4.3.2",
+    "vitest": "^3.2.4",
+    "wait-on": "^7.2.0",
+    "whatwg-fetch": "^3.6.2"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "packageManager": "yarn@4.9.2",
+  "description": "A modern, AI-powered note-taking application with PWA support and admin capabilities.",
+  "keywords": [
+    "electron",
+    "react",
+    "vite"
+  ],
+  "author": "",
+  "license": "ISC",
+  "build": {
+    "appId": "com.notefusion.ai",
+    "productName": "NoteFusion AI",
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "public/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "public/icon.icns"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "public/icon.png"
+    }
+  }
+}

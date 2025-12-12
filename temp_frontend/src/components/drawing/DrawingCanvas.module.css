@@ -1,0 +1,96 @@
+.drawingCanvas {
+  --canvas-width: 100%;
+  width: var(--canvas-width);
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px;
+  background-color: #f0f0f0;
+  border-radius: 8px 8px 0 0;
+}
+
+.toolsContainer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background-color: white;
+  border-radius: 4px;
+}
+
+.canvasContainer {
+  position: relative;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  background-color: #fafafa;
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  overflow: hidden;
+}
+
+.canvas {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  touch-action: none;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.textInputModal {
+  position: absolute;
+  background: white;
+  padding: 8px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  min-width: 200px;
+}
+
+.positionedModal {
+  --modal-left: 0;
+  --modal-top: 0;
+  left: var(--modal-left);
+  top: var(--modal-top);
+  z-index: 1000;
+}
+
+.textInput {
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.textInputActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.colorPickerContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+.sliderContainer {
+  min-width: 100px;
+  margin-left: 8px;
+}
+
+.actionButtons {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}

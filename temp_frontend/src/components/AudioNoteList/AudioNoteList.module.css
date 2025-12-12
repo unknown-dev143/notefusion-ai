@@ -1,0 +1,88 @@
+.virtualizedRow {
+  position: relative;
+  width: 100%;
+  will-change: transform;
+  contain: layout style;
+}
+
+.dynamic {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--height, auto);
+  transform: var(--transform, none);
+  /* Ensure proper stacking context */
+  z-index: 1;
+}
+
+.noteCard {
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.noteCard.playing {
+  border-left: 4px solid #1890ff;
+  background-color: #fafafa;
+}
+
+.noteHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.noteContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.noteTitle {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.noteMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.noteActions {
+  display: flex;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+.playButton, .deleteButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.playButton.playing {
+  color: #1890ff;
+}
+
+.deleteButton {
+  color: #ff4d4f;
+  border-color: #ff4d4f;
+}
+
+.deleteButton:hover {
+  color: #ff7875;
+  border-color: #ff7875;
+}

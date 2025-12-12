@@ -1,0 +1,122 @@
+/* Mobile Loading Spinner Styles */
+
+.mobile-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.mobile-loading-container.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 9999;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.mobile-loading-spinner {
+  display: flex;
+  gap: 4px;
+}
+
+.mobile-loading-spinner.small {
+  width: 24px;
+  height: 24px;
+}
+
+.mobile-loading-spinner.medium {
+  width: 32px;
+  height: 32px;
+}
+
+.mobile-loading-spinner.large {
+  width: 48px;
+  height: 48px;
+}
+
+.spinner-circle {
+  border-radius: 50%;
+  background: #1890ff;
+  animation: spinner-bounce 1.4s ease-in-out infinite both;
+}
+
+.mobile-loading-spinner.small .spinner-circle {
+  width: 4px;
+  height: 4px;
+}
+
+.mobile-loading-spinner.medium .spinner-circle {
+  width: 6px;
+  height: 6px;
+}
+
+.mobile-loading-spinner.large .spinner-circle {
+  width: 8px;
+  height: 8px;
+}
+
+.spinner-circle:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.spinner-circle:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.spinner-circle:nth-child(3) {
+  animation-delay: 0;
+}
+
+.spinner-circle:nth-child(4) {
+  animation-delay: 0.16s;
+}
+
+.mobile-loading-text {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+@keyframes spinner-bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .mobile-loading-container.overlay {
+    background: rgba(0, 0, 0, 0.8);
+  }
+  
+  .spinner-circle {
+    background: #1890ff;
+  }
+  
+  .mobile-loading-text {
+    color: #ccc;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .spinner-circle {
+    animation: none;
+  }
+  
+  .mobile-loading-spinner.small .spinner-circle,
+  .mobile-loading-spinner.medium .spinner-circle,
+  .mobile-loading-spinner.large .spinner-circle {
+    transform: scale(1);
+  }
+}

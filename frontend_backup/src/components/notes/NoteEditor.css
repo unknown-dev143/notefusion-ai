@@ -1,0 +1,120 @@
+.note-editor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.note-editor .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 24px;
+}
+
+.note-editor .ant-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.note-title-input {
+  font-size: 1.5em;
+  font-weight: bold;
+  border: none;
+  box-shadow: none;
+  padding: 4px 0;
+}
+
+.note-title-input:focus,
+.note-title-input:hover {
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.note-tags {
+  margin-bottom: 16px;
+}
+
+.note-tag-input {
+  width: 100px;
+  transition: width 0.2s;
+}
+
+.note-tag-input:focus {
+  width: 150px;
+}
+
+.note-content {
+  flex: 1;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.note-content .ql-container {
+  flex: 1;
+  border: none;
+  font-family: inherit;
+}
+
+.note-content .ql-toolbar {
+  border: none;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 8px 0;
+  margin-bottom: 16px;
+}
+
+.note-content .ql-editor {
+  padding: 0;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.note-content .ql-editor.ql-blank::before {
+  left: 0;
+  color: #bfbfbf;
+  font-style: normal;
+}
+
+.note-footer {
+  margin-top: 16px;
+  text-align: right;
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .note-editor .ant-card-head {
+    padding: 0 16px;
+  }
+  
+  .note-editor .ant-card-body {
+    padding: 16px;
+  }
+  
+  .note-content {
+    min-height: 50vh;
+  }
+  
+  .note-content .ql-toolbar {
+    padding: 4px 0;
+    margin-bottom: 8px;
+  }
+}
+
+/* Dark mode support */
+[data-theme='dark'] .note-editor .ant-card-head {
+  border-bottom-color: #303030;
+}
+
+[data-theme='dark'] .note-content .ql-toolbar {
+  border-bottom-color: #303030;
+}
+
+[data-theme='dark'] .note-content .ql-editor {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme='dark'] .note-content .ql-editor.ql-blank::before {
+  color: #595959;
+}

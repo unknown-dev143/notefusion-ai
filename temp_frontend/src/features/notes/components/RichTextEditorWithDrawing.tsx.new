@@ -1,0 +1,316 @@
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+
+// Simple drawing icon component
+const DrawingIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="16" y1="3" x2="16" y2="21"></line>
+  </svg>
+);
+
+// Type for the Quill editor instance
+type Quill = any;
+
+// Type for ReactQuill ref
+type ReactQuillRef = ReactQuill & {
+  getEditor: () => Quill;
+};
+
+interface RichTextEditorProps {
+  initialContent?: string;
+  onChange?: (content: string) => void;
+  readOnly?: boolean;
+  className?: string;
+}
+
+// Custom drawing blot for Quill
+class DrawingBlot extends ReactQuill.Quill.import('blots/block/embed') {
+  static blotName = 'drawing';
+  static tagName = 'div';
+  static className = 'ql-drawing';
+
+  static create(value: { url: string }) {
+    const node = super.create() as HTMLElement;
+    node.setAttribute('contenteditable', 'false');
+    node.innerHTML = `<img src="${value.url}" alt="Drawing" style="max-width: 100%;" />`;
+    return node;
+  }
+
+  static value(domNode: HTMLElement) {
+    const img = domNode.querySelector('img');
+    return { url: img?.getAttribute('src') || '' };
+  }
+}
+
+const RichTextEditorWithDrawing: React.FC<RichTextEditorProps> = ({
+  initialContent = '',
+  onChange,
+  readOnly = false,
+  className = ''
+}) => {
+  const [content, setContent] = useState(initialContent);
+  const [isDrawingOpen, setIsDrawingOpen] = useState(false);
+  const quillRef = useRef<ReactQuillRef>(null);
+  const quillInstance = useRef<Quill | null>(null);
+
+  // Register custom drawing blot
+  useEffect(() => {
+    const Quill = ReactQuill.Quill;
+    Quill.register('formats/drawing', DrawingBlot);
+  }, []);
+
+  // Handle initial content change
+  useEffect(() => {
+    if (initialContent !== content) {
+      setContent(initialContent || '');
+    }
+  }, [initialContent]);
+
+  // Notify parent of content changes
+  useEffect(() => {
+    if (onChange) {
+      onChange(content);
+    }
+  }, [content, onChange]);
+
+  const handleInsertDrawing = (dataUrl: string) => {
+    if (!quillInstance.current) return;
+    
+    const range = quillInstance.current.getSelection(true);
+    
+    if (range) {
+      // Insert drawing at cursor position
+      quillInstance.current.insertEmbed(range.index, 'drawing', { url: dataUrl }, 'user');
+      
+      // Move cursor after the drawing
+      quillInstance.current.setSelection(range.index + 1, 0, 'silent');
+    }
+    
+    setIsDrawingOpen(false);
+  };
+
+  const quillModules = useMemo(() => ({
+    toolbar: {
+      container: '#toolbar',
+    },
+    clipboard: {
+      matchVisual: false,
+    },
+  }), []);
+
+  const quillFormats = useMemo(() => [
+    'header',
+    'bold', 'italic', 'underline', 'strike', 'blockquote',
+    'list', 'bullet', 'indent',
+    'link', 'image', 'drawing'
+  ], []);
+
+  const CustomToolbar = React.memo(function CustomToolbar({ onDrawingClick }: { onDrawingClick: () => void }) {
+    return (
+      <div id="toolbar" className="ql-toolbar ql-snow">
+        <span className="ql-formats">
+          <select className="ql-header" defaultValue="">
+            <option value="1">Heading 1</option>
+            <option value="2">Heading 2</option>
+            <option value="3">Heading 3</option>
+            <option value="">Normal</option>
+          </select>
+        </span>
+        <span className="ql-formats">
+          <button className="ql-bold" title="Bold">B</button>
+          <button className="ql-italic" title="Italic">I</button>
+          <button className="ql-underline" title="Underline">U</button>
+          <button className="ql-strike" title="Strikethrough">S</button>
+        </span>
+        <span className="ql-formats">
+          <button className="ql-list" value="ordered" title="Numbered List">1.</button>
+          <button className="ql-list" value="bullet" title="Bullet List">•</button>
+          <button className="ql-indent" value="-1" title="Decrease Indent">←</button>
+          <button className="ql-indent" value="+1" title="Increase Indent">→</button>
+        </span>
+        <span className="ql-formats">
+          <button className="ql-link" title="Add Link">🔗</button>
+          <button className="ql-image" title="Insert Image">🖼️</button>
+          <button 
+            className="ql-drawing" 
+            onClick={(e) => {
+              e.preventDefault();
+              onDrawingClick();
+            }}
+            title="Add Drawing"
+          >
+            <DrawingIcon />
+          </button>
+        </span>
+      </div>
+    );
+  });
+
+  return (
+    <div className={`rich-text-editor-container ${className}`}>
+      <div className="editor-container">
+        <CustomToolbar onDrawingClick={() => setIsDrawingOpen(true)} />
+        <div className="quill-wrapper">
+          <ReactQuill
+            theme="snow"
+            value={content}
+            onChange={(_content, _delta, _source, editor) => {
+              setContent(editor.getHTML());
+            }}
+            onLoad={(quill) => {
+              quillInstance.current = quill;
+            }}
+            readOnly={readOnly}
+            placeholder="Start writing your note here..."
+            modules={quillModules}
+            formats={quillFormats}
+            className="rich-text-editor"
+            ref={(el) => {
+              if (el) {
+                quillInstance.current = (el as any).getEditor();
+              }
+            }}
+          />
+        </div>
+      </div>
+      
+      {isDrawingOpen && (
+        <div className="drawing-modal" onClick={() => setIsDrawingOpen(false)}>
+          <div className="drawing-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="drawing-modal-header">
+              <h3>Add Drawing</h3>
+              <button onClick={() => setIsDrawingOpen(false)}>×</button>
+            </div>
+            <div className="drawing-modal-body">
+              <p>Drawing panel will be implemented here</p>
+              <button 
+                className="add-drawing-btn"
+                onClick={() => {
+                  // Simulate adding a drawing
+                  handleInsertDrawing('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZmYwIiAvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBhbGlnbm1lbnQtYmFzZWxpbmU9Im1pZGRsZSIgZmlsbD0iIzAwMCI+RHJhd2luZzwvdGV4dD4KPC9zdmc+');
+                }}
+              >
+                Add Sample Drawing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <style jsx>{`
+        .rich-text-editor-container {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+        }
+        
+        .editor-container {
+          background: #fff;
+          border: 1px solid #d9d9d9;
+          border-radius: 4px;
+          overflow: hidden;
+        }
+        
+        .quill-wrapper {
+          min-height: 200px;
+        }
+        
+        .rich-text-editor {
+          height: 100%;
+        }
+        
+        .rich-text-editor :global(.ql-container) {
+          min-height: 200px;
+          font-size: 16px;
+        }
+        
+        .rich-text-editor :global(.ql-snow) {
+          border: none;
+        }
+        
+        .rich-text-editor :global(.ql-toolbar) {
+          border: none;
+          border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .rich-text-editor :global(.ql-editor) {
+          min-height: 200px;
+          padding: 16px;
+        }
+        
+        /* Modal styles */
+        .drawing-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+        
+        .drawing-modal-content {
+          background: white;
+          padding: 20px;
+          border-radius: 4px;
+          max-width: 500px;
+          width: 90%;
+          max-height: 90vh;
+          overflow-y: auto;
+        }
+        
+        .drawing-modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          padding-bottom: 10px;
+          border-bottom: 1px solid #eee;
+        }
+        
+        .drawing-modal-header h3 {
+          margin: 0;
+        }
+        
+        .drawing-modal-header button {
+          background: none;
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+          padding: 0 10px;
+        }
+        
+        .drawing-modal-body {
+          padding: 10px 0;
+          text-align: center;
+        }
+        
+        .add-drawing-btn {
+          background-color: #1890ff;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 4px;
+          cursor: pointer;
+          margin-top: 10px;
+        }
+        
+        .add-drawing-btn:hover {
+          background-color: #40a9ff;
+        }
+        
+        :global(.ql-drawing) img {
+          max-width: 100%;
+          height: auto;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default RichTextEditorWithDrawing;

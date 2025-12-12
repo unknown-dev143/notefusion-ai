@@ -1,0 +1,48 @@
+{
+  "app": {
+    "title": "NoteFusion AI",
+    "description": "Ihr intelligenter Notizassistent"
+  },
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "loading": "Wird geladen..."
+  },
+  "auth": {
+    "login": "Anmelden",
+    "signup": "Registrieren",
+    "logout": "Abmelden",
+    "email": "E-Mail",
+    "password": "Passwort"
+  },
+  "errors": {
+    "generic": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "network": "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung.",
+    "auth": "Authentifizierung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten."
+  },
+  "audio": {
+    "transcribeAudio": "Audio transkribieren",
+    "startRecording": "Aufnahme starten",
+    "stopRecording": "Aufnahme stoppen",
+    "processing": "Verarbeite Ihre Aufnahme...",
+    "transcription": "Transkription",
+    "transcriptionComplete": "Audio-Transkription abgeschlossen!",
+    "transcriptionFailed": "Transkription fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "transcriptionSaved": "Transkription erfolgreich gespeichert!",
+    "microphoneAccessDenied": "Zugriff auf das Mikrofon wurde verweigert. Bitte erlauben Sie den Zugriff, um diese Funktion zu nutzen.",
+    "failedToLoadLanguages": "Laden der unterstützten Sprachen fehlgeschlagen.",
+    "language": "Sprache",
+    "saveTranscription": "Transkription speichern",
+    "audioNotes": "Audio-Notizen",
+    "noteAdded": "Notiz erfolgreich hinzugefügt!",
+    "notesSaved": "Notizen erfolgreich gespeichert!",
+    "pause": "Pause",
+    "play": "Abspielen",
+    "notes": "Notizen",
+    "addNotePlaceholder": "Notiz zur aktuellen Zeit hinzufügen...",
+    "noAudioRecorded": "Noch keine Audiodatei aufgenommen. Starten Sie eine Aufnahme, um Notizen hinzuzufügen.",
+    "recordFirst": "Bitte nehmen Sie zuerst eine Audiodatei auf"
+  }
+}

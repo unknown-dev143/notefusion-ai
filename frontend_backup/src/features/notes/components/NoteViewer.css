@@ -1,0 +1,43 @@
+/* NoteViewer.css */
+.note-viewer {
+  min-height: 100%;
+}
+
+.note-title-input {
+  min-width: 200px;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  border-bottom: 1px dashed #d9d9d9;
+  background-color: transparent;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.note-title-input:focus {
+  border-color: #1890ff;
+}
+
+.note-content {
+  min-height: 200px;
+}
+
+.note-content :global(img) {
+  max-width: 100%;
+  height: auto;
+}
+
+.note-content :global(.ql-drawing) {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Ensure proper spacing for the editor container */
+.rich-text-editor-container {
+  min-height: 300px;
+}

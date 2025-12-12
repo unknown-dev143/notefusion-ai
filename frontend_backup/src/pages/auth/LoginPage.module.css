@@ -1,0 +1,29 @@
+.loginContainer {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.loginCard {
+  width: 100%;
+}
+
+.loginTitle {
+  text-align: center;
+  margin-bottom: 2rem !important;
+}
+
+.loginForm {
+  width: 100%;
+}
+
+.loginButton {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.signupLink {
+  text-align: center;
+  display: block;
+  margin-top: 1rem;
+}

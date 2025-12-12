@@ -1,0 +1,14 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px;
+  width: 100%;
+}
+
+.tabsContainer {
+  width: 100%;
+}
+
+.title {
+  margin-bottom: 24px;
+}

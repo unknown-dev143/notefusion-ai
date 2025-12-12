@@ -1,0 +1,48 @@
+{
+  "app": {
+    "title": "NoteFusion AI",
+    "description": "Votre assistant intelligent de prise de notes"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "loading": "Chargement..."
+  },
+  "auth": {
+    "login": "Connexion",
+    "signup": "S'inscrire",
+    "logout": "Déconnexion",
+    "email": "E-mail",
+    "password": "Mot de passe"
+  },
+  "errors": {
+    "generic": "Une erreur s'est produite. Veuillez réessayer.",
+    "network": "Erreur de réseau. Veuillez vérifier votre connexion.",
+    "auth": "Échec de l'authentification. Veuillez vérifier vos identifiants."
+  },
+  "audio": {
+    "transcribeAudio": "Transcrire l'audio",
+    "startRecording": "Commencer l'enregistrement",
+    "stopRecording": "Arrêter l'enregistrement",
+    "processing": "Traitement de votre audio...",
+    "transcription": "Transcription",
+    "transcriptionComplete": "Transcription audio terminée !",
+    "transcriptionFailed": "Échec de la transcription audio. Veuillez réessayer.",
+    "transcriptionSaved": "Transcription enregistrée avec succès !",
+    "microphoneAccessDenied": "L'accès au microphone a été refusé. Veuillez autoriser l'accès pour utiliser cette fonctionnalité.",
+    "failedToLoadLanguages": "Échec du chargement des langues prises en charge.",
+    "language": "Langue",
+    "saveTranscription": "Enregistrer la transcription",
+    "audioNotes": "Notes Audio",
+    "noteAdded": "Note ajoutée avec succès !",
+    "notesSaved": "Notes enregistrées avec succès !",
+    "pause": "Pause",
+    "play": "Lire",
+    "notes": "Notes",
+    "addNotePlaceholder": "Ajouter une note au moment actuel...",
+    "noAudioRecorded": "Aucun enregistrement audio pour le moment. Commencez à enregistrer pour ajouter des notes.",
+    "recordFirst": "Veuillez d'abord enregistrer un audio"
+  }
+}

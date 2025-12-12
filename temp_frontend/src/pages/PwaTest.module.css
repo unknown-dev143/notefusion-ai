@@ -1,0 +1,33 @@
+.container {
+  padding: 24px;
+  width: 100%;
+}
+
+.statusTag {
+  margin-left: 8px;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.featureCard {
+  height: 100%;
+}
+
+.featureContent {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.featureActions {
+  margin-top: auto;
+  padding-top: 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}

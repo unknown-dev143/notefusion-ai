@@ -1,0 +1,21 @@
+.description {
+  margin-bottom: 24px;
+}
+
+.buttonContainer {
+  margin-top: 16px;
+}
+
+.sectionTitle {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.sectionDescription {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.frequencySelect {
+  width: 150px;
+}

@@ -1,0 +1,403 @@
+/*
+ * Mobile UX Enhancement Summary
+ * This file contains comprehensive mobile optimizations for the NoteFusion AI app
+ */
+
+/* Enhanced Touch Interactions */
+@media (hover: none) and (pointer: coarse) {
+  /* Increase touch targets for better usability */
+  .ant-btn,
+  .ant-input,
+  .ant-select,
+  .ant-checkbox,
+  .ant-radio,
+  .ant-switch {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Remove hover effects on touch devices */
+  .ant-btn:hover {
+    transform: none;
+  }
+  
+  /* Add active states for touch feedback */
+  .ant-btn:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+  
+  /* Improve form input focus on mobile */
+  .ant-input:focus,
+  .ant-select:focus {
+    transform: scale(1.02);
+    transition: transform 0.2s ease;
+  }
+}
+
+/* Enhanced Mobile Typography */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  h1 { font-size: 24px; }
+  h2 { font-size: 20px; }
+  h3 { font-size: 18px; }
+  h4 { font-size: 16px; }
+  h5 { font-size: 14px; }
+  h6 { font-size: 12px; }
+  
+  .ant-typography {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
+  .ant-typography h1 { font-size: 24px; }
+  .ant-typography h2 { font-size: 20px; }
+  .ant-typography h3 { font-size: 18px; }
+  .ant-typography h4 { font-size: 16px; }
+}
+
+/* Mobile-First Spacing System */
+@media (max-width: 768px) {
+  .mobile-mt-0 { margin-top: 0; }
+  .mobile-mt-1 { margin-top: 4px; }
+  .mobile-mt-2 { margin-top: 8px; }
+  .mobile-mt-3 { margin-top: 12px; }
+  .mobile-mt-4 { margin-top: 16px; }
+  .mobile-mt-5 { margin-top: 20px; }
+  .mobile-mt-6 { margin-top: 24px; }
+  
+  .mobile-mb-0 { margin-bottom: 0; }
+  .mobile-mb-1 { margin-bottom: 4px; }
+  .mobile-mb-2 { margin-bottom: 8px; }
+  .mobile-mb-3 { margin-bottom: 12px; }
+  .mobile-mb-4 { margin-bottom: 16px; }
+  .mobile-mb-5 { margin-bottom: 20px; }
+  .mobile-mb-6 { margin-bottom: 24px; }
+  
+  .mobile-p-0 { padding: 0; }
+  .mobile-p-1 { padding: 4px; }
+  .mobile-p-2 { padding: 8px; }
+  .mobile-p-3 { padding: 12px; }
+  .mobile-p-4 { padding: 16px; }
+  .mobile-p-5 { padding: 20px; }
+  .mobile-p-6 { padding: 24px; }
+}
+
+/* Enhanced Mobile Animations */
+@media (max-width: 768px) {
+  /* Smoother page transitions */
+  .page-transition-enter {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  
+  .page-transition-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  .page-transition-exit {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .page-transition-exit-active {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  /* Card hover effects */
+  .mobile-card-hover {
+    transition: all 0.3s ease;
+  }
+  
+  .mobile-card-hover:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Mobile Form Enhancements */
+@media (max-width: 768px) {
+  .ant-form-item-label > label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  
+  .ant-input,
+  .ant-select-selector,
+  .ant-picker {
+    border-radius: 8px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px 16px;
+  }
+  
+  .ant-input-affix-wrapper {
+    padding: 0;
+  }
+  
+  .ant-input-affix-wrapper .ant-input {
+    padding: 12px 16px;
+  }
+  
+  /* Better checkbox and radio buttons */
+  .ant-checkbox-wrapper,
+  .ant-radio-wrapper {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  
+  .ant-checkbox-inner,
+  .ant-radio-inner {
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* Enhanced button styles */
+  .ant-btn {
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    height: 44px;
+    padding: 0 20px;
+  }
+  
+  .ant-btn-sm {
+    height: 36px;
+    font-size: 12px;
+    padding: 0 16px;
+  }
+}
+
+/* Mobile Table Enhancements */
+@media (max-width: 768px) {
+  .ant-table {
+    font-size: 12px;
+  }
+  
+  .ant-table-thead > tr > th {
+    padding: 8px 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .ant-table-tbody > tr > td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+  
+  /* Horizontal scroll for tables on mobile */
+  .ant-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Stack table on very small screens */
+  @media (max-width: 480px) {
+    .ant-table-tbody > tr {
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid #f0f0f0;
+      padding: 12px 0;
+    }
+    
+    .ant-table-tbody > tr > td {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border: none;
+    }
+    
+    .ant-table-tbody > tr > td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      margin-right: 8px;
+    }
+  }
+}
+
+/* Mobile Modal Enhancements */
+@media (max-width: 768px) {
+  .ant-modal {
+    margin: 0;
+    max-width: 100vw;
+    top: 0;
+    height: 100vh;
+  }
+  
+  .ant-modal-content {
+    height: 100vh;
+    border-radius: 0;
+  }
+  
+  .ant-modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .ant-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .ant-modal-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #f0f0f0;
+  }
+}
+
+/* Mobile Navigation Enhancements */
+@media (max-width: 768px) {
+  .ant-menu {
+    border-right: none;
+    background: transparent;
+  }
+  
+  .ant-menu-item {
+    margin: 0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+  }
+  
+  .ant-menu-item:hover {
+    background: #f5f5f5;
+  }
+  
+  .ant-menu-item-selected {
+    background: #e6f7ff;
+    color: #1890ff;
+  }
+  
+  .ant-menu-submenu {
+    margin-bottom: 4px;
+  }
+  
+  .ant-menu-submenu-title {
+    padding: 12px 16px;
+    border-radius: 8px;
+  }
+}
+
+/* Mobile Loading States */
+@media (max-width: 768px) {
+  .mobile-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: mobile-skeleton-loading 1.5s infinite;
+    border-radius: 4px;
+  }
+  
+  @keyframes mobile-skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  
+  .mobile-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+}
+
+/* Mobile Accessibility Enhancements */
+@media (max-width: 768px) {
+  /* Better focus indicators */
+  *:focus {
+    outline: 2px solid #1890ff;
+    outline-offset: 2px;
+  }
+  
+  /* Skip to content link for mobile */
+  .mobile-skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: #1890ff;
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 4px;
+    z-index: 10000;
+  }
+  
+  .mobile-skip-link:focus {
+    top: 6px;
+  }
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .ant-btn {
+      border: 2px solid;
+    }
+    
+    .ant-card {
+      border: 2px solid;
+    }
+  }
+}
+
+/* Mobile Performance Optimizations */
+@media (max-width: 768px) {
+  /* Reduce animations on low-end devices */
+  .mobile-reduced-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  /* Optimize images for mobile */
+  .mobile-optimized-image {
+    max-width: 100%;
+    height: auto;
+    loading: lazy;
+  }
+  
+  /* Hardware acceleration for smooth scrolling */
+  .mobile-smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    transform: translateZ(0);
+  }
+}
+
+/* Mobile Dark Mode Enhancements */
+@media (prefers-color-scheme: dark) and (max-width: 768px) {
+  .ant-modal {
+    background: #1f1f1f;
+  }
+  
+  .ant-modal-header {
+    background: #1f1f1f;
+    border-bottom-color: #434343;
+  }
+  
+  .ant-modal-body {
+    background: #1f1f1f;
+  }
+  
+  .ant-modal-footer {
+    background: #1f1f1f;
+    border-top-color: #434343;
+  }
+  
+  .ant-menu-item {
+    background: #1f1f1f;
+  }
+}
