@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Card, List, Typography, Tag, Divider, Button, Space, message } from 'antd';
-import { KeyboardOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Card, Typography, List, Button, Space, Divider, Tag, message } from 'antd';
+import { KeyOutlined } from '@ant-design/icons';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface KeyboardShortcut {
   key: string;
@@ -16,7 +16,7 @@ interface KeyboardShortcut {
 }
 
 const KeyboardShortcuts: React.FC = () => {
-  const [shortcuts, setShortcuts] = useState<KeyboardShortcut[]>([
+  const [shortcuts] = useState<KeyboardShortcut[]>([
     // Navigation shortcuts
     {
       key: 'g',
@@ -212,7 +212,7 @@ const KeyboardShortcuts: React.FC = () => {
               renderItem={(shortcut) => (
                 <List.Item>
                   <List.Item.Meta
-                    avatar={<KeyboardOutlined style={{ fontSize: 20, color: '#1890ff' }} />}
+                    avatar={<KeyOutlined style={{ fontSize: 20, color: '#1890ff' }} />}
                     title={
                       <Space>
                         <Tag color="blue">{formatShortcut(shortcut)}</Tag>
@@ -231,7 +231,7 @@ const KeyboardShortcuts: React.FC = () => {
         <div style={{ textAlign: 'center' }}>
           <Button 
             type="primary" 
-            icon={<KeyboardOutlined />}
+            icon={<KeyOutlined />}
             onClick={() => message.info('Keyboard shortcuts are active!')}
           >
             Test Shortcuts
