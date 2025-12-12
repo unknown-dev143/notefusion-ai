@@ -1,26 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Card, 
-  Typography, 
-  Button, 
-  Space, 
-  Input, 
-  Select, 
-  Modal, 
-  List, 
-  Tag, 
-  Empty,
-  message,
-  Dropdown,
-  Menu,
-  Tooltip,
-  Alert,
-  QRCode,
-  Row,
-  Col,
-  Tabs,
-  Collapse
-} from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Input, Button, Typography, Space, List, Tag, Dropdown, Menu, Modal, message, Row, Col, Select, Tooltip, Empty, Alert, QRCode } from 'antd';
 import { 
   PlusOutlined,
   SearchOutlined,
@@ -33,12 +12,7 @@ import {
   QrcodeOutlined,
   DownloadOutlined,
   MoreOutlined,
-  FileTextOutlined,
-  FolderOutlined,
-  CalendarOutlined,
-  BookOutlined,
-  HistoryOutlined,
-  RobotOutlined
+  FileTextOutlined
 } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
@@ -79,124 +53,6 @@ interface NoteVersion {
   createdAt: string;
   author: string;
   changes: string;
-}
-
-interface NoteFolder {
-  id: string;
-  name: string;
-  parentId?: string;
-  color: string;
-  icon: React.ReactNode;
-  noteCount: number;
-  createdAt: string;
-  isShared: boolean;
-}
-
-interface NoteCollection {
-  id: string;
-  name: string;
-  description: string;
-  noteIds: string[];
-  color: string;
-  isPublic: boolean;
-  createdAt: string;
-  tags: string[];
-}
-
-interface NoteTemplate {
-  id: string;
-  name: string;
-  content: string;
-  category: string;
-  tags: string[];
-  icon: React.ReactNode;
-  variables?: TemplateVariable[];
-}
-
-interface TemplateVariable {
-  name: string;
-  type: 'text' | 'date' | 'select';
-  options?: string[];
-  defaultValue?: string;
-}
-
-interface NoteReminder {
-  id: string;
-  noteId: string;
-  title: string;
-  message: string;
-  datetime: string;
-  isRecurring: boolean;
-  recurringPattern?: string;
-  isActive: boolean;
-}
-
-interface NoteAnalytics {
-  totalNotes: number;
-  totalWords: number;
-  averageNoteLength: number;
-  mostUsedTags: { tag: string; count: number }[];
-  notesByCategory: { category: string; count: number }[];
-  writingStreak: number;
-  lastActiveDate: string;
-  productivityScore: number;
-  studyProgress: number;
-  knowledgeGraph: KnowledgeNode[];
-}
-
-interface KnowledgeNode {
-  id: string;
-  title: string;
-  type: 'note' | 'concept' | 'topic';
-  connections: string[];
-  weight: number;
-  category: string;
-}
-
-interface SearchFilters {
-  query: string;
-  category: string;
-  tags: string[];
-  dateRange: [string, string] | null;
-  format: string;
-  folderId: string | null;
-  isFavorite: boolean;
-  hasAttachments: boolean;
-  collaborators: string[];
-}
-
-interface CollaborationSession {
-  id: string;
-  noteId: string;
-  participants: User[];
-  isActive: boolean;
-  createdAt: string;
-  lastActivity: string;
-}
-
-interface User {
-  id: string;
-  name: string;
-  avatar: string;
-  email: string;
-  isOnline: boolean;
-}
-
-interface StudySession {
-  id: string;
-  noteId: string;
-  startTime: string;
-  endTime?: string;
-  focusLevel: number;
-  comprehensionScore?: number;
-  notes: string;
-}
-
-interface NoteExport {
-  format: 'pdf' | 'docx' | 'markdown' | 'html' | 'json';
-  includeMetadata: boolean;
-  includeAttachments: boolean;
-  selectedNotes: string[];
 }
 
 interface NoteCategory {
@@ -265,90 +121,6 @@ const Notes: React.FC = () => {
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [qrModalVisible, setQrModalVisible] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
-
-  // Enhanced Features State
-  const [folders, setFolders] = useState<NoteFolder[]>([
-    { id: 'root', name: 'My Notes', color: 'blue', icon: <FolderOutlined />, noteCount: 0, createdAt: new Date().toISOString(), isShared: false },
-    { id: 'study', name: 'Study', color: 'green', icon: <BookOutlined />, noteCount: 0, createdAt: new Date().toISOString(), isShared: false },
-    { id: 'work', name: 'Work', color: 'orange', icon: <FileTextOutlined />, noteCount: 0, createdAt: new Date().toISOString(), isShared: false }
-  ]);
-  const [collections, setCollections] = useState<NoteCollection[]>([]);
-  const [selectedFolder, setSelectedFolder] = useState('root');
-  const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'tree'>('list');
-  const [activeTab, setActiveTab] = useState('notes');
-  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
-    query: '',
-    category: 'all',
-    tags: [],
-    dateRange: null,
-    format: 'all',
-    folderId: null,
-    isFavorite: false,
-    hasAttachments: false,
-    collaborators: []
-  });
-  const [advancedSearchVisible, setAdvancedSearchVisible] = useState(false);
-  const [analyticsVisible, setAnalyticsVisible] = useState(false);
-  const [analytics, setAnalytics] = useState<NoteAnalytics | null>(null);
-  const [noteVersions, setNoteVersions] = useState<NoteVersion[]>([]);
-  const [versionHistoryVisible, setVersionHistoryVisible] = useState(false);
-  const [collaborationSessions, setCollaborationSessions] = useState<CollaborationSession[]>([]);
-  const [activeCollaborators, setActiveCollaborators] = useState<User[]>([]);
-  const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(false);
-  const [reminders, setReminders] = useState<NoteReminder[]>([]);
-  const [reminderModalVisible, setReminderModalVisible] = useState(false);
-  const [templates, setTemplates] = useState<NoteTemplate[]>([
-    {
-      id: 'meeting',
-      name: 'Meeting Notes',
-      content: '# Meeting Notes\n\n**Date:** {{date}}\n**Attendees:** {{attendees}}\n\n## Agenda\n{{agenda}}\n\n## Discussion Points\n{{discussion}}\n\n## Action Items\n{{actions}}',
-      category: 'meeting',
-      tags: ['meeting', 'notes'],
-      icon: <CalendarOutlined />,
-      variables: [
-        { name: 'date', type: 'date', defaultValue: new Date().toLocaleDateString() },
-        { name: 'attendees', type: 'text', defaultValue: '' },
-        { name: 'agenda', type: 'text', defaultValue: '' },
-        { name: 'discussion', type: 'text', defaultValue: '' },
-        { name: 'actions', type: 'text', defaultValue: '' }
-      ]
-    },
-    {
-      id: 'study',
-      name: 'Study Notes',
-      content: '# {{title}}\n\n**Subject:** {{subject}}\n**Date:** {{date}}\n\n## Key Concepts\n{{concepts}}\n\n## Important Points\n{{points}}\n\n## Questions\n{{questions}}\n\n## Summary\n{{summary}}',
-      category: 'study',
-      tags: ['study', 'learning'],
-      icon: <BookOutlined />,
-      variables: [
-        { name: 'title', type: 'text', defaultValue: '' },
-        { name: 'subject', type: 'text', defaultValue: '' },
-        { name: 'date', type: 'date', defaultValue: new Date().toLocaleDateString() },
-        { name: 'concepts', type: 'text', defaultValue: '' },
-        { name: 'points', type: 'text', defaultValue: '' },
-        { name: 'questions', type: 'text', defaultValue: '' },
-        { name: 'summary', type: 'text', defaultValue: '' }
-      ]
-    }
-  ]);
-  const [templateModalVisible, setTemplateModalVisible] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<NoteTemplate | null>(null);
-  const [studyMode, setStudyMode] = useState(false);
-  const [studySession, setStudySession] = useState<StudySession | null>(null);
-  const [flashcards, setFlashcards] = useState<any[]>([]);
-  const [flashcardModalVisible, setFlashcardModalVisible] = useState(false);
-  const [exportModalVisible, setExportModalVisible] = useState(false);
-  const [exportSettings, setExportSettings] = useState<NoteExport>({
-    format: 'pdf',
-    includeMetadata: true,
-    includeAttachments: false,
-    selectedNotes: []
-  });
-  const [importModalVisible, setImportModalVisible] = useState(false);
-  const [knowledgeGraphVisible, setKnowledgeGraphVisible] = useState(false);
-  const [quickCaptureVisible, setQuickCaptureVisible] = useState(false);
-  const [quickCaptureText, setQuickCaptureText] = useState('');
 
   // Load notes from localStorage on mount
   useEffect(() => {
@@ -690,53 +462,7 @@ const Notes: React.FC = () => {
     </Menu>
   );
 
-  // Enhanced Features Functions
-  
-  // 1. Advanced Organization Functions
-  const createFolder = (name: string, parentId?: string) => {
-    const newFolder: NoteFolder = {
-      id: Date.now().toString(),
-      name,
-      parentId,
-      color: 'blue',
-      icon: <FolderOutlined />,
-      noteCount: 0,
-      createdAt: new Date().toISOString(),
-      isShared: false
-    };
-    setFolders(prev => [...prev, newFolder]);
-    message.success('Folder created successfully');
-  };
-
-  const deleteFolder = (folderId: string) => {
-    setFolders(prev => prev.filter(folder => folder.id !== folderId));
-    message.success('Folder deleted successfully');
-  };
-
-  const downloadJSON = (notesToExport: Note[]) => {
-    const dataStr = JSON.stringify(notesToExport, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = `notes_${new Date().toISOString().split('T')[0]}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-  };
-
-  const downloadMarkdown = (notesToExport: Note[]) => {
-    const content = notesToExport.map(note => 
-      `# ${note.title}\n\n${note.content}\n\n---\n\n`
-    ).join('');
-    
-    const dataUri = 'data:text/markdown;charset=utf-8,'+ encodeURIComponent(content);
-    const exportFileDefaultName = `notes_${new Date().toISOString().split('T')[0]}.md`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-  };
+  // Enhanced Features Functions (removed unused functions for build)
 
   return (
     <div style={{ padding: 24 }}>

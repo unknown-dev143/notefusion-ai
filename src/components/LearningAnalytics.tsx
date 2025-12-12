@@ -1,6 +1,26 @@
 import React, { useState } from 'react';
-import { Card, Row, Col, Typography, Progress, Statistic, Table, Tag, Space, Select } from 'antd';
+import { Card, Row, Col, Statistic, Progress, Typography, Tag, Space, Select, Table } from 'antd';
 import { TrophyOutlined, FireOutlined, BookOutlined, ClockCircleOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
+import { 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  BarChart,
+  Bar,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  LineChart,
+  Line
+} from 'recharts';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
