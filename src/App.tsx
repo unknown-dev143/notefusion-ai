@@ -2,6 +2,7 @@
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { KeyboardShortcutsProvider } from './components/KeyboardShortcutsProvider';
+import { FeatureIntegrationProvider } from './contexts/FeatureIntegrationContext';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
@@ -12,6 +13,10 @@ import SettingsPage from './pages/SettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import MFAVerification from './components/MFAVerification';
 import DashboardPage from './pages/DashboardPage';
+import FeatureBridge from './components/FeatureBridge';
+
+// Initialize feature integration
+import './services/FeatureIntegrationService';
 
 // Mobile Components
 import MobileDashboard from './components/MobileDashboard';
@@ -145,6 +150,7 @@ const AppRoutes = () => {
         <Route path="voice" element={<VoiceRecorder />} />
         <Route path="study-groups" element={<StudyGroups />} />
         <Route path="integrations" element={<IntegrationHub />} />
+        <Route path="feature-bridge" element={<FeatureBridge />} />
         <Route path="pdf" element={<PDFProcessor />} />
         <Route path="ai" element={<AIAssistant />} />
         <Route path="ai-notes" element={<AINoteGenerator />} />
@@ -259,7 +265,9 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <KeyboardShortcutsProvider>
-          <AppRoutes />
+          <FeatureIntegrationProvider>
+            <AppRoutes />
+          </FeatureIntegrationProvider>
         </KeyboardShortcutsProvider>
       </AuthProvider>
     </ThemeProvider>
