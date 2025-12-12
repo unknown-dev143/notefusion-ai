@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Typography, Button, Space, Input, Select, Tabs, List, Tag, Modal, Avatar, Badge, Switch, Row, Col } from 'antd';
+import { Card, Typography, Button, Space, Input, Select, Tabs, List, Tag, Avatar, Badge, Switch, Row, Col } from 'antd';
 import { 
   MailOutlined,
   SendOutlined,
@@ -7,13 +7,10 @@ import {
   EditOutlined,
   DeleteOutlined,
   StarOutlined,
-  ClockCircleOutlined,
   CheckCircleOutlined,
-  ExclamationCircleOutlined,
   BulbOutlined,
   ThunderboltOutlined,
-  UserOutlined,
-  TeamOutlined
+  UserOutlined
 } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
@@ -69,8 +66,6 @@ const AIEmailAssistant: React.FC = () => {
   const [emailTone, setEmailTone] = useState('professional');
   const [emailLength, setEmailLength] = useState('medium');
   const [autoReply, setAutoReply] = useState(false);
-  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
-  const [showEmailModal, setShowEmailModal] = useState(false);
 
   const emailTemplates: EmailTemplate[] = [
     {
@@ -86,59 +81,15 @@ const AIEmailAssistant: React.FC = () => {
       subject: 'Follow Up - [Previous Subject]',
       body: 'Hi [Name],\n\nJust following up on our previous conversation about [topic].\n\nLooking forward to hearing from you.\n\nBest,\n[Your Name]',
       category: 'Professional'
+    },
+    {
+      id: '3',
+      name: 'New Follow Up',
+      subject: 'New Follow Up - [Previous Subject]',
+      body: 'Hi [Name],\n\nJust following up on our previous conversation about [topic].\n\nLooking forward to hearing from you.\n\nBest,\n[Your Name]',
+      category: 'Professional'
     }
   ];
-
-  const generateEmailReply = (email: Email) => {
-    const reply = `
-Dear ${email.from.split('@')[0]},
-
-Thank you for your email regarding "${email.subject}".
-
-${emailTone === 'professional' ? 'I have received your message and will respond appropriately.' : 
-  emailTone === 'casual' ? 'Thanks for reaching out! Got your message.' : 
-  'Your message has been noted and will be addressed.'}
-
-${autoReply ? 'This is an automated response. I will get back to you soon.' : ''}
-
-Best regards,
-[Your Name]
-    `;
-    return reply.trim();
-  };
-
-  const generateEmailDraft = () => {
-    const draft = `
-Subject: ${newEmail.subject || 'Generated Subject'}
-
-Dear ${newEmail.to.split('@')[0] || 'Recipient'},
-
-${emailTone === 'professional' ? 
-  'I hope this email finds you well. I am writing to discuss...' :
-  emailTone === 'casual' ? 
-  'Hey! Just wanted to reach out about...' :
-  'Greetings! I am contacting you regarding...'
-}
-
-${newEmail.body || '[AI-generated content based on your input]'}
-
-${emailTone === 'professional' ? 
-  'I look forward to your response.' :
-  emailTone === 'casual' ? 
-  'Let me know what you think!' :
-  'Awaiting your reply.'
-}
-
-Best regards,
-[Your Name]
-    `;
-    setNewEmail({ ...newEmail, body: draft.trim() });
-  };
-
-  const summarizeEmail = (email: Email) => {
-    const summary = `This email from ${email.from} discusses ${email.subject}. Key points: ${email.body.substring(0, 100)}...`;
-    return summary;
-  };
 
   const categorizeEmail = (email: Email): string => {
     const body = email.body.toLowerCase();
@@ -237,7 +188,7 @@ Best regards,
                     </Button>
                     <Button
                       icon={<RobotOutlined />}
-                      onClick={generateEmailDraft}
+                      disabled
                     >
                       AI Draft
                     </Button>

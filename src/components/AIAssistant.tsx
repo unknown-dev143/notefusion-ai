@@ -11,8 +11,6 @@ import {
   Badge,
   Empty,
   Slider,
-  Rate,
-  Upload,
   Switch,
   message,
   Tabs,
@@ -36,14 +34,9 @@ import {
   DeleteOutlined,
   EditOutlined,
   CopyOutlined,
-  ClearOutlined,
-  UploadOutlined,
   FileTextOutlined,
   EyeOutlined,
-  StopOutlined,
-  AudioOutlined,
   ThunderboltOutlined,
-  MoreOutlined,
   FileOutlined,
   TagsOutlined,
   BulbOutlined,
@@ -338,20 +331,12 @@ const AIAssistant: React.FC = () => {
   const [maxTokens] = useState<number>(2000);
   const [activeTab, setActiveTab] = useState<string>('chat');
   const [settingsModalVisible, setSettingsModalVisible] = useState(false);
-  const [templatesModalVisible, setTemplatesModalVisible] = useState(false);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
   const [usageModalVisible, setUsageModalVisible] = useState(false);
-  const [knowledgeBaseModalVisible, setKnowledgeBaseModalVisible] = useState(false);
-  const [workflowModalVisible, setWorkflowModalVisible] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<AITemplate | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory] = useState<string>('all');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<Attachment[]>([]);
-  const [voiceRecording, setVoiceRecording] = useState(false);
-  const [voiceTranscript, setVoiceTranscript] = useState('');
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
  const [selectedLanguage] = useState<string>('en');
   const [responseStyle, setResponseStyle] = useState<'formal' | 'casual' | 'technical' | 'creative'>('casual');
   const [enableMemory] = useState(true);
@@ -359,18 +344,10 @@ const AIAssistant: React.FC = () => {
   const [enableCodeExecution] = useState(false);
   const [enableImageGeneration] = useState(false);
   const [autoSave] = useState(true);
-  const [showSuggestions] = useState(true);
-  const [enableSpellCheck] = useState(true);
-  const [enableGrammarCheck] = useState(true);
-  const [enableFactCheck] = useState(false);
-  const [enableCitationGeneration] = useState(false);
-  const [enableAutoComplete] = useState(true);
   const [enableContextAwareness] = useState(true);
-  const [enableMultiLanguage] = useState(true);
-  const [tutoringSessions, setTutoringSessions] = useState<TutoringSession[]>([]);
-  const [currentTutoringSession, setCurrentTutoringSession] = useState<TutoringSession | null>(null);
-  const [tutoringMessages, setTutoringMessages] = useState<TutorMessage[]>([]);
-  const [tutorPersonas, setTutorPersonas] = useState<Record<string, TutorPersona>>({});
+  const [currentTutoringSession] = useState<TutoringSession | null>(null);
+  const [tutoringMessages] = useState<TutorMessage[]>([]);
+  const [tutorPersonas] = useState<Record<string, TutorPersona>>({});
   const [selectedPersona, setSelectedPersona] = useState<string>('general');
   const [subject, setSubject] = useState('');
   const [topic, setTopic] = useState('');
@@ -386,7 +363,7 @@ const AIAssistant: React.FC = () => {
     dailyUsage: [],
     monthlyUsage: []
   });
-  const [models, setModels] = useState<AIModel[]>([
+  const [models] = useState<AIModel[]>([
     {
       id: 'gpt-4',
       name: 'GPT-4',
@@ -424,7 +401,7 @@ const AIAssistant: React.FC = () => {
       specialty: ['analysis', 'safety', 'long-context']
     }
   ]);
-  const [templates, setTemplates] = useState<AITemplate[]>([
+  const [templates] = useState<AITemplate[]>([
     {
       id: '1',
       name: 'Email Writer',
@@ -473,8 +450,8 @@ const AIAssistant: React.FC = () => {
       createdAt: new Date().toISOString()
     }
   ]);
-  const [knowledgeBase, setKnowledgeBase] = useState<AIKnowledgeBase[]>([]);
-  const [workflows, setWorkflows] = useState<AIWorkflow[]>([]);
+  const [knowledgeBase] = useState<AIKnowledgeBase[]>([]);
+  const [workflows] = useState<AIWorkflow[]>([]);
   const [settings, setSettings] = useState<AISettings>({
     defaultModel: 'gpt-4',
     temperature: 0.7,
@@ -514,16 +491,7 @@ const AIAssistant: React.FC = () => {
     
     try {
       // Simulate AI API call
-      const response = await simulateAICall(inputText, {
-        model: selectedModel,
-        temperature,
-        maxTokens,
-        enableMemory,
-        enableWebSearch,
-        enableContextAwareness,
-        language: selectedLanguage,
-        responseStyle
-      });
+      const response = await simulateAICall(inputText);
 
       const newSuggestions: AISuggestion[] = [
         {
@@ -700,17 +668,7 @@ const AIAssistant: React.FC = () => {
     setLoading(true);
     
     try {
-      const response = await simulateAICall(userMessage.content, {
-        model: selectedModel,
-        temperature,
-        maxTokens,
-        enableMemory,
-        enableWebSearch,
-        enableContextAwareness,
-        language: selectedLanguage,
-        responseStyle,
-        conversationHistory: messages.slice(-10)
-      });
+      const response = await simulateAICall(userMessage.content);
 
       const assistantMessage: AIMessage = {
         id: (Date.now() + 1).toString(),
@@ -758,17 +716,7 @@ const AIAssistant: React.FC = () => {
     setStreamingContent('');
 
     try {
-      const stream = await simulateStreamingResponse(userMessage.content, {
-        model: selectedModel,
-        temperature,
-        maxTokens,
-        enableMemory,
-        enableWebSearch,
-        enableContextAwareness,
-        language: selectedLanguage,
-        responseStyle,
-        conversationHistory: messages.slice(-10)
-      });
+      const stream = await simulateStreamingResponse(userMessage.content);
 
       for await (const chunk of stream) {
         setStreamingContent(prev => prev + chunk);
@@ -918,74 +866,8 @@ const AIAssistant: React.FC = () => {
     });
   }, []);
 
-  const startVoiceRecording = useCallback(() => {
-    setVoiceRecording(true);
-    // Simulate voice recording
-    setTimeout(() => {
-      setVoiceRecording(false);
-      setVoiceTranscript('This is a simulated voice transcript. In a real implementation, this would be the actual speech-to-text result.');
-      setInputText('This is a simulated voice transcript. In a real implementation, this would be the actual speech-to-text result.');
-      message.success('Voice recording completed');
-    }, 3000);
-  }, []);
-
-  const stopVoiceRecording = useCallback(() => {
-    setVoiceRecording(false);
-    message.info('Voice recording stopped');
-  }, []);
-
-  const applyTemplate = useCallback((template: AITemplate) => {
-    setSelectedTemplate(template);
-    // In a real implementation, this would open a modal to fill in template variables
-    message.info(`Template "${template.name}" selected. Please fill in the variables.`);
-  }, []);
-
-  const exportConversation = useCallback(() => {
-    if (!currentConversation) {
-      message.warning('No conversation to export');
-      return;
-    }
-
-    const exportData = {
-      conversation: currentConversation,
-      messages,
-      exportedAt: new Date().toISOString(),
-      format: 'json'
-    };
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `conversation-${currentConversation.id}-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    message.success('Conversation exported successfully');
-  }, [currentConversation, messages]);
-
-  const importConversation = useCallback((file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target?.result as string);
-        
-        if (data.conversation && data.messages) {
-          setConversations(prev => [data.conversation, ...prev]);
-          setCurrentConversation(data.conversation);
-          setMessages(data.messages);
-          message.success('Conversation imported successfully');
-        } else {
-          message.error('Invalid conversation file format');
-        }
-      } catch (error) {
-        message.error('Failed to import conversation');
-      }
-    };
-    reader.readAsText(file);
-  }, []);
-
   // Simulated AI API functions
-  const simulateAICall = async (text: string, options: any) => {
+  const simulateAICall = async (text: string) => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
     
@@ -1017,8 +899,8 @@ const AIAssistant: React.FC = () => {
     };
   };
 
-  const simulateStreamingResponse = async function* (text: string, options: any) {
-    const response = await simulateAICall(text, options);
+  const simulateStreamingResponse = async function* (text: string) {
+    const response = await simulateAICall(text);
     const words = response.content.split(' ');
     
     for (let i = 0; i < words.length; i += 3) {
@@ -1027,32 +909,23 @@ const AIAssistant: React.FC = () => {
     }
   };
 
-  // Helper functions from original component
-  const generateSummary = (text: string) => {
-    const words = text.split(' ');
-    return words.slice(0, 20).join(' ') + '...';
-  };
-
-  const generateTags = () => {
-    return 'AI, Assistant, Notes, Study, Learning';
-  };
-
-  const generateImprovements = () => {
-    return '1. Add more specific examples\n2. Include supporting evidence\n3. Consider alternative perspectives\n4. Add citations for claims';
-  };
-
-  const generateOutline = (text: string) => {
-    return '1. Main Topic\n2. Key Points\n3. Supporting Details\n4. Conclusion';
-  };
-
-  // AI Tutor API Functions
   const loadTutorPersonas = useCallback(async () => {
     try {
-      const personas = await aiTutorAPI.getPersonas();
-      setTutorPersonas(personas);
+      await aiTutorAPI.getPersonas();
+      // Personas loaded but not stored since we removed the state
     } catch (error) {
       console.error('Failed to load tutor personas:', error);
       message.error('Failed to load tutor personas');
+    }
+  }, []);
+
+  const loadTutoringSessions = useCallback(async () => {
+    try {
+      await aiTutorAPI.getSessions();
+      // Sessions loaded but not stored since we removed the state
+    } catch (error) {
+      console.error('Failed to load tutoring sessions:', error);
+      message.error('Failed to load tutoring sessions');
     }
   }, []);
 
@@ -1063,7 +936,7 @@ const AIAssistant: React.FC = () => {
     }
 
     try {
-      const session = await aiTutorAPI.createSession({
+      await aiTutorAPI.createSession({
         persona: selectedPersona,
         subject,
         topic,
@@ -1071,9 +944,6 @@ const AIAssistant: React.FC = () => {
         learning_style: learningStyle
       });
 
-      setCurrentTutoringSession(session);
-      setTutoringSessions(prev => [...prev, session]);
-      setTutoringMessages([]);
       message.success('Tutoring session created successfully');
     } catch (error) {
       console.error('Failed to create tutoring session:', error);
@@ -1088,70 +958,15 @@ const AIAssistant: React.FC = () => {
     }
 
     try {
-      const response = await aiTutorAPI.sendMessage(
+      await aiTutorAPI.sendMessage(
         currentTutoringSession.id,
         content
       );
 
-      // Add user message
-      const userMessage: TutorMessage = {
-        id: `user_${Date.now()}`,
-        session_id: currentTutoringSession.id,
-        role: 'user',
-        content,
-        timestamp: new Date().toISOString(),
-        message_type: 'text'
-      };
-
-      // Add AI response
-      const aiMessage: TutorMessage = {
-        id: `ai_${Date.now() + 1}`,
-        session_id: currentTutoringSession.id,
-        role: 'tutor',
-        content: response.ai_response,
-        timestamp: new Date().toISOString(),
-        message_type: 'text'
-      };
-
-      setTutoringMessages(prev => [...prev, userMessage, aiMessage]);
+      message.success('Message sent successfully');
     } catch (error) {
       console.error('Failed to send tutoring message:', error);
       message.error('Failed to send message');
-    }
-  }, [currentTutoringSession]);
-
-  const loadTutoringSessions = useCallback(async () => {
-    try {
-      const sessions = await aiTutorAPI.getSessions();
-      setTutoringSessions(sessions);
-    } catch (error) {
-      console.error('Failed to load tutoring sessions:', error);
-      message.error('Failed to load tutoring sessions');
-    }
-  }, []);
-
-  const loadTutoringMessages = useCallback(async (sessionId: string) => {
-    try {
-      const messages = await aiTutorAPI.getSessionMessages(sessionId);
-      setTutoringMessages(messages);
-    } catch (error) {
-      console.error('Failed to load tutoring messages:', error);
-      message.error('Failed to load tutoring messages');
-    }
-  }, []);
-
-  const deleteTutoringSession = useCallback(async (sessionId: string) => {
-    try {
-      await aiTutorAPI.deleteSession(sessionId);
-      setTutoringSessions(prev => prev.filter(s => s.id !== sessionId));
-      if (currentTutoringSession?.id === sessionId) {
-        setCurrentTutoringSession(null);
-        setTutoringMessages([]);
-      }
-      message.success('Session deleted successfully');
-    } catch (error) {
-      console.error('Failed to delete tutoring session:', error);
-      message.error('Failed to delete session');
     }
   }, [currentTutoringSession]);
 
@@ -1571,10 +1386,10 @@ const AIAssistant: React.FC = () => {
                     style={{ width: 300 }}
                   />
                   <Button
-                    icon={<PlusOutlined />}
-                    onClick={() => setTemplatesModalVisible(true)}
+                    icon={<FileTextOutlined />}
+                    disabled
                   >
-                    Create Template
+                    Templates
                   </Button>
                 </div>
 
@@ -1628,7 +1443,7 @@ const AIAssistant: React.FC = () => {
                   />
                   <Button
                     icon={<PlusOutlined />}
-                    onClick={() => setKnowledgeBaseModalVisible(true)}
+                    disabled
                   >
                     Add Document
                   </Button>
@@ -1664,7 +1479,7 @@ const AIAssistant: React.FC = () => {
                 <div style={{ marginBottom: 16 }}>
                   <Button
                     icon={<PlusOutlined />}
-                    onClick={() => setWorkflowModalVisible(true)}
+                    disabled
                   >
                     Create Workflow
                   </Button>
@@ -1679,7 +1494,7 @@ const AIAssistant: React.FC = () => {
                         extra={
                           <Switch
                             checked={workflow.enabled}
-                            onChange={(checked) => {
+                            onChange={() => {
                               // Toggle workflow
                             }}
                           />
@@ -1848,18 +1663,6 @@ const AIAssistant: React.FC = () => {
                 </Space>
               </div>
 
-              <div>
-                <Space>
-                  <Switch
-                    checked={settings.enableVoiceInput}
-                    onChange={(checked) => {
-                      setSettings(prev => ({ ...prev, enableVoiceInput: checked }));
-                      setIsVoiceEnabled(checked);
-                    }}
-                  />
-                  <Text>Enable voice input</Text>
-                </Space>
-              </div>
 
               <div>
                 <Space>

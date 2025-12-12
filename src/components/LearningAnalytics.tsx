@@ -314,7 +314,7 @@ const LearningAnalytics: React.FC = () => {
             <ResponsiveContainer width="100%" height={300}>
               <RadarChart data={getSkillRadarData()}>
                 <PolarGrid />
-                <PolarAngleAxis dataKey="subject" />
+                {React.createElement(PolarAngleAxis as any, { dataKey: "subject" })}
                 <PolarRadiusAxis />
                 <Radar name="Accuracy" dataKey="accuracy" stroke="#1890ff" fill="#1890ff" fillOpacity={0.6} />
                 <Radar name="Time Spent" dataKey="timeSpent" stroke="#52c41a" fill="#52c41a" fillOpacity={0.6} />

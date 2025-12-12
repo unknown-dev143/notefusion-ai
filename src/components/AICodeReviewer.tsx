@@ -60,7 +60,6 @@ const AICodeReviewer: React.FC = () => {
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState('javascript');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisMode] = useState<'quick' | 'detailed'>('quick');
   const [issues, setIssues] = useState<CodeIssue[]>([]);
   const [metrics, setMetrics] = useState<CodeMetrics | null>(null);
   const [autoFix, setAutoFix] = useState(true);

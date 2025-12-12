@@ -61,31 +61,6 @@ interface Reward {
   expiresAt?: string;
 }
 
-interface ChallengeRequirement {
-  type: 'study_minutes' | 'cards_reviewed' | 'accuracy' | 'streak' | 'notes_created' | 'social';
-  target: number;
-  current: number;
-  description: string;
-}
-
-interface Challenge {
-  id: string;
-  title: string;
-  description: string;
-  type: 'daily' | 'weekly' | 'monthly' | 'special';
-  difficulty: 'easy' | 'medium' | 'hard' | 'extreme';
-  requirements: ChallengeRequirement[];
-  rewards: Reward[];
-  startDate: string;
-  endDate: string;
-  isActive: boolean;
-  participants: number;
-  completedBy: string[];
-  maxParticipants?: number;
-  isTeamChallenge?: boolean;
-  teamSize?: number;
-}
-
 const GamificationSystem: React.FC = () => {
   const userPoints = 1250;
   const userLevel = 5;
