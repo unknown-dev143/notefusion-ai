@@ -1,15 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Card, 
   Row, 
   Col, 
-  Statistic, 
   Progress, 
-  List, 
-  Avatar, 
   Button, 
   Space, 
-  Typography
+  Typography,
+  Tag
 } from 'antd';
 import { 
   TrophyOutlined, 
@@ -63,6 +61,13 @@ interface Reward {
   expiresAt?: string;
 }
 
+interface ChallengeRequirement {
+  type: 'study_minutes' | 'cards_reviewed' | 'accuracy' | 'streak' | 'notes_created' | 'social';
+  target: number;
+  current: number;
+  description: string;
+}
+
 interface Challenge {
   id: string;
   title: string;
@@ -79,62 +84,6 @@ interface Challenge {
   maxParticipants?: number;
   isTeamChallenge?: boolean;
   teamSize?: number;
-}
-
-interface ChallengeRequirement {
-  type: 'study_minutes' | 'cards_reviewed' | 'accuracy' | 'streak' | 'notes_created' | 'social';
-  target: number;
-  current: number;
-  description: string;
-}
-
-interface UserStats {
-  userId: string;
-  level: number;
-  experience: number;
-  experienceToNext: number;
-  totalPoints: number;
-  currentStreak: number;
-  longestStreak: number;
-  studyTime: number;
-  accuracy: number;
-  totalSessions: number;
-  favoriteSubject: string;
-  globalRank: number;
-  badges: Achievement[];
-  activeChallenges: Challenge[];
-  completedChallenges: string[];
-  lastActive: string;
-}
-
-interface LeaderboardConfig {
-  timeFrame: 'daily' | 'weekly' | 'monthly' | 'all_time';
-  category: 'points' | 'streak' | 'study_time' | 'accuracy' | 'level';
-  filter: 'all' | 'friends' | 'global' | 'country';
-  showInactive: boolean;
-  maxEntries: number;
-}
-
-interface NotificationSettings {
-  achievements: boolean;
-  leaderboard: boolean;
-  challenges: boolean;
-  rewards: boolean;
-  streaks: boolean;
-  milestones: boolean;
-  friendActivity: boolean;
-}
-
-interface GamificationSettings {
-  isEnabled: boolean;
-  showLeaderboards: boolean;
-  allowChallenges: boolean;
-  enableRewards: boolean;
-  showBadges: boolean;
-  enableStreaks: boolean;
-  experienceMultiplier: number;
-  pointMultiplier: number;
-  notifications: NotificationSettings;
 }
 
 const GamificationSystem: React.FC = () => {

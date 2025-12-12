@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState } from 'react';
 import { 
   Card, 
   Typography, 
@@ -12,22 +12,7 @@ import {
   Tag, 
   Progress, 
   Rate, 
-  Select, 
-  Row, 
-  Col, 
-  Badge, 
-  Tooltip, 
-  Dropdown, 
-  Menu, 
-  Switch, 
-  Slider, 
-  Alert, 
-  Divider,
-  Statistic,
-  Avatar,
-  Upload,
-  Checkbox,
-  Radio
+  Select
 } from 'antd';
 import { 
   QuestionCircleOutlined, 
@@ -38,38 +23,12 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   BookOutlined,
-  ClockCircleOutlined,
-  RobotOutlined,
-  ThunderboltOutlined,
-  StarOutlined,
-  FireOutlined,
-  TrophyOutlined,
-  BulbOutlined,
-  EyeOutlined,
-  SoundOutlined,
-  ImageOutlined,
-  UploadOutlined,
-  DownloadOutlined,
-  ShareAltOutlined,
-  SettingOutlined,
-  BarChartOutlined,
-  LineChartOutlined,
-  PieChartOutlined,
-  ReloadOutlined,
-  PauseOutlined,
-  SkipForwardOutlined,
-  UndoOutlined,
-  RedoOutlined,
-  HeartOutlined,
-  HeartFilled,
-  ExclamationCircleOutlined,
-  CheckSquareOutlined
+  ClockCircleOutlined
 } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 const { TabPane } = Tabs;
-const { Option } = Select;
 
 // Enhanced Interfaces
 interface Flashcard {
@@ -115,68 +74,6 @@ interface FlashcardSet {
   aiOptimized?: boolean;
 }
 
-interface StudySession {
-  id: string;
-  setId: string;
-  startTime: string;
-  endTime?: string;
-  cardsStudied: string[];
-  correctAnswers: number;
-  totalAnswers: number;
-  averageResponseTime: number;
-  studyMode: 'review' | 'test' | 'spaced' | 'adaptive';
-  settings: StudySettings;
-}
-
-interface StudySettings {
-  showHints: boolean;
-  showExplanations: boolean;
-  adaptiveDifficulty: boolean;
-  timeLimit?: number;
-  cardOrder: 'sequential' | 'random' | 'spaced';
-  includeImages: boolean;
-  includeAudio: boolean;
-  spacedRepetitionEnabled: boolean;
-}
-
-interface AIGenerationRequest {
-  topic: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  count: number;
-  includeImages: boolean;
-  includeAudio: boolean;
-  language: string;
-  style: 'qa' | 'multiple_choice' | 'fill_blank' | 'true_false';
-}
-
-interface StudyAnalytics {
-  totalCards: number;
-  masteredCards: number;
-  averageMastery: number;
-  studyStreak: number;
-  totalTime: number;
-  averageResponseTime: number;
-  retentionRate: number;
-  difficultyProgress: {
-    easy: number;
-    medium: number;
-    hard: number;
-  };
-  categoryProgress: { [key: string]: number };
-  dailyStudyTime: { date: string; minutes: number }[];
-}
-
-interface SpacedRepetitionConfig {
-  easeFactor: number;
-  minimumInterval: number;
-  maximumInterval: number;
-  intervalModifier: number;
-  graduationInterval: number;
-  startingEase: number;
-  easyBonus: number;
-  intervalFactor: number;
-}
-
 const FlashcardSystem: React.FC = () => {
   const [flashcardSets, setFlashcardSets] = useState<FlashcardSet[]>([
     {
@@ -209,7 +106,13 @@ const FlashcardSystem: React.FC = () => {
           masteryLevel: 2
         }
       ],
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      tags: [],
+      isPublic: false,
+      difficulty: 'beginner',
+      estimatedStudyTime: 0,
+      shareCount: 0,
+      rating: 0
     }
   ]);
 
@@ -243,54 +146,6 @@ const FlashcardSystem: React.FC = () => {
     incorrectAnswers: 0
   });
 
-  // Enhanced AI-Powered State
-  const [aiGenerationModal, setAiGenerationModal] = useState(false);
-  const [aiRequest, setAiRequest] = useState<AIGenerationRequest>({
-    topic: '',
-    difficulty: 'medium',
-    count: 10,
-    includeImages: false,
-    includeAudio: false,
-    language: 'en',
-    style: 'qa'
-  });
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [studySession, setStudySession] = useState<StudySession | null>(null);
-  const [studySettings, setStudySettings] = useState<StudySettings>({
-    showHints: true,
-    showExplanations: true,
-    adaptiveDifficulty: true,
-    cardOrder: 'spaced',
-    includeImages: true,
-    includeAudio: true,
-    spacedRepetitionEnabled: true
-  });
-  const [analytics, setAnalytics] = useState<StudyAnalytics | null>(null);
-  const [analyticsVisible, setAnalyticsVisible] = useState(false);
-  const [spacedConfig, setSpacedConfig] = useState<SpacedRepetitionConfig>({
-    easeFactor: 2.5,
-    minimumInterval: 1,
-    maximumInterval: 36500,
-    intervalModifier: 1.0,
-    graduationInterval: 1,
-    startingEase: 2.5,
-    easyBonus: 1.3,
-    intervalFactor: 2.5
-  });
-  const [currentResponseTime, setCurrentResponseTime] = useState(0);
-  const [responseStartTime, setResponseStartTime] = useState(Date.now());
-  const [aiHints, setAiHints] = useState<string[]>([]);
-  const [showHints, setShowHints] = useState(false);
-  const [aiExplanation, setAiExplanation] = useState('');
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [studyStreak, setStudyStreak] = useState(0);
-  const [lastStudyDate, setLastStudyDate] = useState<string | null>(null);
-  const [adaptiveDifficulty, setAdaptiveDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
-  const [favoriteCards, setFavoriteCards] = useState<string[]>([]);
-  const [cardHistory, setCardHistory] = useState<string[]>([]);
-  const [undoStack, setUndoStack] = useState<string[]>([]);
-  const [redoStack, setRedoStack] = useState<string[]>([]);
-
   const difficultyColors = {
     easy: 'green',
     medium: 'orange',
@@ -304,225 +159,6 @@ const FlashcardSystem: React.FC = () => {
   };
 
   // AI-Powered Functions
-  const generateAIFlashcards = useCallback(async () => {
-    if (!aiRequest.topic.trim()) {
-      message.error('Please enter a topic');
-      return;
-    }
-
-    setIsGenerating(true);
-    try {
-      // Simulate AI generation
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      const generatedCards: Flashcard[] = Array.from({ length: aiRequest.count }, (_, index) => ({
-        id: `ai-${Date.now()}-${index}`,
-        question: `AI Generated Question ${index + 1} about ${aiRequest.topic}`,
-        answer: `AI Generated Answer ${index + 1} explaining the concept in detail`,
-        category: aiRequest.topic,
-        difficulty: aiRequest.difficulty,
-        tags: ['ai-generated', aiRequest.topic],
-        createdAt: new Date().toISOString(),
-        reviewCount: 0,
-        masteryLevel: 0,
-        aiGenerated: true,
-        aiHints: [`Hint ${index + 1}: Think about the key concepts`],
-        aiExplanation: `This card was AI-generated based on ${aiRequest.topic}`,
-        isFavorite: false,
-        studyStreak: 0,
-        averageResponseTime: 0
-      }));
-
-      const newSet: FlashcardSet = {
-        id: Date.now().toString(),
-        name: `AI Generated: ${aiRequest.topic}`,
-        description: `AI-generated flashcards about ${aiRequest.topic}`,
-        category: aiRequest.topic,
-        flashcards: generatedCards,
-        createdAt: new Date().toISOString(),
-        tags: ['ai-generated'],
-        isPublic: false,
-        difficulty: aiRequest.difficulty === 'easy' ? 'beginner' : aiRequest.difficulty === 'medium' ? 'intermediate' : 'advanced',
-        estimatedStudyTime: generatedCards.length * 2,
-        shareCount: 0,
-        rating: 0,
-        aiOptimized: true
-      };
-
-      setFlashcardSets(prev => [newSet, ...prev]);
-      setAiGenerationModal(false);
-      message.success(`Generated ${aiRequest.count} flashcards about ${aiRequest.topic}`);
-    } catch (error) {
-      message.error('Failed to generate flashcards');
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [aiRequest]);
-
-  const calculateSpacedRepetition = useCallback((card: Flashcard, quality: number) => {
-    let easeFactor = card.easeFactor || spacedConfig.startingEase;
-    let interval = card.interval || spacedConfig.minimumInterval;
-    let repetitions = card.repetitions || 0;
-
-    if (quality >= 3) {
-      if (repetitions === 0) {
-        interval = 1;
-      } else if (repetitions === 1) {
-        interval = 6;
-      } else {
-        interval = Math.round(interval * easeFactor * spacedConfig.intervalFactor);
-      }
-      repetitions += 1;
-    } else {
-      repetitions = 0;
-      interval = 1;
-    }
-
-    easeFactor = Math.max(1.3, easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
-
-    return {
-      easeFactor,
-      interval,
-      repetitions,
-      nextReview: new Date(Date.now() + interval * 24 * 60 * 60 * 1000).toISOString()
-    };
-  }, [spacedConfig]);
-
-  const startStudySession = useCallback((setId: string, mode: StudySession['studyMode']) => {
-    const session: StudySession = {
-      id: Date.now().toString(),
-      setId,
-      startTime: new Date().toISOString(),
-      cardsStudied: [],
-      correctAnswers: 0,
-      totalAnswers: 0,
-      averageResponseTime: 0,
-      studyMode: mode,
-      settings: studySettings
-    };
-    setStudySession(session);
-    setSelectedSet(flashcardSets.find(set => set.id === setId) || null);
-    setCurrentCardIndex(0);
-    setShowAnswer(false);
-    setStudyMode(true);
-    setResponseStartTime(Date.now());
-  }, [flashcardSets, studySettings]);
-
-  const recordAnswer = useCallback((cardId: string, correct: boolean) => {
-    const responseTime = Date.now() - responseStartTime;
-    setCurrentResponseTime(responseTime);
-
-    if (!studySession) return;
-
-    const updatedSession = {
-      ...studySession,
-      cardsStudied: [...studySession.cardsStudied, cardId],
-      correctAnswers: studySession.correctAnswers + (correct ? 1 : 0),
-      totalAnswers: studySession.totalAnswers + 1,
-      averageResponseTime: (studySession.averageResponseTime * studySession.totalAnswers + responseTime) / (studySession.totalAnswers + 1)
-    };
-
-    setStudySession(updatedSession);
-
-    // Update flashcard with spaced repetition
-    const quality = correct ? 4 : 2;
-    if (selectedSet) {
-      const updatedCards = selectedSet.flashcards.map(card => {
-        if (card.id === cardId) {
-          const spacedData = calculateSpacedRepetition(card, quality);
-          return {
-            ...card,
-            lastReviewed: new Date().toISOString(),
-            reviewCount: card.reviewCount + 1,
-            masteryLevel: Math.min(5, card.masteryLevel + (correct ? 1 : -1)),
-            ...spacedData,
-            averageResponseTime: (card.averageResponseTime * card.reviewCount + responseTime) / (card.reviewCount + 1)
-          };
-        }
-        return card;
-      });
-
-      setSelectedSet({ ...selectedSet, flashcards: updatedCards });
-      setFlashcardSets(prev => prev.map(set => 
-        set.id === selectedSet.id ? { ...selectedSet, flashcards: updatedCards } : set
-      ));
-    }
-  }, [studySession, selectedSet, responseStartTime, calculateSpacedRepetition]);
-
-  const generateAIHints = useCallback((card: Flashcard) => {
-    const hints = [
-      `Hint 1: Focus on the main concept of ${card.question.split(' ').slice(-3).join(' ')}`,
-      `Hint 2: Consider the context of ${card.category}`,
-      `Hint 3: Think about related terms: ${card.tags.join(', ')}`
-    ];
-    setAiHints(hints);
-    setShowHints(true);
-  }, []);
-
-  const generateAIExplanation = useCallback((card: Flashcard) => {
-    const explanation = `This question tests your understanding of ${card.category}. The key concept here is ${card.question.split(' ').slice(0, 3).join(' ')} which relates to ${card.tags.join(' and ')}. The answer demonstrates ${card.difficulty === 'easy' ? 'basic' : card.difficulty === 'medium' ? 'intermediate' : 'advanced'} knowledge in this area.`;
-    setAiExplanation(explanation);
-    setShowExplanation(true);
-  }, []);
-
-  const updateStudyStreak = useCallback(() => {
-    const today = new Date().toDateString();
-    if (lastStudyDate === today) return;
-    
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
-    if (lastStudyDate === yesterday) {
-      setStudyStreak(prev => prev + 1);
-    } else {
-      setStudyStreak(1);
-    }
-    setLastStudyDate(today);
-  }, [lastStudyDate]);
-
-  const generateAnalytics = useCallback(() => {
-    const allCards = flashcardSets.flatMap(set => set.flashcards);
-    const totalCards = allCards.length;
-    const masteredCards = allCards.filter(card => card.masteryLevel >= 4).length;
-    const averageMastery = allCards.reduce((sum, card) => sum + card.masteryLevel, 0) / totalCards || 0;
-    
-    const categoryProgress: { [key: string]: number } = {};
-    allCards.forEach(card => {
-      if (!categoryProgress[card.category]) {
-        categoryProgress[card.category] = 0;
-      }
-      categoryProgress[card.category] += card.masteryLevel;
-    });
-    
-    Object.keys(categoryProgress).forEach(category => {
-      const categoryCards = allCards.filter(card => card.category === category);
-      categoryProgress[category] = categoryProgress[category] / categoryCards.length;
-    });
-
-    const analyticsData: StudyAnalytics = {
-      totalCards,
-      masteredCards,
-      averageMastery,
-      studyStreak,
-      totalTime: studySession ? (Date.now() - new Date(studySession.startTime).getTime()) / 1000 / 60 : 0,
-      averageResponseTime: allCards.reduce((sum, card) => sum + (card.averageResponseTime || 0), 0) / totalCards || 0,
-      retentionRate: masteredCards / totalCards * 100,
-      difficultyProgress: {
-        easy: allCards.filter(card => card.difficulty === 'easy').reduce((sum, card) => sum + card.masteryLevel, 0) / allCards.filter(card => card.difficulty === 'easy').length || 0,
-        medium: allCards.filter(card => card.difficulty === 'medium').reduce((sum, card) => sum + card.masteryLevel, 0) / allCards.filter(card => card.difficulty === 'medium').length || 0,
-        hard: allCards.filter(card => card.difficulty === 'hard').reduce((sum, card) => sum + card.masteryLevel, 0) / allCards.filter(card => card.difficulty === 'hard').length || 0
-      },
-      categoryProgress,
-      dailyStudyTime: [
-        { date: new Date().toISOString().split('T')[0], minutes: 30 }
-      ]
-    };
-
-    setAnalytics(analyticsData);
-    setAnalyticsVisible(true);
-  }, [flashcardSets, studySession, studyStreak]);
-
-  useEffect(() => {
-    updateStudyStreak();
-  }, [updateStudyStreak]);
 
   const createFlashcard = () => {
     if (!selectedSet) return;
@@ -607,7 +243,13 @@ const FlashcardSystem: React.FC = () => {
       description: setForm.description,
       category: setForm.category,
       flashcards: [],
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      tags: [],
+      isPublic: false,
+      difficulty: 'beginner',
+      estimatedStudyTime: 0,
+      shareCount: 0,
+      rating: 0
     };
 
     setFlashcardSets(prev => [newSet, ...prev]);

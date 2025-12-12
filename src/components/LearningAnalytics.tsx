@@ -287,16 +287,16 @@ const LearningAnalytics: React.FC = () => {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={subjectPerformance}
+                  data={subjectPerformance as any[]}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ subject, timeSpent }) => `${subject}: ${timeSpent}min`}
+                  label={(entry: any) => `${entry.subject}: ${entry.timeSpent}min`}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="timeSpent"
                 >
-                  {subjectPerformance.map((entry: any, index: number) => (
+                  {subjectPerformance.map((_: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

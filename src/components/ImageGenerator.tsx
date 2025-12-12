@@ -74,7 +74,7 @@ const ImageGenerator: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return imageUrl;
 
-    const img = new Image();
+    const img = document.createElement('img') as HTMLImageElement;
     img.crossOrigin = 'anonymous';
     
     return new Promise<string>((resolve) => {
