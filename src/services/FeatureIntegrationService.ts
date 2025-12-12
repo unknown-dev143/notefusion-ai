@@ -40,7 +40,7 @@ class FeatureIntegrationService {
 
   // Handle feature connection events
   private handleFeatureConnection(connection: FeatureConnection, event: FeatureEvent) {
-    const { source, target, action } = connection;
+    const { target, action } = connection;
     
     switch (action) {
       case 'sync_notes':

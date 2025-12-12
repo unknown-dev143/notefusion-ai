@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Space, Typography, Badge, List, Tooltip, Switch, Row, Col, message } from 'antd';
+import { Card, Button, Space, Typography, Badge, List, Tooltip, Switch, Row, Col, message, Tag } from 'antd';
 import { 
   ApiOutlined, 
   CheckCircleOutlined, 
@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import { featureIntegration } from '../services/FeatureIntegrationService';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface ConnectionStatus {
   source: string;
@@ -39,9 +39,6 @@ const FeatureBridge: React.FC = () => {
   }, [isAutoSync]);
 
   const initializeFeatureBridge = () => {
-    // Get all active connections
-    const activeConnections = featureIntegration.getActiveConnections();
-    
     // Create connection status objects
     const connectionStatuses: ConnectionStatus[] = [
       { source: 'notes', target: 'ai_assistant', status: 'active', lastSync: new Date() },
