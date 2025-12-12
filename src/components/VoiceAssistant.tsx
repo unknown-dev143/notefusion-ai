@@ -84,7 +84,8 @@ const VoiceAssistant = () => {
       
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(chunks, { type: 'audio/webm' });
-        // Here you would typically send the audio to a speech-to-text service
+        // TODO: Send audioBlob to speech-to-text service
+        console.log('Audio blob created:', audioBlob.size, 'bytes');
         setInputText('Voice message recorded (speech-to-text would be processed here)');
         stream.getTracks().forEach(track => track.stop());
       };
