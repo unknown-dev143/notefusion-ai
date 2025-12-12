@@ -1,40 +1,17 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState } from 'react';
 import { 
   Card, 
   Typography, 
   Button, 
   Space, 
   Input, 
-  Select, 
   Tabs, 
   Progress, 
   List, 
   Tag, 
   Badge, 
   Row, 
-  Col, 
-  Modal, 
-  Alert, 
-  Tooltip, 
-  Avatar, 
-  Rate, 
-  Statistic, 
-  Timeline, 
-  Steps, 
-  Divider, 
-  Switch, 
-  Slider, 
-  Radio, 
-  Checkbox, 
-  Upload, 
-  Spin, 
-  Empty, 
-  Pagination, 
-  BackTop, 
-  FloatButton, 
-  notification, 
-  message,
-  Drawer
+  Col
 } from 'antd';
 import {
   BarChartOutlined,

@@ -1,19 +1,10 @@
 import React, { useState } from 'react';
-import { Card, Typography, Button, Space, Input, Select, Tabs, List, Tag, Progress, Modal, Table, Badge, Tooltip } from 'antd';
+import { Card, Typography, Button, Space, Input, Select, Tabs, List, Progress, Table } from 'antd';
 import { 
   SearchOutlined,
-  BookOutlined,
-  FileTextOutlined,
-  BulbOutlined,
   DownloadOutlined,
-  ShareAltOutlined,
-  StarOutlined,
-  ClockCircleOutlined,
   CheckCircleOutlined,
-  ExclamationCircleOutlined,
-  RobotOutlined,
-  GlobalOutlined,
-  DatabaseOutlined
+  RobotOutlined
 } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;

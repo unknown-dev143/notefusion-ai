@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   Button, 
@@ -10,7 +10,6 @@ import {
   Slider, 
   Progress, 
   Tag, 
-  Tooltip, 
   Row, 
   Col, 
   Divider,
@@ -22,7 +21,6 @@ import {
   Badge,
   Statistic,
   Steps,
-  Timeline,
   Switch
 } from 'antd';
 import { 
@@ -34,18 +32,13 @@ import {
   TrophyOutlined,
   BookOutlined,
   StarOutlined,
-  PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   PlayCircleOutlined,
-  PauseCircleOutlined,
-  ReloadOutlined,
-  DownloadOutlined,
-  ShareAltOutlined
+  DownloadOutlined
 } from '@ant-design/icons';
-import dayjs from 'dayjs';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 const { Step } = Steps;
@@ -130,7 +123,6 @@ const AIQuizGenerator: React.FC = () => {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const [form] = Form.useForm();
-  const [quizForm] = Form.useForm();
 
   // Load quizzes from localStorage
   useEffect(() => {

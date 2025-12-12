@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Typography, Button, Space, Input, Select, Tabs, List, Tag, Modal, Avatar, Badge, Switch } from 'antd';
+import { Card, Typography, Button, Space, Input, Select, Tabs, List, Tag, Modal, Avatar, Badge, Switch, Row, Col } from 'antd';
 import { 
   MailOutlined,
   SendOutlined,

@@ -124,11 +124,13 @@ const AIDocumentSummarizer: React.FC = () => {
     
     const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `document-summary-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const a = typeof window !== 'undefined' && window.document ? window.document.createElement('a') : null;
+    if (a) {
+      a.href = url;
+      a.download = `document-summary-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
     
     message.success('Summary exported successfully!');
   };

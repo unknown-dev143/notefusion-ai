@@ -59,7 +59,7 @@ const AISentimentAnalyzer: React.FC = () => {
   const [analysisHistory] = useState<any[]>([]);
   const [realTimeAnalysis, setRealTimeAnalysis] = useState(false);
   const [showEmotions, setShowEmotions] = useState(true);
-  const [analysisMode] = useState<'quick' | 'detailed'>('quick');
+  const [analysisMode, setAnalysisMode] = useState<'quick' | 'detailed'>('quick');
 
   const analyzeSentiment = async () => {
     if (!text.trim()) {

@@ -13,17 +13,13 @@ import {
   Slider, 
   Progress, 
   Tag, 
-  Tooltip, 
   Row, 
-  Col, 
-  Divider,
+  Col,
   Badge,
-  Alert,
   Timeline,
   Statistic
 } from 'antd';
 import { 
-  CalendarOutlined, 
   ClockCircleOutlined, 
   BookOutlined, 
   TrophyOutlined, 
@@ -39,7 +35,7 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
 interface StudySession {
@@ -205,8 +201,17 @@ const AIStudyPlanner: React.FC = () => {
     };
 
     const updatedPlan: StudyPlan = {
-      ...studyPlan,
-      sessions: [...(studyPlan?.sessions || []), session]
+      id: studyPlan?.id || `plan_${Date.now()}`,
+      name: studyPlan?.name || 'Study Plan',
+      description: studyPlan?.description || '',
+      goals: studyPlan?.goals || [],
+      sessions: [...(studyPlan?.sessions || []), session],
+      totalStudyTime: studyPlan?.totalStudyTime || 0,
+      completedStudyTime: studyPlan?.completedStudyTime || 0,
+      averageSessionDuration: studyPlan?.averageSessionDuration || 0,
+      preferredStudyTimes: studyPlan?.preferredStudyTimes || [],
+      breakDuration: studyPlan?.breakDuration || 15,
+      difficultyProgression: studyPlan?.difficultyProgression || 'linear'
     };
 
     await saveStudyPlan(updatedPlan);
@@ -229,8 +234,17 @@ const AIStudyPlanner: React.FC = () => {
     };
 
     const updatedPlan: StudyPlan = {
-      ...studyPlan,
-      goals: [...(studyPlan?.goals || []), goal]
+      id: studyPlan?.id || `plan_${Date.now()}`,
+      name: studyPlan?.name || 'Study Plan',
+      description: studyPlan?.description || '',
+      goals: [...(studyPlan?.goals || []), goal],
+      sessions: studyPlan?.sessions || [],
+      totalStudyTime: studyPlan?.totalStudyTime || 0,
+      completedStudyTime: studyPlan?.completedStudyTime || 0,
+      averageSessionDuration: studyPlan?.averageSessionDuration || 0,
+      preferredStudyTimes: studyPlan?.preferredStudyTimes || [],
+      breakDuration: studyPlan?.breakDuration || 15,
+      difficultyProgression: studyPlan?.difficultyProgression || 'linear'
     };
 
     await saveStudyPlan(updatedPlan);
@@ -248,7 +262,19 @@ const AIStudyPlanner: React.FC = () => {
       s.id === session.id ? { ...s, status: 'in-progress' as const } : s
     );
     
-    const updatedPlan: StudyPlan = { ...studyPlan, sessions: updatedSessions };
+    const updatedPlan: StudyPlan = {
+      id: studyPlan?.id || `plan_${Date.now()}`,
+      name: studyPlan?.name || 'Study Plan',
+      description: studyPlan?.description || '',
+      goals: studyPlan?.goals || [],
+      sessions: updatedSessions,
+      totalStudyTime: studyPlan?.totalStudyTime || 0,
+      completedStudyTime: studyPlan?.completedStudyTime || 0,
+      averageSessionDuration: studyPlan?.averageSessionDuration || 0,
+      preferredStudyTimes: studyPlan?.preferredStudyTimes || [],
+      breakDuration: studyPlan?.breakDuration || 15,
+      difficultyProgression: studyPlan?.difficultyProgression || 'linear'
+    };
     saveStudyPlan(updatedPlan);
   };
 
@@ -282,10 +308,17 @@ const AIStudyPlanner: React.FC = () => {
     });
 
     const updatedPlan: StudyPlan = {
-      ...studyPlan,
+      id: studyPlan?.id || `plan_${Date.now()}`,
+      name: studyPlan?.name || 'Study Plan',
+      description: studyPlan?.description || '',
       sessions: updatedSessions,
       goals: updatedGoals,
-      completedStudyTime: (studyPlan?.completedStudyTime || 0) + sessionTimer
+      totalStudyTime: studyPlan?.totalStudyTime || 0,
+      completedStudyTime: (studyPlan?.completedStudyTime || 0) + sessionTimer,
+      averageSessionDuration: studyPlan?.averageSessionDuration || 0,
+      preferredStudyTimes: studyPlan?.preferredStudyTimes || [],
+      breakDuration: studyPlan?.breakDuration || 15,
+      difficultyProgression: studyPlan?.difficultyProgression || 'linear'
     };
 
     saveStudyPlan(updatedPlan);
@@ -294,18 +327,21 @@ const AIStudyPlanner: React.FC = () => {
     setIsTimerRunning(false);
   };
 
-  const skipSession = (sessionId: string) => {
-    const updatedSessions = sessions.map(s => 
-      s.id === sessionId ? { ...s, status: 'skipped' as const } : s
-    );
-    
-    const updatedPlan: StudyPlan = { ...studyPlan, sessions: updatedSessions };
-    saveStudyPlan(updatedPlan);
-  };
-
   const deleteSession = (sessionId: string) => {
     const updatedSessions = sessions.filter(s => s.id !== sessionId);
-    const updatedPlan: StudyPlan = { ...studyPlan, sessions: updatedSessions };
+    const updatedPlan: StudyPlan = {
+      id: studyPlan?.id || `plan_${Date.now()}`,
+      name: studyPlan?.name || 'Study Plan',
+      description: studyPlan?.description || '',
+      goals: studyPlan?.goals || [],
+      sessions: updatedSessions,
+      totalStudyTime: studyPlan?.totalStudyTime || 0,
+      completedStudyTime: studyPlan?.completedStudyTime || 0,
+      averageSessionDuration: studyPlan?.averageSessionDuration || 0,
+      preferredStudyTimes: studyPlan?.preferredStudyTimes || [],
+      breakDuration: studyPlan?.breakDuration || 15,
+      difficultyProgression: studyPlan?.difficultyProgression || 'linear'
+    };
     saveStudyPlan(updatedPlan);
   };
 

@@ -1,17 +1,12 @@
 import React, { useState } from 'react';
-import { Card, Typography, Button, Space, Input, Select, Tabs, Slider, Tag, Switch, Divider, Row, Col, Alert } from 'antd';
+import { Card, Typography, Button, Space, Input, Select, Tabs, Slider, Tag, Row, Col, Alert, List } from 'antd';
 import { 
   EditOutlined,
   CopyOutlined,
   DownloadOutlined,
-  BulbOutlined,
   ThunderboltOutlined,
   GlobalOutlined,
-  SmileOutlined,
-  RobotOutlined,
-  FileTextOutlined,
-  EyeOutlined,
-  SettingOutlined
+  EyeOutlined
 } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
@@ -42,14 +37,10 @@ const AIContentRewriter: React.FC = () => {
   const [rewrittenText, setRewrittenText] = useState('');
   const [writingStyle, setWritingStyle] = useState('professional');
   const [tone, setTone] = useState('neutral');
-  const [targetAudience, setTargetAudience] = useState('general');
   const [creativity, setCreativity] = useState(0.7);
   const [isRewriting, setIsRewriting] = useState(false);
   const [rewrittenVersions, setRewrittenVersions] = useState<RewrittenContent[]>([]);
   const [seoKeywords, setSeoKeywords] = useState('');
-  const [readabilityLevel, setReadabilityLevel] = useState('college');
-  const [contentLength, setContentLength] = useState('same');
-  const [language, setLanguage] = useState('english');
 
   const rewriteOptions: RewriteOption[] = [
     { id: 'simplify', label: 'Simplify', description: 'Make text easier to understand' },
@@ -84,24 +75,8 @@ const AIContentRewriter: React.FC = () => {
     }, 2000);
   };
 
-  const analyzeContent = () => {
-    // Mock content analysis
-    const analysis = {
-      readabilityScore: 75,
-      seoScore: 82,
-      sentiment: 'positive',
-      keywordDensity: 3.2,
-      wordCount: originalText.split(' ').length,
-      sentenceCount: originalText.split('.').length,
-      avgSentenceLength: Math.round(originalText.split(' ').length / originalText.split('.').length)
-    };
-    
-    return analysis;
-  };
-
   const optimizeForSEO = () => {
     const keywords = seoKeywords.split(',').map(k => k.trim());
-    const optimized = originalText;
     // Mock SEO optimization
     setRewrittenText(`SEO-optimized content with keywords: ${keywords.join(', ')}. ${originalText}`);
   };
