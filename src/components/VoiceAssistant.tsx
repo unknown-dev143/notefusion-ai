@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { Card, Input, Button, Typography, Space, List, Avatar, Dropdown, Badge, Tooltip, Switch, Tag, Divider } from 'antd';
+import { Card, Input, Button, Typography, Space, List, Avatar, Dropdown, Badge, Tooltip, Switch, Tag } from 'antd';
 import { 
   RobotOutlined, SendOutlined, UserOutlined, 
-  MicrophoneOutlined, StopOutlined, ClearOutlined,
+  AudioOutlined, StopOutlined, ClearOutlined,
   HistoryOutlined, SettingOutlined, BulbOutlined,
-  DownloadOutlined, CopyOutlined, ThumbsUpOutlined,
-  ThumbsDownOutlined, ReloadOutlined
+  DownloadOutlined, CopyOutlined, LikeOutlined,
+  DislikeOutlined, ReloadOutlined
 } from '@ant-design/icons';
 
 const { TextArea } = Input;
@@ -27,7 +27,6 @@ const VoiceAssistant = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [conversationHistory, setConversationHistory] = useState([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
@@ -84,7 +83,7 @@ const VoiceAssistant = () => {
       };
       
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
         // Here you would typically send the audio to a speech-to-text service
         setInputText('Voice message recorded (speech-to-text would be processed here)');
         stream.getTracks().forEach(track => track.stop());
@@ -205,8 +204,8 @@ const VoiceAssistant = () => {
                 checked={isVoiceEnabled}
                 onChange={setIsVoiceEnabled}
                 size="small"
-                checkedChildren={<MicrophoneOutlined />}
-                unCheckedChildren={<MicrophoneOutlined />}
+                checkedChildren={<AudioOutlined />}
+                unCheckedChildren={<AudioOutlined />}
               />
             </Tooltip>
             
@@ -315,7 +314,7 @@ const VoiceAssistant = () => {
                               <Button
                                 type="text"
                                 size="small"
-                                icon={<ThumbsUpOutlined />}
+                                icon={<LikeOutlined />}
                                 onClick={() => rateMessage(message.id, 'like')}
                                 style={{ 
                                   fontSize: 10, 
@@ -328,7 +327,7 @@ const VoiceAssistant = () => {
                               <Button
                                 type="text"
                                 size="small"
-                                icon={<ThumbsDownOutlined />}
+                                icon={<DislikeOutlined />}
                                 onClick={() => rateMessage(message.id, 'dislike')}
                                 style={{ 
                                   fontSize: 10, 
@@ -352,11 +351,11 @@ const VoiceAssistant = () => {
           <Space.Compact style={{ width: '100%' }}>
             {isVoiceEnabled && (
               <Button
-                type={isRecording ? 'danger' : 'default'}
-                icon={isRecording ? <StopOutlined /> : <MicrophoneOutlined />}
+                type={isRecording ? 'primary' : 'default'}
+                danger={isRecording}
+                icon={isRecording ? <StopOutlined /> : <AudioOutlined />}
                 onClick={isRecording ? stopRecording : startRecording}
                 style={{ height: 'auto' }}
-                danger={isRecording}
               >
                 {isRecording ? 'Recording...' : 'Voice'}
               </Button>
@@ -387,10 +386,10 @@ const VoiceAssistant = () => {
           {isVoiceEnabled && (
             <div style={{ marginTop: 8 }}>
               <Tag color="blue">
-                <MicrophoneOutlined /> Voice input is enabled
+                <AudioOutlined /> Voice input is enabled
               </Tag>
               <Text type="secondary" style={{ fontSize: 12 }}>
-                Click the microphone button to start recording
+                Click the voice button to start recording
               </Text>
             </div>
           )}
