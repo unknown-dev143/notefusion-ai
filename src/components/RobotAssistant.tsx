@@ -311,15 +311,46 @@ const RobotAssistant: React.FC = () => {
     setChatMessages(prev => [...prev, userMessage]);
     setInputMessage('');
 
-    // Simulate robot response
-    setTimeout(() => {
-      const robotResponse = {
+    try {
+      // Add loading message
+      const loadingMessage = {
         role: 'robot' as const,
-        content: `I understand you want to: "${inputMessage}". Let me help you with that. I can analyze your request and provide the best assistance.`,
+        content: 'Thinking...',
         timestamp: new Date().toISOString()
       };
-      setChatMessages(prev => [...prev, robotResponse]);
-    }, 1000);
+      setChatMessages(prev => [...prev, loadingMessage]);
+
+      // Simulate API call (replace with actual API integration)
+      setTimeout(() => {
+        const responses = [
+          "I understand your request. Let me help you with that task.",
+          "That's an interesting question! Here's what I can do for you.",
+          "I'll assist you with that. Let me analyze the best approach.",
+          "Great! I can help you accomplish that goal.",
+          "I'm on it! Let me provide you with the best solution."
+        ];
+        
+        const robotResponse = {
+          role: 'robot' as const,
+          content: responses[Math.floor(Math.random() * responses.length)],
+          timestamp: new Date().toISOString()
+        };
+        
+        setChatMessages(prev => {
+          const newMessages = [...prev];
+          newMessages[newMessages.length - 1] = robotResponse; // Replace loading message
+          return newMessages;
+        });
+      }, 1500);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorMessage = {
+        role: 'robot' as const,
+        content: 'Sorry, I encountered an error. Please try again.',
+        timestamp: new Date().toISOString()
+      };
+      setChatMessages(prev => [...prev, errorMessage]);
+    }
   };
 
   const toggleCapability = (capabilityId: string) => {
