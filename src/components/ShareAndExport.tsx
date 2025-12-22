@@ -19,6 +19,7 @@ import {
   Progress,
   Tag
 } from 'antd';
+import ExcelJS from 'exceljs';
 import { 
   ShareAltOutlined,
   DownloadOutlined,
@@ -186,7 +187,7 @@ const ShareAndExport: React.FC = () => {
 
     switch (platform) {
       case 'twitter':
-        window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+        window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
         break;
       case 'facebook':
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
@@ -198,7 +199,7 @@ const ShareAndExport: React.FC = () => {
         window.open(`https://wa.me/?text=${text}%20${url}`, '_blank');
         break;
       case 'email':
-        window.location.href = `mailto:?subject=${encodeURIComponent(selectedItem.title)}&body=${text}%20${url}`;
+        window.open(`mailto:?subject=${text}&body=Check out this link: ${url}`, '_blank');
         break;
     }
   };
@@ -220,12 +221,12 @@ const ShareAndExport: React.FC = () => {
       });
     }, 200);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       clearInterval(interval);
       setUploadProgress(100);
       
       // Create export based on format
-      let content = selectedItem.content;
+      let content: string | Blob = selectedItem.content;
       let mimeType = 'text/plain';
       let fileName = `${selectedItem.title.replace(/[^a-zA-Z0-9]/g, '_')}.${selectedFormat}`;
 
@@ -239,7 +240,7 @@ const ShareAndExport: React.FC = () => {
           mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
           break;
         case 'xlsx':
-          content = generateExcelContent(selectedItem);
+          content = await generateExcelContent(selectedItem);
           mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
           break;
         case 'png':
@@ -309,9 +310,52 @@ const ShareAndExport: React.FC = () => {
 </html>`;
   };
 
-  const generateExcelContent = (item: ShareableItem): string => {
-    return `Title,Type,Exported Date,Content
-"${item.title}","${item.type}","${new Date().toLocaleString()}","${item.content.replace(/"/g, '""')}"`;
+  const generateExcelContent = async (item: ShareableItem): Promise<Blob> => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Export Data');
+    
+    // Add headers
+    const headers = ['Title', 'Type', 'Exported Date', 'Content'];
+    const headerRow = worksheet.addRow(headers);
+    headerRow.font = { bold: true };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE6E6FA' }
+    };
+    
+    // Add data
+    const dataRow = worksheet.addRow([
+      item.title,
+      item.type,
+      new Date().toLocaleString(),
+      item.content
+    ]);
+    
+    // Style the worksheet
+    worksheet.columns = [
+      { width: 20 },
+      { width: 15 },
+      { width: 25 },
+      { width: 50 }
+    ];
+    
+    // Add borders to all cells
+    worksheet.eachRow((row, rowNumber) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        };
+      });
+    });
+    
+    const buffer = await workbook.xlsx.writeBuffer();
+    return new Blob([buffer], { 
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+    });
   };
 
   const generateImageContent = (item: ShareableItem): string => {

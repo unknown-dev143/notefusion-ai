@@ -32,7 +32,8 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 // import UsageTracker from '../UsageTracker';
-// import AdRewardsScreen from '../AdRewardsScreen';
+
+import AdRewardsScreen from '../AdRewardsScreen'; // Used below for modal
 import './Layout.css';
 
 const { Text } = Typography;
@@ -44,7 +45,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  // const [showAdRewards, setShowAdRewards] = useState(false);
+  const [showAdRewards, setShowAdRewards] = useState(false); // Used for AdRewardsScreen modal
   const location = useLocation();
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = React.useState('');
@@ -303,7 +304,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Button 
               type="primary" 
               icon={<ThunderboltOutlined />}
-              // onClick={() => setShowAdRewards(true)}
+              onClick={() => setShowAdRewards(true)}
               style={{ marginRight: '16px', background: '#52c41a', borderColor: '#52c41a' }}
               title="Earn More Tokens"
             >
@@ -678,10 +679,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </Drawer>
     
     {/* Ad Rewards Screen */}
-    {/* <AdRewardsScreen
+    <AdRewardsScreen
       visible={showAdRewards}
       onClose={() => setShowAdRewards(false)}
-    /> */}
+    />
+    <AdRewardsScreen
+      visible={showAdRewards}
+      onClose={() => setShowAdRewards(false)}
+    />
     </React.Fragment>
   );
 };

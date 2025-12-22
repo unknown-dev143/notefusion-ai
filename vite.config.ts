@@ -16,5 +16,28 @@ export default defineConfig({
   },
   define: {
     'process.env': {}
+  },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          antd: ['antd', '@ant-design/icons'],
+          charts: ['recharts'],
+          editor: ['@uiw/react-md-editor', 'react-markdown'],
+          router: ['react-router-dom'],
+          utils: ['lodash', 'dayjs', 'uuid', 'firebase', 'exceljs']
+        }
+      }
+    },
+    chunkFileNames: 'assets/[name]-[hash].js',
+    entryFileNames: 'assets/[name]-[hash].js',
+    assetFileNames: 'assets/[name]-[hash].[ext]',
+    sourcemap: false, // Disable source maps for faster builds
+    minify: 'esbuild', // Use esbuild for faster minification
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'antd', 'react-router-dom']
   }
 });
