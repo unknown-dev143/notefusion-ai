@@ -26,6 +26,45 @@ import {
   CloseCircleOutlined
 } from '@ant-design/icons';
 
+// Error boundary component
+class AntigravityErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Antigravity component error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Alert
+          message="System Error"
+          description="The antigravity control system encountered an error. Please refresh the page."
+          type="error"
+          showIcon
+          action={
+            <Button size="small" onClick={() => window.location.reload()}>
+              Refresh
+            </Button>
+          }
+        />
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 const { Title, Text } = Typography;
 const { Option } = Select;
 
@@ -63,7 +102,7 @@ interface AntigravityAlert {
   acknowledged: boolean;
 }
 
-const Antigravity: React.FC = () => {
+const AntigravityComponent: React.FC = () => {
   const [isActive, setIsActive] = useState(false);
   const [settings, setSettings] = useState<AntigravitySettings>({
     power: 50,
@@ -94,6 +133,14 @@ const Antigravity: React.FC = () => {
   const [alerts, setAlerts] = useState<AntigravityAlert[]>([]);
   const [isCalibrating, setIsCalibrating] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const seedRef = useRef(Date.now());
+
+  // Seeded pseudo-random function for predictable values
+  const seededRandom = useCallback((min: number, max: number) => {
+    seedRef.current = (seedRef.current * 9301 + 49297) % 233280;
+    const rnd = seedRef.current / 233280;
+    return min + rnd * (max - min);
+  }, []);
 
   const addAlert = useCallback((type: AntigravityAlert['type'], message: string) => {
     const newAlert: AntigravityAlert = {
@@ -117,8 +164,8 @@ const Antigravity: React.FC = () => {
       const liftForce = Math.max(0, (settings.power * settings.fieldStrength * powerEfficiency * fieldEfficiency * temperatureFactor) / 10);
       const energyConsumption = Math.max(0, settings.power * (1 + settings.frequency / 1000) * (1 + settings.temperature / 100));
       const fieldStability = settings.stabilization ? 
-        Math.max(0, 100 - (Math.random() * 5)) : 
-        Math.max(0, 80 - (Math.random() * 20));
+        Math.max(0, 100 - seededRandom(0, 5)) : 
+        Math.max(0, 80 - seededRandom(0, 20));
       const efficiency = energyConsumption > 0 ? Math.min(100, (liftForce / energyConsumption) * 100) : 0;
 
       let status: AntigravityMetrics['status'] = 'active';
@@ -131,7 +178,7 @@ const Antigravity: React.FC = () => {
         liftForce: Math.round(liftForce * 10) / 10,
         energyConsumption: Math.round(energyConsumption * 100) / 100,
         fieldStability: Math.round(fieldStability * 100) / 100,
-        temperature: Math.max(-50, Math.min(100, settings.temperature + (Math.random() - 0.5) * 2)),
+        temperature: Math.max(-50, Math.min(100, settings.temperature + (seededRandom(-1, 1) * 2))),
         efficiency: Math.round(efficiency * 100) / 100,
         operationalTime: prev.operationalTime + 1,
         status,
@@ -139,13 +186,13 @@ const Antigravity: React.FC = () => {
       }));
 
       // Add alerts based on conditions
-      if (efficiency < 30 && Math.random() > 0.7) {
+      if (efficiency < 30 && seededRandom(0, 1) > 0.7) {
         addAlert('error', 'Critical efficiency drop detected!');
       }
-      if (fieldStability < 70 && Math.random() > 0.8) {
+      if (fieldStability < 70 && seededRandom(0, 1) > 0.8) {
         addAlert('warning', 'Field stability compromised');
       }
-      if (settings.temperature > 50 && Math.random() > 0.9) {
+      if (settings.temperature > 50 && seededRandom(0, 1) > 0.9) {
         addAlert('error', 'Overheating detected!');
       }
     } catch (error) {
@@ -212,7 +259,7 @@ const Antigravity: React.FC = () => {
         try {
           setSettings(prev => ({
             ...prev,
-            resonance: Math.min(100, Math.max(0, 85 + Math.random() * 10)),
+            resonance: Math.min(100, Math.max(0, 85 + seededRandom(0, 10))),
             efficiency: Math.min(100, prev.efficiency + 5)
           }));
           setIsCalibrating(false);
@@ -649,4 +696,14 @@ const Antigravity: React.FC = () => {
   );
 };
 
-export default Antigravity;
+// Wrap with React.memo for performance optimization
+const Antigravity = React.memo(AntigravityComponent);
+
+// Wrap with error boundary
+const AntigravityWithErrorBoundary: React.FC = () => (
+  <AntigravityErrorBoundary>
+    <Antigravity />
+  </AntigravityErrorBoundary>
+);
+
+export default AntigravityWithErrorBoundary;
