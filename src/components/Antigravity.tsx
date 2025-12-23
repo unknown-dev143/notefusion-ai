@@ -472,7 +472,7 @@ const AntigravityComponent: React.FC = () => {
                           min={100}
                           max={10000}
                           value={settings.frequency}
-                          onChange={(value) => setSettings(validateSettings({ frequency: value }))}
+                          onChange={(value) => setSettings(validateSettings({ frequency: value !== null && value !== undefined ? value : settings.frequency }))}
                           disabled={isActive}
                           style={{ width: '100%', marginTop: '8px' }}
                           aria-label="Frequency in Hertz"
@@ -656,7 +656,7 @@ const AntigravityComponent: React.FC = () => {
                           min={0}
                           max={200}
                           value={settings.pressure}
-                          onChange={(value) => setSettings(validateSettings({ pressure: value }))}
+                          onChange={(value) => setSettings(validateSettings({ pressure: value !== null && value !== undefined ? value : settings.pressure }))}
                           style={{ width: '100%', marginTop: '8px' }}
                         />
                       </div>
