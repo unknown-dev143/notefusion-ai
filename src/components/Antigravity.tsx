@@ -156,13 +156,23 @@ const Antigravity: React.FC = () => {
 
   useEffect(() => {
     if (isActive) {
+      // Clear any existing interval before setting a new one
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
       intervalRef.current = setInterval(calculateMetrics, 1000);
     } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     }
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
   }, [isActive, calculateMetrics]);
 
@@ -192,11 +202,13 @@ const Antigravity: React.FC = () => {
   }, [addAlert]);
 
   const handleCalibrate = useCallback(() => {
+    if (isCalibrating) return; // Prevent multiple simultaneous calibrations
+    
     try {
       setIsCalibrating(true);
       addAlert('info', 'Starting calibration sequence...');
       
-      setTimeout(() => {
+      const calibrationTimeout = setTimeout(() => {
         try {
           setSettings(prev => ({
             ...prev,
@@ -211,12 +223,15 @@ const Antigravity: React.FC = () => {
           setIsCalibrating(false);
         }
       }, 3000);
+
+      // Store timeout ID for potential cleanup
+      return () => clearTimeout(calibrationTimeout);
     } catch (error) {
       console.error('Error starting calibration:', error);
       addAlert('error', 'Failed to start calibration');
       setIsCalibrating(false);
     }
-  }, [addAlert]);
+  }, [isCalibrating, addAlert]);
 
   const handleEmergencyShutdown = useCallback(() => {
     try {
@@ -235,6 +250,23 @@ const Antigravity: React.FC = () => {
       addAlert('error', 'Emergency shutdown failed');
     }
   }, [addAlert]);
+
+  const validateSettings = useCallback((newSettings: Partial<AntigravitySettings>): AntigravitySettings => {
+    return {
+      power: Math.max(0, Math.min(100, Number(newSettings.power) || settings.power)),
+      frequency: Math.max(100, Math.min(10000, Number(newSettings.frequency) || settings.frequency)),
+      fieldStrength: Math.max(0, Math.min(100, Number(newSettings.fieldStrength) || settings.fieldStrength)),
+      stabilization: Boolean(newSettings.stabilization),
+      autoMode: Boolean(newSettings.autoMode),
+      temperature: Math.max(-50, Math.min(100, Number(newSettings.temperature) || settings.temperature)),
+      pressure: Math.max(0, Math.min(200, Number(newSettings.pressure) || settings.pressure)),
+      resonance: Math.max(0, Math.min(100, Number(newSettings.resonance) || settings.resonance)),
+      efficiency: Math.max(0, Math.min(100, Number(newSettings.efficiency) || settings.efficiency)),
+      safetyLevel: ['low', 'medium', 'high', 'maximum'].includes(newSettings.safetyLevel as any) 
+        ? newSettings.safetyLevel as AntigravitySettings['safetyLevel']
+        : settings.safetyLevel
+    };
+  }, [settings]);
 
   const getStatusColor = useCallback((status: AntigravityMetrics['status']) => {
     switch (status) {
@@ -315,7 +347,7 @@ const Antigravity: React.FC = () => {
                           min={0}
                           max={100}
                           value={settings.power}
-                          onChange={(value) => setSettings(prev => ({ ...prev, power: value }))}
+                          onChange={(value) => setSettings(validateSettings({ power: value }))}
                           disabled={isActive}
                           style={{ marginTop: '8px' }}
                           aria-label="Power level slider"
@@ -333,7 +365,7 @@ const Antigravity: React.FC = () => {
                           min={100}
                           max={10000}
                           value={settings.frequency}
-                          onChange={(value) => setSettings(prev => ({ ...prev, frequency: value || 1000 }))}
+                          onChange={(value) => setSettings(validateSettings({ frequency: value }))}
                           disabled={isActive}
                           style={{ width: '100%', marginTop: '8px' }}
                           aria-label="Frequency in Hertz"
@@ -349,7 +381,7 @@ const Antigravity: React.FC = () => {
                           min={0}
                           max={100}
                           value={settings.fieldStrength}
-                          onChange={(value) => setSettings(prev => ({ ...prev, fieldStrength: value }))}
+                          onChange={(value) => setSettings(validateSettings({ fieldStrength: value }))}
                           disabled={isActive}
                           style={{ marginTop: '8px' }}
                           aria-label="Field strength slider"
@@ -365,7 +397,7 @@ const Antigravity: React.FC = () => {
                         <Space>
                           <Switch
                             checked={settings.stabilization}
-                            onChange={(checked) => setSettings(prev => ({ ...prev, stabilization: checked }))}
+                            onChange={(checked) => setSettings(validateSettings({ stabilization: checked }))}
                             disabled={isActive}
                             aria-label="Field stabilization toggle"
                             aria-checked={settings.stabilization}
@@ -378,7 +410,7 @@ const Antigravity: React.FC = () => {
                         <Space>
                           <Switch
                             checked={settings.autoMode}
-                            onChange={(checked) => setSettings(prev => ({ ...prev, autoMode: checked }))}
+                            onChange={(checked) => setSettings(validateSettings({ autoMode: checked }))}
                             aria-label="Auto mode toggle"
                             aria-checked={settings.autoMode}
                           />
@@ -390,7 +422,7 @@ const Antigravity: React.FC = () => {
                         <Text strong>Safety Level:</Text>
                         <Select
                           value={settings.safetyLevel}
-                          onChange={(value) => setSettings(prev => ({ ...prev, safetyLevel: value }))}
+                          onChange={(value) => setSettings(validateSettings({ safetyLevel: value }))}
                           style={{ width: '100%', marginTop: '8px' }}
                           disabled={isActive}
                           aria-label="Safety level selection"
