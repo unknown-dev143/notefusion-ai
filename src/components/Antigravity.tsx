@@ -133,6 +133,7 @@ const AntigravityComponent: React.FC = () => {
   const [alerts, setAlerts] = useState<AntigravityAlert[]>([]);
   const [isCalibrating, setIsCalibrating] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const calibrationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const seedRef = useRef(Date.now());
 
   // Seeded pseudo-random function for predictable values
@@ -230,6 +231,20 @@ const AntigravityComponent: React.FC = () => {
     };
   }, [isActive, calculateMetrics]);
 
+  // Cleanup effect for component unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (calibrationTimeoutRef.current) {
+        clearTimeout(calibrationTimeoutRef.current);
+        calibrationTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
   const handleStart = useCallback(() => {
     try {
       if (settings.safetyLevel === 'maximum' && settings.power > 80) {
@@ -262,11 +277,17 @@ const AntigravityComponent: React.FC = () => {
   const handleCalibrate = useCallback(() => {
     if (isCalibrating) return; // Prevent multiple simultaneous calibrations
     
+    // Clear any existing calibration timeout
+    if (calibrationTimeoutRef.current) {
+      clearTimeout(calibrationTimeoutRef.current);
+      calibrationTimeoutRef.current = null;
+    }
+    
     try {
       setIsCalibrating(true);
       addAlert('info', 'Starting calibration sequence...');
       
-      const calibrationTimeout = setTimeout(() => {
+      calibrationTimeoutRef.current = setTimeout(() => {
         try {
           setSettings(prev => ({
             ...prev,
@@ -274,16 +295,15 @@ const AntigravityComponent: React.FC = () => {
             efficiency: Math.min(100, prev.efficiency + 5)
           }));
           setIsCalibrating(false);
+          calibrationTimeoutRef.current = null;
           addAlert('success', 'Calibration completed successfully');
         } catch (error) {
           console.error('Error during calibration:', error);
           addAlert('error', 'Calibration failed');
           setIsCalibrating(false);
+          calibrationTimeoutRef.current = null;
         }
       }, 3000);
-
-      // Store timeout ID for potential cleanup
-      return () => clearTimeout(calibrationTimeout);
     } catch (error) {
       console.error('Error starting calibration:', error);
       addAlert('error', 'Failed to start calibration');
