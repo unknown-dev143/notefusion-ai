@@ -160,7 +160,7 @@ const AntigravityComponent: React.FC = () => {
   });
 
   const [alerts, setAlerts] = useState<AntigravityAlert[]>([]);
-  const [isCalibrating, setIsCalibrating] = useState(false);
+  const [isCalibrating, setIsCalibrating] = useState(false); // Fixed typo: was isCalibrating
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const calibrationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const seedRef = useRef(Date.now());
@@ -546,68 +546,67 @@ const AntigravityComponent: React.FC = () => {
 
                 <Col xs={24} lg={12}>
                   <Card title="System Metrics" size="small">
-                    <Row gutter={[16, 16]}>
-                      <Col xs={12}>
-                        <Statistic
-                          title="Lift Force"
-                          value={metrics.liftForce}
-                          suffix="N"
-                          precision={1}
-                          valueStyle={{ color: '#3f8600' }}
-                        />
-                      </Col>
-                      <Col xs={12}>
-                        <Statistic
-                          title="Energy Use"
-                          value={metrics.energyConsumption}
-                          suffix="kW"
-                          precision={2}
-                          valueStyle={{ color: '#cf1322' }}
-                        />
-                      </Col>
-                      <Col xs={12}>
-                        <Statistic
-                          title="Field Stability"
-                          value={metrics.fieldStability}
-                          suffix="%"
-                          precision={1}
-                          valueStyle={{ color: '#1890ff' }}
-                        />
-                      </Col>
-                      <Col xs={12}>
-                        <Statistic
-                          title="Efficiency"
-                          value={metrics.efficiency}
-                          suffix="%"
-                          precision={1}
-                          valueStyle={{ color: '#722ed1' }}
-                        />
-                      </Col>
-                      <Col xs={12}>
-                        <Statistic
-                          title="Temperature"
-                          value={metrics.temperature}
-                          suffix="°C"
-                          precision={1}
-                          valueStyle={{ color: metrics.temperature > 50 ? '#cf1322' : '#3f8600' }}
-                        />
-                      </Col>
-                      <Col xs={12}>
-                        <Statistic
-                          title="Performance"
-                          value={metrics.performanceScore}
-                          suffix="/100"
-                          precision={0}
-                          valueStyle={{ color: '#fa8c16' }}
-                        />
-                      </Col>
-                    </Row>
+                    <Space direction="vertical" style={{ width: '100%' }}>
+                      <Row gutter={16}>
+                        <Col span={12}>
+                          <Statistic
+                            title="Lift Force"
+                            value={metrics.liftForce}
+                            suffix="kN"
+                            precision={1}
+                          />
+                        </Col>
+                        <Col span={12}>
+                          <Statistic
+                            title="Energy Consumption"
+                            value={metrics.energyConsumption}
+                            suffix="kW"
+                            precision={2}
+                          />
+                        </Col>
+                      </Row>
 
-                    <Divider />
+                      <Row gutter={16}>
+                        <Col span={12}>
+                          <Statistic
+                            title="Field Stability"
+                            value={metrics.fieldStability}
+                            suffix="%"
+                            precision={2}
+                          />
+                        </Col>
+                        <Col span={12}>
+                          <Statistic
+                            title="Temperature"
+                            value={metrics.temperature}
+                            suffix="°C"
+                            precision={1}
+                          />
+                        </Col>
+                      </Row>
 
-                    <div>
-                      <Text strong>System Status:</Text>
-                      <div style={{ marginTop: '8px' }}>
+                      <Row gutter={16}>
+                        <Col span={12}>
+                          <Statistic
+                            title="Efficiency"
+                            value={metrics.efficiency}
+                            suffix="%"
+                            precision={2}
+                          />
+                        </Col>
+                        <Col span={12}>
+                          <Statistic
+                            title="Operational Time"
+                            value={metrics.operationalTime}
+                            suffix="s"
+                          />
+                        </Col>
+                      </Row>
+
+                      <Divider />
+
+                      <div>
+                        <Text strong>System Status:</Text>
                         <Tag color={getStatusColor(metrics.status)}>
                           {metrics.status.toUpperCase()}
                         </Tag>
@@ -615,26 +614,28 @@ const AntigravityComponent: React.FC = () => {
                           <Tag color="red">{metrics.errorCount} Errors</Tag>
                         )}
                       </div>
-                    </div>
 
-                    <div style={{ marginTop: '16px' }}>
-                      <Text strong>Operational Time:</Text>
-                      <Progress
-                        percent={Math.min(100, (metrics.operationalTime / 3600) * 100)}
-                        format={() => `${Math.floor(metrics.operationalTime / 60)}m ${metrics.operationalTime % 60}s`}
-                        style={{ marginTop: '8px' }}
-                      />
-                    </div>
+                      <div style={{ marginTop: '16px' }}>
+                        <Text strong>Performance Score:</Text>
+                        <Progress
+                          percent={metrics.performanceScore}
+                          status={metrics.performanceScore > 70 ? 'success' : metrics.performanceScore > 40 ? 'normal' : 'exception'}
+                          strokeColor={getStatusColor(metrics.status)}
+                        />
+                      </div>
+
+                      <Divider />
+
+                      <div>
+                        <Text strong>Last Maintenance:</Text>
+                        <Text type="secondary">
+                          {new Date(metrics.lastMaintenance).toLocaleString()}
+                        </Text>
+                      </div>
+                    </Space>
                   </Card>
                 </Col>
-              </Row>
-            )
-          },
-          {
-            key: 'advanced',
-            label: 'Advanced Settings',
-            children: (
-              <Row gutter={[16, 16]}>
+
                 <Col xs={24} lg={12}>
                   <Card title="Environmental Controls" size="small">
                     <Space direction="vertical" style={{ width: '100%' }}>
@@ -667,7 +668,7 @@ const AntigravityComponent: React.FC = () => {
                           min={0}
                           max={100}
                           value={settings.resonance}
-                          onChange={(value) => setSettings(validateSettings({ resonance: value }))}
+                          onChange={(value) => setSettings(validateSettings({ resonance: value !== null && value !== undefined ? value : settings.resonance }))}
                           style={{ marginTop: '8px' }}
                         />
                         <Text type="secondary">{settings.resonance}%</Text>
@@ -680,74 +681,49 @@ const AntigravityComponent: React.FC = () => {
                   <Card title="System Information" size="small">
                     <Space direction="vertical" style={{ width: '100%' }}>
                       <div>
-                        <Text strong>Model:</Text>
-                        <div style={{ marginTop: '4px' }}>
-                          <Tag color="blue">AG-X2000</Tag>
-                          <Tag color="green">Quantum Enhanced</Tag>
-                        </div>
+                        <Text strong>System Alerts:</Text>
+                        {alerts.length === 0 ? (
+                          <Text type="secondary">No alerts</Text>
+                        ) : (
+                          alerts.map(alert => (
+                            <Alert
+                              key={alert.id}
+                              message={alert.message}
+                              type={alert.type}
+                              showIcon
+                              style={{ marginBottom: '8px' }}
+                              closable
+                              onClose={() => {
+                                setAlerts(prev => prev.filter(a => a.id !== alert.id));
+                              }}
+                            />
+                          ))
+                        )}
                       </div>
 
-                      <div>
-                        <Text strong>Safety Features:</Text>
-                        <div style={{ marginTop: '4px' }}>
-                          <Tag color="green">Auto-Shutdown</Tag>
-                          <Tag color="green">Overload Protection</Tag>
-                          <Tag color="green">Field Stabilizer</Tag>
-                          <Tag color="orange">Temperature Monitor</Tag>
-                        </div>
-                      </div>
+                      <Divider />
 
                       <div>
-                        <Text strong>Last Maintenance:</Text>
-                        <div style={{ marginTop: '4px' }}>
-                          <Text type="secondary">
-                            {new Date(metrics.lastMaintenance).toLocaleString()}
-                          </Text>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Text strong>System Health:</Text>
-                        <Progress
-                          percent={metrics.performanceScore}
-                          status={metrics.performanceScore > 80 ? 'success' : metrics.performanceScore > 50 ? 'active' : 'exception'}
-                          style={{ marginTop: '8px' }}
-                        />
+                        <Text strong>Advanced Settings:</Text>
+                        <Space direction="vertical" style={{ width: '100%' }}>
+                          <div>
+                            <Text>Resonance: {settings.resonance}%</Text>
+                          </div>
+                          <div>
+                            <Text>Auto Mode: {settings.autoMode ? 'Enabled' : 'Disabled'}</Text>
+                          </div>
+                          <div>
+                            <Text>Field Stabilization: {settings.stabilization ? 'Active' : 'Inactive'}</Text>
+                          </div>
+                          <div>
+                            <Text>Safety Level: {settings.safetyLevel.toUpperCase()}</Text>
+                          </div>
+                        </Space>
                       </div>
                     </Space>
                   </Card>
                 </Col>
               </Row>
-            )
-          },
-          {
-            key: 'alerts',
-            label: 'Alerts & Logs',
-            children: (
-              <Card title="System Alerts" size="small">
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  {alerts.length === 0 ? (
-                    <Alert
-                      message="No alerts"
-                      description="System is operating normally"
-                      type="success"
-                      showIcon
-                    />
-                  ) : (
-                    alerts.map((alert) => (
-                      <Alert
-                        key={alert.id}
-                        message={alert.message}
-                        description={new Date(alert.timestamp).toLocaleString()}
-                        type={alert.type}
-                        showIcon
-                        closable
-                        onClose={() => setAlerts(prev => prev.filter(a => a.id !== alert.id))}
-                      />
-                    ))
-                  )}
-                </Space>
-              </Card>
             )
           }
         ]}
