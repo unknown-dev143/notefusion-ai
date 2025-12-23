@@ -360,15 +360,15 @@ const AntigravityComponent: React.FC = () => {
 
   const validateSettings = useCallback((newSettings: Partial<AntigravitySettings>): AntigravitySettings => {
     return {
-      power: Math.max(0, Math.min(100, Number(newSettings.power) || settings.power)),
-      frequency: Math.max(100, Math.min(10000, Number(newSettings.frequency) || settings.frequency)),
-      fieldStrength: Math.max(0, Math.min(100, Number(newSettings.fieldStrength) || settings.fieldStrength)),
-      stabilization: Boolean(newSettings.stabilization),
-      autoMode: Boolean(newSettings.autoMode),
-      temperature: Math.max(-50, Math.min(100, Number(newSettings.temperature) || settings.temperature)),
-      pressure: Math.max(0, Math.min(200, Number(newSettings.pressure) || settings.pressure)),
-      resonance: Math.max(0, Math.min(100, Number(newSettings.resonance) || settings.resonance)),
-      efficiency: Math.max(0, Math.min(100, Number(newSettings.efficiency) || settings.efficiency)),
+      power: Math.max(0, Math.min(100, newSettings.power !== undefined ? Number(newSettings.power) : settings.power)),
+      frequency: Math.max(100, Math.min(10000, newSettings.frequency !== undefined ? Number(newSettings.frequency) : settings.frequency)),
+      fieldStrength: Math.max(0, Math.min(100, newSettings.fieldStrength !== undefined ? Number(newSettings.fieldStrength) : settings.fieldStrength)),
+      stabilization: newSettings.stabilization !== undefined ? Boolean(newSettings.stabilization) : settings.stabilization,
+      autoMode: newSettings.autoMode !== undefined ? Boolean(newSettings.autoMode) : settings.autoMode,
+      temperature: Math.max(-50, Math.min(100, newSettings.temperature !== undefined ? Number(newSettings.temperature) : settings.temperature)),
+      pressure: Math.max(0, Math.min(200, newSettings.pressure !== undefined ? Number(newSettings.pressure) : settings.pressure)),
+      resonance: Math.max(0, Math.min(100, newSettings.resonance !== undefined ? Number(newSettings.resonance) : settings.resonance)),
+      efficiency: Math.max(0, Math.min(100, newSettings.efficiency !== undefined ? Number(newSettings.efficiency) : settings.efficiency)),
       safetyLevel: ['low', 'medium', 'high', 'maximum'].includes(newSettings.safetyLevel as any) 
         ? newSettings.safetyLevel as AntigravitySettings['safetyLevel']
         : settings.safetyLevel
