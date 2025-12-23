@@ -102,6 +102,35 @@ interface AntigravityAlert {
   acknowledged: boolean;
 }
 
+// Type guard functions for runtime type checking
+const isValidAntigravitySettings = (obj: any): obj is AntigravitySettings => {
+  return obj && 
+    typeof obj.power === 'number' &&
+    typeof obj.frequency === 'number' &&
+    typeof obj.fieldStrength === 'number' &&
+    typeof obj.stabilization === 'boolean' &&
+    typeof obj.autoMode === 'boolean' &&
+    typeof obj.temperature === 'number' &&
+    typeof obj.pressure === 'number' &&
+    typeof obj.resonance === 'number' &&
+    typeof obj.efficiency === 'number' &&
+    ['low', 'medium', 'high', 'maximum'].includes(obj.safetyLevel);
+};
+
+const isValidAntigravityMetrics = (obj: any): obj is AntigravityMetrics => {
+  return obj &&
+    typeof obj.liftForce === 'number' &&
+    typeof obj.energyConsumption === 'number' &&
+    typeof obj.fieldStability === 'number' &&
+    typeof obj.temperature === 'number' &&
+    typeof obj.efficiency === 'number' &&
+    typeof obj.operationalTime === 'number' &&
+    ['idle', 'active', 'warning', 'critical', 'offline'].includes(obj.status) &&
+    typeof obj.errorCount === 'number' &&
+    typeof obj.lastMaintenance === 'string' &&
+    typeof obj.performanceScore === 'number';
+};
+
 const AntigravityComponent: React.FC = () => {
   const [isActive, setIsActive] = useState(false);
   const [settings, setSettings] = useState<AntigravitySettings>({
