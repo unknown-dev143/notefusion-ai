@@ -157,42 +157,49 @@ const AntigravityComponent: React.FC = () => {
     if (!isActive) return;
 
     try {
-      const powerEfficiency = settings.efficiency / 100;
-      const fieldEfficiency = settings.fieldStrength / 100;
-      const temperatureFactor = Math.max(0, 1 - Math.abs(settings.temperature - 20) / 100);
+      // Add null/undefined checks
+      const power = Number(settings.power) || 0;
+      const frequency = Number(settings.frequency) || 1000;
+      const fieldStrength = Number(settings.fieldStrength) || 0;
+      const temperature = Number(settings.temperature) || 20;
+      const efficiency = Number(settings.efficiency) || 0;
+
+      const powerEfficiency = efficiency / 100;
+      const fieldEfficiency = fieldStrength / 100;
+      const temperatureFactor = Math.max(0, 1 - Math.abs(temperature - 20) / 100);
       
-      const liftForce = Math.max(0, (settings.power * settings.fieldStrength * powerEfficiency * fieldEfficiency * temperatureFactor) / 10);
-      const energyConsumption = Math.max(0, settings.power * (1 + settings.frequency / 1000) * (1 + settings.temperature / 100));
+      const liftForce = Math.max(0, (power * fieldStrength * powerEfficiency * fieldEfficiency * temperatureFactor) / 10);
+      const energyConsumption = Math.max(0, power * (1 + frequency / 1000) * (1 + temperature / 100));
       const fieldStability = settings.stabilization ? 
         Math.max(0, 100 - seededRandom(0, 5)) : 
         Math.max(0, 80 - seededRandom(0, 20));
-      const efficiency = energyConsumption > 0 ? Math.min(100, (liftForce / energyConsumption) * 100) : 0;
+      const calculatedEfficiency = energyConsumption > 0 ? Math.min(100, (liftForce / energyConsumption) * 100) : 0;
 
       let status: AntigravityMetrics['status'] = 'active';
-      if (efficiency < 30) status = 'critical';
-      else if (efficiency < 50) status = 'warning';
-      else if (efficiency > 80) status = 'active';
+      if (calculatedEfficiency < 30) status = 'critical';
+      else if (calculatedEfficiency < 50) status = 'warning';
+      else if (calculatedEfficiency > 80) status = 'active';
 
       setMetrics(prev => ({
         ...prev,
         liftForce: Math.round(liftForce * 10) / 10,
         energyConsumption: Math.round(energyConsumption * 100) / 100,
         fieldStability: Math.round(fieldStability * 100) / 100,
-        temperature: Math.max(-50, Math.min(100, settings.temperature + (seededRandom(-1, 1) * 2))),
-        efficiency: Math.round(efficiency * 100) / 100,
+        temperature: Math.max(-50, Math.min(100, temperature + (seededRandom(-1, 1) * 2))),
+        efficiency: Math.round(calculatedEfficiency * 100) / 100,
         operationalTime: prev.operationalTime + 1,
         status,
-        performanceScore: Math.round(Math.min(100, (efficiency + fieldStability) / 2))
+        performanceScore: Math.round(Math.min(100, (calculatedEfficiency + fieldStability) / 2))
       }));
 
       // Add alerts based on conditions
-      if (efficiency < 30 && seededRandom(0, 1) > 0.7) {
+      if (calculatedEfficiency < 30 && seededRandom(0, 1) > 0.7) {
         addAlert('error', 'Critical efficiency drop detected!');
       }
       if (fieldStability < 70 && seededRandom(0, 1) > 0.8) {
         addAlert('warning', 'Field stability compromised');
       }
-      if (settings.temperature > 50 && seededRandom(0, 1) > 0.9) {
+      if (temperature > 50 && seededRandom(0, 1) > 0.9) {
         addAlert('error', 'Overheating detected!');
       }
     } catch (error) {
@@ -227,7 +234,7 @@ const AntigravityComponent: React.FC = () => {
     try {
       if (settings.safetyLevel === 'maximum' && settings.power > 80) {
         addAlert('warning', 'Power reduced for safety');
-        setSettings(prev => ({ ...prev, power: 80 }));
+        setSettings(validateSettings({ power: 80 }));
       }
       setIsActive(true);
       addAlert('success', 'Antigravity field activated');
@@ -240,7 +247,11 @@ const AntigravityComponent: React.FC = () => {
   const handleStop = useCallback(() => {
     try {
       setIsActive(false);
-      setMetrics(prev => ({ ...prev, status: 'idle', liftForce: 0 }));
+      setMetrics(prev => ({ 
+        ...prev, 
+        status: 'idle', 
+        liftForce: 0 
+      }));
       addAlert('info', 'Antigravity field deactivated');
     } catch (error) {
       console.error('Error stopping antigravity field:', error);
@@ -283,13 +294,13 @@ const AntigravityComponent: React.FC = () => {
   const handleEmergencyShutdown = useCallback(() => {
     try {
       setIsActive(false);
-      setSettings(prev => ({ ...prev, power: 0 }));
+      setSettings(validateSettings({ power: 0 }));
       setMetrics(prev => ({ 
         ...prev, 
         status: 'critical', 
         liftForce: 0,
         efficiency: 0,
-        errorCount: prev.errorCount + 1 
+        errorCount: (prev.errorCount || 0) + 1 
       }));
       addAlert('error', 'Emergency shutdown activated!');
     } catch (error) {
@@ -584,7 +595,7 @@ const AntigravityComponent: React.FC = () => {
                           min={-50}
                           max={100}
                           value={settings.temperature}
-                          onChange={(value) => setSettings(prev => ({ ...prev, temperature: value }))}
+                          onChange={(value) => setSettings(validateSettings({ temperature: value }))}
                           style={{ marginTop: '8px' }}
                         />
                         <Text type="secondary">{settings.temperature}°C</Text>
@@ -596,7 +607,7 @@ const AntigravityComponent: React.FC = () => {
                           min={0}
                           max={200}
                           value={settings.pressure}
-                          onChange={(value) => setSettings(prev => ({ ...prev, pressure: value || 101.3 }))}
+                          onChange={(value) => setSettings(validateSettings({ pressure: value }))}
                           style={{ width: '100%', marginTop: '8px' }}
                         />
                       </div>
@@ -607,7 +618,7 @@ const AntigravityComponent: React.FC = () => {
                           min={0}
                           max={100}
                           value={settings.resonance}
-                          onChange={(value) => setSettings(prev => ({ ...prev, resonance: value }))}
+                          onChange={(value) => setSettings(validateSettings({ resonance: value }))}
                           style={{ marginTop: '8px' }}
                         />
                         <Text type="secondary">{settings.resonance}%</Text>
