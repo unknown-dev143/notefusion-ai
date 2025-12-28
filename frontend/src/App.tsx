@@ -14,6 +14,7 @@ const TestErrorBoundary = lazy(() => import('./features/test/TestErrorBoundary')
 const FlashcardPage = lazy(() => import('./features/flashcards/FlashcardPage'));
 const TasksPage = lazy(() => import('./features/tasks').then(m => ({ default: (m as any).TasksPage })));
 const AIChatPage = lazy(() => import('./features/ai/pages/AIChatPage'));
+const AntigravityPage = lazy(() => import('./components/AntigravityFeature'));
 
 // Loading component
 const Loading = () => (
@@ -82,6 +83,13 @@ const App: React.FC = () => {
                       <ErrorBoundary componentName="AIChatPage">
                         <Suspense fallback={<div>Loading AI chat...</div>}>
                           <AIChatPage />
+                        </Suspense>
+                      </ErrorBoundary>
+                    } />
+                    <Route path="/antigravity" element={
+                      <ErrorBoundary componentName="AntigravityPage">
+                        <Suspense fallback={<div>Loading antigravity feature...</div>}>
+                          <AntigravityPage />
                         </Suspense>
                       </ErrorBoundary>
                     } />
