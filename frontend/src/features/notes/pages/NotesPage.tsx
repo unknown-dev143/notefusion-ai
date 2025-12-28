@@ -3,6 +3,7 @@ import { Result } from 'antd';
 import { useAuth } from '../../../contexts/AuthContext';
 import ErrorBoundary from '../../../components/ErrorBoundary';
 import NotesManager from '../components/NotesManager';
+import { QuickActions } from '../../../components/QuickActions';
 
 export const NotesPage: React.FC = () => {
   const { user } = useAuth();
@@ -23,7 +24,10 @@ export const NotesPage: React.FC = () => {
       title="Error in Notes"
       subtitle="We encountered an error in the notes page. Please try refreshing the page."
     >
-      <NotesManager />
+      <div style={{ padding: '1rem' }}>
+        <QuickActions />
+        <NotesManager />
+      </div>
     </ErrorBoundary>
   );
 };

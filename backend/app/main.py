@@ -18,3 +18,9 @@ app = create_app()
 
 # Include API router
 app.include_router(api_router, prefix="/api/v1")
+
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Docker."""
+    return {"status": "healthy", "service": "notefusion-ai-backend"}
