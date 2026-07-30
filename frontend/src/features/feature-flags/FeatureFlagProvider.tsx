@@ -62,7 +62,7 @@ export const FeatureFlagProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const fetchFlags = async () => {
     try {
       // TODO: Replace with actual API call
-      // const response = await fetch('/api/feature-flags');
+      // const response = await fetch('/feature-flags');
       // const data = await response.json();
       // setFlags(data);
       setIsLoading(false);

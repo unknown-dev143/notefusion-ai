@@ -66,13 +66,13 @@ api.interceptors.response.use(
 
 // Flashcards
 const getFlashcards = async (sessionId) => {
-  const response = await api.get(`/api/flashcards/${sessionId}`);
+  const response = await api.get(`/flashcards/${sessionId}`);
   return response;
 };
 
 // Quiz
 const getQuiz = async (sessionId) => {
-  const response = await api.get(`/api/quiz/${sessionId}`);
+  const response = await api.get(`/quiz/${sessionId}`);
   return response;
 };
 
@@ -82,17 +82,17 @@ export const apiService = {
   // Async video job: submit, poll, download
   submitVideoJob: async (payload) => {
     // POST to submit job, returns {job_id, status}
-    const response = await api.post('/api/video/job', payload);
+    const response = await api.post('/video/job', payload);
     return response;
   },
   getVideoJobStatus: async (jobId) => {
     // GET job status/result
-    const response = await api.get(`/api/video/job/${jobId}`);
+    const response = await api.get(`/video/job/${jobId}`);
     return response;
   },
   downloadVideoJobResult: async (jobId) => {
     // GET video file
-    const response = await api.get(`/api/video/job/${jobId}/download`, { responseType: 'blob' });
+    const response = await api.get(`/video/job/${jobId}/download`, { responseType: 'blob' });
     return response;
   },
   // File upload and processing
@@ -100,7 +100,7 @@ export const apiService = {
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await api.post('/api/upload', formData, {
+    const response = await api.post('/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -112,7 +112,7 @@ export const apiService = {
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await api.post('/api/transcribe', formData, {
+    const response = await api.post('/transcribe', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -132,7 +132,7 @@ export const apiService = {
       formData.append('session_id', data.session_id);
     }
     
-    const response = await api.post('/api/fuse', formData, {
+    const response = await api.post('/fuse', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -142,7 +142,7 @@ export const apiService = {
 
   // Sessions
   getSessions: async () => {
-    const response = await api.get('/api/sessions');
+    const response = await api.get('/sessions');
     return response.data;
   },
 
@@ -160,7 +160,7 @@ export const apiService = {
     if (sessionId) {
       params.session_id = sessionId;
     }
-    const response = await api.get('/api/search', { params });
+    const response = await api.get('/search', { params });
     return response;
   },
 
@@ -169,7 +169,7 @@ export const apiService = {
     const formData = new FormData();
     formData.append('session_id', sessionId);
     
-    const response = await api.post('/api/export/markdown', formData, {
+    const response = await api.post('/export/markdown', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -182,7 +182,7 @@ export const apiService = {
     const formData = new FormData();
     formData.append('session_id', sessionId);
     
-    const response = await api.post('/api/export/pdf', formData, {
+    const response = await api.post('/export/pdf', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -195,7 +195,7 @@ export const apiService = {
     const formData = new FormData();
     formData.append('session_id', sessionId);
     
-    const response = await api.post('/api/export/flashcards', formData, {
+    const response = await api.post('/export/flashcards', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -211,7 +211,7 @@ export const apiService = {
     formData.append('diagram_data', diagramData);
     formData.append('diagram_type', diagramType);
     
-    const response = await api.post('/api/diagrams/save', formData, {
+    const response = await api.post('/diagrams/save', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -220,7 +220,7 @@ export const apiService = {
   },
 
   getDiagrams: async (sessionId) => {
-    const response = await api.get(`/api/diagrams/${sessionId}`);
+    const response = await api.get(`/diagrams/${sessionId}`);
     return response;
   },
 
@@ -231,7 +231,7 @@ export const apiService = {
     formData.append('notes_content', notesContent);
     formData.append('version_number', versionNumber);
     
-    const response = await api.post('/api/notes/version', formData, {
+    const response = await api.post('/notes/version', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -240,7 +240,7 @@ export const apiService = {
   },
 
   getNotesVersions: async (sessionId) => {
-    const response = await api.get(`/api/notes/versions/${sessionId}`);
+    const response = await api.get(`/notes/versions/${sessionId}`);
     return response;
   },
 

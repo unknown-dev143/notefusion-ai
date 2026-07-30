@@ -59,7 +59,7 @@ export const FolderProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       await folderService.createFolder({
         name,
         parentId,
-        userId: user.id
+        userId: user.id!
       });
       
       await loadFolders();

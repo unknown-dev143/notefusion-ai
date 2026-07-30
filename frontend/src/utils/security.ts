@@ -137,7 +137,8 @@ export const encryptData = async (
     result.set(iv, 0);
     result.set(new Uint8Array(encrypted), iv.length);
     
-    return btoa(String.fromCharCode(...result));
+    // Convert to base64 string properly
+    return btoa(String.fromCharCode.apply(null, Array.from(result)));
   } else {
     // Node.js environment
     const crypto = require('crypto');

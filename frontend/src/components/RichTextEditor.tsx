@@ -1,14 +1,8 @@
-<<<<<<< HEAD
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-=======
-import * as React from 'react';
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { 
   Editor, 
   EditorState, 
   RichUtils, 
-<<<<<<< HEAD
-  getDefaultKeyBinding, 
   convertToRaw, 
   convertFromRaw, 
   ContentState, 
@@ -16,18 +10,10 @@ import {
   CompositeDecorator, 
   ContentBlock, 
   DraftHandleValue, 
-  RawDraftContentState,
-  DraftEditorCommand,
-  DraftBlockType,
   DraftInlineStyleType,
   CharacterMetadata,
-  DraftDecorator,
-  CompositeDecoratorProps
+  DraftEditorCommand
 } from 'draft-js';
-
-type DraftDecoratorType = DraftDecorator;
-
-type BlockStyleFn = (block: ContentBlock) => string;
 import 'draft-js/dist/Draft.css';
 import { 
   FaBold, 
@@ -41,58 +27,12 @@ import {
   FaAlignRight,
   FaAlignJustify
 } from 'react-icons/fa';
-=======
-  convertToRaw, 
-  convertFromRaw, 
-  ContentState,
-  DraftStyleMap,
-  CompositeDecorator,
-  ContentBlock,
-  DraftInlineStyle,
-  CharacterMetadata,
-  DraftHandleValue,
-  RawDraftContentState,
-  EntityInstance
-} from 'draft-js';
-
-// Import React hooks explicitly to avoid TypeScript errors
-const { 
-  useRef, 
-  useState, 
-  useCallback, 
-  useEffect 
-} = React;
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-
-// Define interfaces for better type safety
-interface RichTextEditorProps {
-  content?: string;
-  onChange: (content: string) => void;
-  placeholder?: string;
-  readOnly?: boolean;
-  style?: React.CSSProperties;
-  className?: string;
-}
-
-interface LinkProps {
-  contentState: ContentState;
-  entityKey: string;
-  children: React.ReactNode;
-<<<<<<< HEAD
-  decoratedText?: string;
-  offsetKey: string;
-  blockKey: string;
-  dir?: string;
-  end: number;
-  start: number;
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-}
+import { message } from 'antd';
 
 // Define the style map for custom styles
-const editorStyleMap: DraftStyleMap = {
+const styleMap: DraftStyleMap = {
   'HIGHLIGHT': {
-    backgroundColor: '#F7A5A5',
+    backgroundColor: '#faed27',
     padding: '0 2px',
     borderRadius: '2px',
   },
@@ -102,65 +42,6 @@ const editorStyleMap: DraftStyleMap = {
     backgroundColor: '#f5f5f5',
     padding: '2px 4px',
     borderRadius: '3px',
-  },
-};
-
-// Custom styles for the editor
-const styles = {
-  editor: {
-    border: '1px solid #ddd',
-    minHeight: '200px',
-    padding: '10px',
-    borderRadius: '4px',
-  },
-  toolbar: {
-    border: '1px solid #ddd',
-    padding: '8px',
-    borderRadius: '4px 4px 0 0',
-    backgroundColor: '#f5f5f5',
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '4px',
-  },
-  button: {
-    padding: '4px 8px',
-    margin: '0 2px',
-    cursor: 'pointer',
-    border: '1px solid #ddd',
-    backgroundColor: 'white',
-    borderRadius: '3px',
-  },
-  activeButton: {
-    backgroundColor: '#e0e0e0',
-  },
-  link: {
-    color: '#3b5998',
-    textDecoration: 'underline',
-    cursor: 'pointer',
-  },
-} as const;
-<<<<<<< HEAD
-=======
-import 'draft-js/dist/Draft.css';
-import { 
-  FaBold, 
-  FaItalic, 
-  FaUnderline, 
-  FaListUl, 
-  FaListOl, 
-  FaLink,
-  FaAlignLeft,
-  FaAlignCenter,
-  FaAlignRight,
-  FaAlignJustify
-} from 'react-icons/fa';
-
-// Define the style map for custom styles
-const styleMap: DraftStyleMap = {
-  'HIGHLIGHT': {
-    backgroundColor: '#faed27',
-    padding: '0 2px',
-    borderRadius: '2px',
   },
 };
 
@@ -180,85 +61,6 @@ interface LinkProps {
   entityKey: string;
   children: React.ReactNode;
 }
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-
-// Custom component for links
-const Link: React.FC<LinkProps> = ({ contentState, entityKey, children }) => {
-  const entity = contentState.getEntity(entityKey);
-  const { url } = entity.getData();
-  
-  return React.createElement(
-    'a',
-    {
-      href: url,
-      style: styles.link,
-      target: '_blank',
-      rel: 'noopener noreferrer',
-    } as React.AnchorHTMLAttributes<HTMLAnchorElement>,
-    children
-  ) as unknown as React.ReactElement;
-};
-
-// Helper function to find link entities
-function findLinkEntities(
-  contentBlock: ContentBlock,
-  callback: (start: number, end: number) => void,
-  contentState: ContentState
-) {
-  contentBlock.findEntityRanges(
-    (character: CharacterMetadata) => {
-      const entityKey = character.getEntity();
-      return (
-        entityKey !== null &&
-        contentState.getEntity(entityKey).getType() === 'LINK'
-      );
-    },
-    callback
-  );
-}
-
-<<<<<<< HEAD
-// Create decorator for links
-const createDecorator = () => {
-  return new CompositeDecorator([
-    {
-      strategy: findLinkEntities,
-      component: Link as React.ComponentType<LinkProps>,
-    },
-  ]);
-};
-=======
-// Define styles
-const styles = {
-  editor: {
-    border: '1px solid #ddd',
-    minHeight: '200px',
-    padding: '10px',
-    borderRadius: '4px',
-    backgroundColor: '#fff',
-  },
-  link: {
-    color: '#3b5998',
-    textDecoration: 'underline',
-  },
-  toolbar: {
-    marginBottom: '10px',
-    display: 'flex',
-    gap: '4px',
-    flexWrap: 'wrap',
-  },
-  button: {
-    backgroundColor: '#f5f5f5',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    padding: '4px 8px',
-    cursor: 'pointer',
-    fontSize: '14px',
-  },
-  activeButton: {
-    backgroundColor: '#e0e0e0',
-  },
-} as const;
 
 // Custom Link component for links in the editor
 const Link: React.FC<LinkProps> = ({ contentState, entityKey, children }) => {
@@ -266,7 +68,7 @@ const Link: React.FC<LinkProps> = ({ contentState, entityKey, children }) => {
   return (
     <a
       href={url}
-      style={styles.link}
+      style={{ color: '#3b5998', textDecoration: 'underline' }}
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -282,7 +84,7 @@ const findLinkEntities = (
   contentState: ContentState
 ) => {
   contentBlock.findEntityRanges(
-    (character) => {
+    (character: CharacterMetadata) => {
       const entityKey = character.getEntity();
       return (
         entityKey !== null &&
@@ -294,14 +96,12 @@ const findLinkEntities = (
 };
 
 // Create decorator for links
-const createDecorator = () =>
-  new CompositeDecorator([
-    {
-      strategy: findLinkEntities,
-      component: Link,
-    },
-  ]);
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+const decorator = new CompositeDecorator([
+  {
+    strategy: findLinkEntities,
+    component: Link as any,
+  },
+]);
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
   content,
@@ -311,20 +111,20 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   style,
   className,
 }) => {
-  const editorRef = React.useRef<Editor>(null);
-  const [editorState, setEditorState] = React.useState(() => {
+  const editorRef = useRef<Editor>(null);
+  const [editorState, setEditorState] = useState(() => {
     if (content) {
       try {
         const parsedContent = JSON.parse(content);
-        return EditorState.createWithContent(convertFromRaw(parsedContent));
+        return EditorState.createWithContent(convertFromRaw(parsedContent), decorator);
       } catch (e) {
         console.error('Error parsing content:', e);
       }
     }
-    return EditorState.createEmpty();
+    return EditorState.createEmpty(decorator);
   });
 
-  const handleChange = React.useCallback((newEditorState: EditorState) => {
+  const handleChange = useCallback((newEditorState: EditorState) => {
     setEditorState(newEditorState);
     if (onChange) {
       const contentState = newEditorState.getCurrentContent();
@@ -332,74 +132,37 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   }, [onChange]);
 
-<<<<<<< HEAD
-  const handleKeyCommand = (command: DraftEditorCommand | string, editorState: EditorState): DraftHandleValue => {
-    if (typeof command === 'string') {
-      command = command as DraftEditorCommandType;
-    }
-    const newState = RichUtils.handleKeyCommand(editorState, command);
-    if (newState) {
-      setEditorState(newState);
-      return 'handled';
-    }
-    return 'not-handled';
-  };
-
-  // Add other handlers as needed
-  const toggleInlineStyle = (inlineStyle: string) => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle as DraftInlineStyleType));
-  };
-
-  const toggleBlockType = (blockType: string) => {
-    setEditorState(RichUtils.toggleBlockType(editorState, blockType as DraftBlockType));
-  };
-=======
-  const handleKeyCommand = React.useCallback((command: string, editorState: EditorState) => {
+  const handleKeyCommand = useCallback((command: DraftEditorCommand | string, editorState: EditorState) => {
     const newState = RichUtils.handleKeyCommand(editorState, command);
     if (newState) {
       handleChange(newState);
-      return 'handled' as const;
+      return 'handled';
     }
-    return 'not-handled' as const;
+    return 'not-handled';
   }, [handleChange]);
 
-  // Add other handlers as needed
-  const toggleInlineStyle = React.useCallback((style: string) => {
+  const toggleInlineStyle = useCallback((style: string) => {
     handleChange(RichUtils.toggleInlineStyle(editorState, style));
   }, [editorState, handleChange]);
 
-  const toggleBlockType = React.useCallback((blockType: string) => {
+  const toggleBlockType = useCallback((blockType: string) => {
     handleChange(RichUtils.toggleBlockType(editorState, blockType));
   }, [editorState, handleChange]);
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-
-  // Focus the editor when mounted
-  React.useEffect(() => {
-    if (editorRef.current) {
-      editorRef.current.focus();
-    }
-  }, []);
 
   // Update editor state when content prop changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (content) {
       try {
         const parsedContent = JSON.parse(content);
         const contentState = convertFromRaw(parsedContent);
-        if (contentState !== editorState.getCurrentContent()) {
+        if (contentState.getPlainText() !== editorState.getCurrentContent().getPlainText()) {
           setEditorState(EditorState.push(editorState, contentState, 'change-block-data'));
         }
       } catch (e) {
-        console.error('Error updating editor content:', e);
+        // Silent error for malformed JSON or empty string
       }
     }
-  }, [content, editorState]);
-
-  const focusEditor = () => {
-    if (editorRef.current) {
-      editorRef.current.focus();
-    }
-  };
+  }, [content]);
 
   // Get current block type
   const getBlockType = useCallback((): string => {
@@ -410,11 +173,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [editorState]);
 
   // Check if current block has a specific style
-<<<<<<< HEAD
-  const hasInlineStyle = useCallback((style: DraftInlineStyleType): boolean => {
-=======
   const hasInlineStyle = useCallback((style: string): boolean => {
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     return editorState.getCurrentInlineStyle().has(style);
   }, [editorState]);
 
@@ -436,48 +195,34 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       const href = window.prompt('Enter URL:', url);
       if (href !== null) {
-        // Create new content state with entity
         const contentStateWithEntity = contentState.createEntity(
           'LINK',
           'MUTABLE',
           { url: href.startsWith('http') ? href : `https://${href}` }
         );
         const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
-        
-        // Get the current selection
-        const selection = editorState.getSelection();
-        
-        // Create a new editor state with the entity
-        let newEditorState = EditorState.push(
-          editorState,
-          contentStateWithEntity,
-          'apply-entity'
-        );
-        
-        // Apply the entity to the current selection
+        let newEditorState = EditorState.set(editorState, { currentContent: contentStateWithEntity });
         newEditorState = RichUtils.toggleLink(
           newEditorState,
-          selection,
+          newEditorState.getSelection(),
           href ? entityKey : null
         );
-        
-        // Update the editor state
         handleChange(newEditorState);
       }
+    } else {
+      message.info('Please select text to link');
     }
   }, [editorState, handleChange]);
 
-  // Handle keyboard shortcuts
+  // Handle keyboard shortcuts for return
   const handleReturn = useCallback((e: React.KeyboardEvent): DraftHandleValue => {
     const contentState = editorState.getCurrentContent();
     const selection = editorState.getSelection();
     const currentBlock = contentState.getBlockForKey(selection.getStartKey());
     const blockType = currentBlock.getType();
 
-    // Handle list items
     if (blockType === 'unordered-list-item' || blockType === 'ordered-list-item') {
       if (currentBlock.getLength() === 0) {
-        // If list item is empty, remove the list style
         handleChange(RichUtils.toggleBlockType(editorState, 'unstyled'));
         return 'handled';
       }
@@ -485,16 +230,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     return 'not-handled';
   }, [editorState, handleChange]);
 
-  // Custom block renderer
-<<<<<<< HEAD
-  const blockStyleFn: BlockStyleFn = (contentBlock: ContentBlock): string => {
-    const type = contentBlock.getType();
-    if (type === 'blockquote') {
-      return 'RichEditor-blockquote';
-    }
-    return '';
-=======
-  const blockStyleFn = (contentBlock: any) => {
+  const blockStyleFn = (contentBlock: ContentBlock) => {
     const type = contentBlock.getType();
     switch (type) {
       case 'blockquote':
@@ -504,122 +240,80 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       default:
         return '';
     }
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   };
 
   return (
-    <div className="border rounded-md bg-white">
+    <div className={`border rounded-md bg-white ${className || ''}`} style={style}>
       {!readOnly && (
         <div className="flex flex-wrap gap-1 p-2 border-b">
-          {/* Inline Styles */}
           <div className="flex border-r pr-2 mr-2">
             <button
               onClick={() => toggleInlineStyle('BOLD')}
               className={`p-2 rounded hover:bg-gray-100 ${hasInlineStyle('BOLD') ? 'bg-gray-200' : ''}`}
-              title="Bold (Ctrl+B)"
+              title="Bold"
             >
               <FaBold />
             </button>
             <button
               onClick={() => toggleInlineStyle('ITALIC')}
               className={`p-2 rounded hover:bg-gray-100 ${hasInlineStyle('ITALIC') ? 'bg-gray-200' : ''}`}
-              title="Italic (Ctrl+I)"
+              title="Italic"
             >
               <FaItalic />
             </button>
             <button
               onClick={() => toggleInlineStyle('UNDERLINE')}
               className={`p-2 rounded hover:bg-gray-100 ${hasInlineStyle('UNDERLINE') ? 'bg-gray-200' : ''}`}
-              title="Underline (Ctrl+U)"
+              title="Underline"
             >
               <FaUnderline />
             </button>
             <button
               onClick={() => toggleInlineStyle('HIGHLIGHT')}
-<<<<<<< HEAD
-              className={`p-2 rounded hover:bg-gray-100 ${editorState.getCurrentInlineStyle().has('HIGHLIGHT' as any) ? 'bg-gray-200' : ''}`}
-              title="Highlight"
-              onClick={() => toggleInlineStyle('HIGHLIGHT')}
-=======
               className={`p-2 rounded hover:bg-gray-100 ${hasInlineStyle('HIGHLIGHT') ? 'bg-gray-200' : ''}`}
               title="Highlight"
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             >
-              <span className="text-yellow-600">H</span>
+              <span className="text-yellow-600 font-bold">H</span>
             </button>
           </div>
 
-          {/* Block Types */}
           <div className="flex border-r pr-2 mr-2">
-            {React.createElement('select', {
-              value: getBlockType(),
-              onChange: (e: React.ChangeEvent<HTMLSelectElement>) => toggleBlockType(e.target.value),
-              className: 'p-1 text-sm border rounded bg-white',
-              children: [
-                React.createElement('option', { key: 'unstyled', value: 'unstyled' }, 'Normal'),
-                React.createElement('option', { key: 'header-one', value: 'header-one' }, 'Heading 1'),
-                React.createElement('option', { key: 'header-two', value: 'header-two' }, 'Heading 2'),
-                React.createElement('option', { key: 'header-three', value: 'header-three' }, 'Heading 3'),
-                React.createElement('option', { key: 'blockquote', value: 'blockquote' }, 'Quote'),
-                React.createElement('option', { key: 'code-block', value: 'code-block' }, 'Code Block'),
-              ]
-            })}
+            <select
+              value={getBlockType()}
+              onChange={(e) => toggleBlockType(e.target.value)}
+              className="p-1 text-sm border rounded bg-white"
+            >
+              <option value="unstyled">Normal</option>
+              <option value="header-one">Heading 1</option>
+              <option value="header-two">Heading 2</option>
+              <option value="header-three">Heading 3</option>
+              <option value="blockquote">Quote</option>
+              <option value="code-block">Code Block</option>
+            </select>
           </div>
 
-          {/* Lists */}
-          {React.createElement('div', { className: 'flex border-r pr-2 mr-2' },
-            React.createElement('button', {
-              onClick: () => toggleBlockType('unordered-list-item'),
-              className: `p-2 rounded hover:bg-gray-100 ${getBlockType() === 'unordered-list-item' ? 'bg-gray-200' : ''}`,
-              title: 'Bullet List',
-              key: 'unordered-list'
-            }, React.createElement(FaListUl)),
-            React.createElement('button', {
-              onClick: () => toggleBlockType('ordered-list-item'),
-              className: `p-2 rounded hover:bg-gray-100 ${getBlockType() === 'ordered-list-item' ? 'bg-gray-200' : ''}`,
-              title: 'Numbered List',
-              key: 'ordered-list'
-            }, React.createElement(FaListOl))
-          )}
-
-          {/* Alignment */}
           <div className="flex border-r pr-2 mr-2">
             <button
-              onClick={() => toggleBlockType('left')}
-              className={`p-2 rounded hover:bg-gray-100 ${getBlockType() === 'left' ? 'bg-gray-200' : ''}`}
-              title="Align Left"
+              onClick={() => toggleBlockType('unordered-list-item')}
+              className={`p-2 rounded hover:bg-gray-100 ${getBlockType() === 'unordered-list-item' ? 'bg-gray-200' : ''}`}
+              title="Bullet List"
             >
-              <FaAlignLeft />
+              <FaListUl />
             </button>
             <button
-              onClick={() => toggleBlockType('center')}
-              className={`p-2 rounded hover:bg-gray-100 ${getBlockType() === 'center' ? 'bg-gray-200' : ''}`}
-              title="Center"
+              onClick={() => toggleBlockType('ordered-list-item')}
+              className={`p-2 rounded hover:bg-gray-100 ${getBlockType() === 'ordered-list-item' ? 'bg-gray-200' : ''}`}
+              title="Numbered List"
             >
-              <FaAlignCenter />
-            </button>
-            <button
-              onClick={() => toggleBlockType('right')}
-              className={`p-2 rounded hover:bg-gray-100 ${getBlockType() === 'right' ? 'bg-gray-200' : ''}`}
-              title="Align Right"
-            >
-              <FaAlignRight />
-            </button>
-            <button
-              onClick={() => toggleBlockType('justify')}
-              className={`p-2 rounded hover:bg-gray-100 ${getBlockType() === 'justify' ? 'bg-gray-200' : ''}`}
-              title="Justify"
-            >
-              <FaAlignJustify />
+              <FaListOl />
             </button>
           </div>
 
-          {/* Links */}
           <div className="flex">
             <button
               onClick={promptForLink}
               className="p-2 rounded hover:bg-gray-100"
-              title="Add/Edit Link"
+              title="Add Link"
             >
               <FaLink />
             </button>
@@ -638,11 +332,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           handleReturn={handleReturn}
           placeholder={placeholder}
           readOnly={readOnly}
-<<<<<<< HEAD
-          customStyleMap={editorStyleMap}
-=======
           customStyleMap={styleMap}
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           blockStyleFn={blockStyleFn}
           spellCheck={true}
         />
@@ -650,3 +340,5 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     </div>
   );
 };
+
+export default RichTextEditor;

@@ -94,7 +94,7 @@ const NotificationTester: React.FC = () => {
           { action: 'view', title: 'View' },
           { action: 'dismiss', title: 'Dismiss' }
         ]
-      });
+      } as any);
       toast.success('Test notification sent!');
     } catch (error) {
       console.error('Error sending test notification:', error);

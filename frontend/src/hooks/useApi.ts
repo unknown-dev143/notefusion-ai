@@ -6,7 +6,7 @@ interface ApiResponse<T = any> {
   loading: boolean;
 }
 
-const useApi = () => {
+export const useApi = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

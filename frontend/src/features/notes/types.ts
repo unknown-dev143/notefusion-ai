@@ -13,6 +13,8 @@ export interface Note {
   color?: string;
   lastEditedBy?: string;
   version?: number;
+  type?: 'text' | 'video' | 'whiteboard';
+  metadata?: Record<string, any>;
 }
 
 export interface CreateNoteDto {
@@ -27,6 +29,8 @@ export interface CreateNoteDto {
   userId?: string;
   createdAt?: string;
   updatedAt?: string;
+  type?: 'text' | 'video' | 'whiteboard';
+  metadata?: Record<string, any>;
 }
 
 export interface UpdateNoteDto extends Partial<CreateNoteDto> {
@@ -57,4 +61,13 @@ export interface NoteState {
   isLoading: boolean;
   error: string | null;
   filters: NoteFilters;
+  setFilters: (filters: Partial<NoteFilters>) => void;
+  resetFilters: () => void;
+  fetchNotes: () => Promise<void>;
+  fetchNote: (id: string) => Promise<Note>;
+  createNote: (noteData: CreateNoteDto) => Promise<Note>;
+  updateNote: (id: string, updates: UpdateNoteDto) => Promise<Note>;
+  deleteNote: (id: string) => Promise<void>;
+  togglePinNote: (id: string) => Promise<Note>;
+  clearCurrentNote: () => void;
 }

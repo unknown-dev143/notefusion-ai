@@ -16,8 +16,10 @@ import {
   ArrowLeftOutlined, 
   PlusOutlined,
   DeleteOutlined,
-  SaveOutlined
+  SaveOutlined,
+  ExperimentOutlined
 } from '@ant-design/icons';
+import { aiApi } from '../../../api';
 import SummaryButton from '../../ai/components/SummaryButton';
 import ReactQuill from 'react-quill';
 import Quill from 'quill';
@@ -68,15 +70,7 @@ class DrawingBlot extends BlockEmbed {
 
 Quill.register(DrawingBlot);
 
-// Define Note interface
-export interface Note {
-  id?: string;
-  title: string;
-  content: string;
-  tags?: string[];
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+import { Note } from '../types/note';
 
 
 // Drawing Panel Component
@@ -91,12 +85,30 @@ const DrawingPanel: React.FC<DrawingPanelProps> = ({ onSave, onCancel }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [lastX, setLastX] = useState(0);
   const [lastY, setLastY] = useState(0);
+  const [isRefining, setIsRefining] = useState(false);
   
   const handleSave = useCallback(() => {
     if (drawingData) {
       onSave(drawingData);
     }
   }, [drawingData, onSave]);
+
+  const handleRefine = async () => {
+    if (!drawingData) return;
+    setIsRefining(true);
+    try {
+      message.loading({ content: 'AI is interpreting your sketch...', key: 'refine' });
+      const result = await aiApi.refineSketch(drawingData.split(',')[1], 'Scientific diagram for student notes');
+      if (result.refined_image_url) {
+        onSave(result.refined_image_url);
+        message.success({ content: 'Sketch refined into a professional diagram!', key: 'refine' });
+      }
+    } catch (err) {
+      message.error({ content: 'Neural refinement failed.', key: 'refine' });
+    } finally {
+      setIsRefining(false);
+    }
+  };
   
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
@@ -160,8 +172,19 @@ const DrawingPanel: React.FC<DrawingPanelProps> = ({ onSave, onCancel }) => {
         </Button>
         <Button 
           type="primary" 
+          onClick={handleRefine}
+          disabled={!drawingData || isRefining}
+          loading={isRefining}
+          icon={<ExperimentOutlined />}
+          className={styles['refineButton']}
+          style={{ background: '#722ed1', borderColor: '#722ed1' }}
+        >
+          AI Refine
+        </Button>
+        <Button 
+          type="primary" 
           onClick={handleSave}
-          disabled={!drawingData}
+          disabled={!drawingData || isRefining}
           className={styles['saveButton']}
         >
           Save Drawing

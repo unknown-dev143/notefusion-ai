@@ -5,7 +5,7 @@ import { rest } from 'msw';
 export const handlers = [
   // Add your API request handlers here
   // Example:
-  // rest.get('/api/endpoint', (req, res, ctx) => {
+  // rest.get('/endpoint', (req, res, ctx) => {
   //   return res(ctx.json({ data: 'mocked data' }));
   // }),
 ];

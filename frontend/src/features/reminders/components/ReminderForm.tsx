@@ -5,7 +5,7 @@ import { format, parseISO } from 'date-fns';
 import { CalendarIcon, Loader2 } from 'lucide-react';
 import { z } from 'zod';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '../../../components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -13,17 +13,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
-import { cn } from '@/lib/utils';
+} from '../../../components/ui/dialog';
+import { Input } from '../../../components/ui/input';
+import { Textarea } from '../../../components/ui/textarea';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../components/ui/form';
+import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/popover';
+import { Calendar } from '../../../components/ui/calendar';
+import { Checkbox } from '../../../components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '../../../components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { useToast } from '../../../components/ui/use-toast';
+import { cn } from '../../../lib/utils';
 import { Reminder, ReminderType, ReminderRecurrence } from '../types';
 import { createReminder, updateReminder } from '../api/reminders';
 
@@ -49,13 +49,13 @@ const formSchema = z.object({
   description: z.string().max(500).optional(),
   reminder_type: z.nativeEnum(ReminderType),
   due_date: z.date({
-    required_error: 'Due date is required',
+    message: 'Due date is required',
   }),
-  is_recurring: z.boolean().default(false),
-  recurrence_rule: z.nativeEnum(ReminderRecurrence).default(ReminderRecurrence.NONE),
-  custom_recurrence: z.string().optional(),
-  send_email: z.boolean().default(false),
-  send_push: z.boolean().default(true),
+  is_recurring: z.boolean(),
+  recurrence_rule: z.nativeEnum(ReminderRecurrence),
+  custom_recurrence: z.string().optional().or(z.literal('')),
+  send_email: z.boolean(),
+  send_push: z.boolean(),
 });
 
 type ReminderFormValues = z.infer<typeof formSchema>;
@@ -72,13 +72,14 @@ export function ReminderForm({ open, onOpenChange, reminder, onSuccess }: Remind
   const [isLoading, setIsLoading] = useState(false);
   const [showCustomRecurrence, setShowCustomRecurrence] = useState(false);
 
-  const defaultValues: Partial<ReminderFormValues> = {
+  const defaultValues: ReminderFormValues = {
     title: '',
     description: '',
     reminder_type: ReminderType.CUSTOM,
     due_date: new Date(),
     is_recurring: false,
     recurrence_rule: ReminderRecurrence.NONE,
+    custom_recurrence: '',
     send_email: false,
     send_push: true,
   };

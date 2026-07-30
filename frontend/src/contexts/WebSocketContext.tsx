@@ -42,8 +42,8 @@ export const WebSocketProvider: React.FC<{ children: ReactNode }> = ({ children 
   const connect = useCallback(() => {
     try {
       const clientId = `client-${Math.random().toString(36).substr(2, 9)}`;
-      const token = localStorage.getItem('token') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJzY29wZXMiOlsicmVhZCIsIndyaXRlIiwiY2hhdCJdLCJleHAiOjE3NTg1NDY5ODh9.qKn9ND1QFA6UEt_UXnyUppN0J0ichiGH6aMZhUT--cg';
-      const wsUrl = `${WS_BASE_URL}/ws/${clientId}`;
+      const token = localStorage.getItem('authToken') || localStorage.getItem('accessToken');
+      const wsUrl = `${WS_BASE_URL.replace(/\/ws\/?$/, '')}/ws/${clientId}`;
       console.log('Attempting to connect to WebSocket at:', wsUrl);
       ws.current = new WebSocket(wsUrl);
 
@@ -55,8 +55,8 @@ export const WebSocketProvider: React.FC<{ children: ReactNode }> = ({ children 
         // Send authentication message to the server
         const authMessage = {
           type: 'AUTH',
-          token: localStorage.getItem('token') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0X3VzZXIiLCJzY29wZXMiOlsicmVhZCIsIndyaXRlIiwiY2hhdCJdLCJleHAiOjE3NTg1NDY5ODh9.qKn9ND1QFA6UEt_UXnyUppN0J0ichiGH6aMZhUT--cg',
-          user_id: 'test_user',
+          token: localStorage.getItem('authToken') || localStorage.getItem('accessToken'),
+          user_id: 'guest',
           client_id: clientId
         };
         sendMessage(authMessage);

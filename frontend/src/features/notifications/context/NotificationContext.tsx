@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Notification, NotificationType } from '../types';
+import { Notification, NotificationType, NotificationStatus } from '../types';
 import { 
   getNotifications, 
   markNotificationAsRead, 
@@ -32,16 +32,18 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // Fetch notifications using React Query
   const { 
-    data: notifications = [], 
+    data, 
     isLoading, 
     error,
     refetch: refetchNotifications 
-  } = useQuery<Notification[]>({
+  } = useQuery<{ data: Notification[]; total: number }>({
     queryKey: ['notifications'],
-    queryFn: () => getNotifications({ is_read: false }),
+    queryFn: () => getNotifications({ status: NotificationStatus.UNREAD }),
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: true,
   });
+
+  const notifications = data?.data || [];
 
   // Fetch notification counts
   const { data: counts = { total: 0, unread: 0, read: 0 } } = useQuery({
@@ -66,10 +68,15 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     // Set up event listeners
     const handleNewNotification = (notification: Notification) => {
       // Update the notifications list optimistically
-      queryClient.setQueryData<Notification[]>(['notifications'], (old = []) => {
+      queryClient.setQueryData<{ data: Notification[]; total: number }>(['notifications'], (old) => {
+        if (!old) return { data: [notification], total: 1 };
         // Don't add duplicates
-        if (old.some(n => n.id === notification.id)) return old;
-        return [notification, ...old];
+        if (old.data.some(n => n.id === notification.id)) return old;
+        return {
+          ...old,
+          data: [notification, ...old.data],
+          total: old.total + 1
+        };
       });
 
       // Update counts
@@ -83,14 +90,18 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       playNotificationSound();
     };
 
-    const handleNotificationUpdate = (update: { id: string; status: string; read_at: string | null }) => {
-      queryClient.setQueryData<Notification[]>(['notifications'], (old = []) => 
-        old.map(n => 
-          n.id === update.id 
-            ? { ...n, status: update.status, read_at: update.read_at }
-            : n
-        )
-      );
+    const handleNotificationUpdate = (update: { id: string; status: NotificationStatus; read_at: string | null }) => {
+      queryClient.setQueryData<{ data: Notification[]; total: number }>(['notifications'], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.map(n => 
+            n.id === update.id 
+              ? { ...n, status: update.status, read_at: update.read_at || undefined }
+              : n
+          )
+        };
+      });
 
       // Update counts if needed
       if (update.status === 'read') {
@@ -103,9 +114,14 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     const handleNotificationDelete = (deleted: { id: string }) => {
-      queryClient.setQueryData<Notification[]>(['notifications'], (old = []) => 
-        old.filter(n => n.id !== deleted.id)
-      );
+      queryClient.setQueryData<{ data: Notification[]; total: number }>(['notifications'], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.filter(n => n.id !== deleted.id),
+          total: Math.max(0, old.total - 1)
+        };
+      });
 
       // Update counts if needed
       queryClient.setQueryData(['notificationCounts'], (old: any) => {
@@ -156,13 +172,17 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       // Optimistic update
       const previousNotifications = queryClient.getQueryData<Notification[]>(['notifications']) || [];
       
-      queryClient.setQueryData<Notification[]>(['notifications'], (old = []) => 
-        old.map(n => 
-          n.id === id 
-            ? { ...n, status: 'read', read_at: new Date().toISOString() }
-            : n
-        )
-      );
+      queryClient.setQueryData<{ data: Notification[]; total: number }>(['notifications'], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.map(n => 
+            n.id === id 
+              ? { ...n, status: NotificationStatus.READ, read_at: new Date().toISOString() }
+              : n
+          )
+        };
+      });
 
       // Update counts optimistically
       queryClient.setQueryData(['notificationCounts'], (old: any) => ({
@@ -195,13 +215,17 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       
       if (unreadCount === 0) return;
       
-      queryClient.setQueryData<Notification[]>(['notifications'], (old = []) => 
-        old.map(n => ({
-          ...n, 
-          status: 'read', 
-          read_at: n.read_at || new Date().toISOString()
-        }))
-      );
+      queryClient.setQueryData<{ data: Notification[]; total: number }>(['notifications'], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.map(n => ({
+            ...n, 
+            status: NotificationStatus.READ, 
+            read_at: n.read_at || new Date().toISOString()
+          }))
+        };
+      });
 
       // Update counts optimistically
       queryClient.setQueryData(['notificationCounts'], (old: any) => ({
@@ -232,10 +256,14 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const notificationToRemove = notifications.find(n => n.id === id);
       if (!notificationToRemove) return;
       
-      queryClient.setQueryData<Notification[]>(['notifications'], (old = []) => 
-        old.filter(n => n.id !== id)
-      );
-
+      queryClient.setQueryData<{ data: Notification[]; total: number }>(['notifications'], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.filter(n => n.id !== id),
+          total: Math.max(0, old.total - 1)
+        };
+      });
       // Update counts optimistically
       queryClient.setQueryData(['notificationCounts'], (old: any) => ({
         total: Math.max(0, (old?.total || 1) - 1),
@@ -269,7 +297,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const count = notifications.length;
       const unreadCount = notifications.filter(n => !n.is_read).length;
       
-      queryClient.setQueryData<Notification[]>(['notifications'], []);
+      queryClient.setQueryData<{ data: Notification[]; total: number }>(['notifications'], { data: [], total: 0 });
       
       // Update counts optimistically
       queryClient.setQueryData(['notificationCounts'], (old: any) => ({

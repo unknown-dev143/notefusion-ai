@@ -1,70 +1,28 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-<<<<<<< HEAD
+import './index.css';
+import App from './App';
+import ErrorBoundary from './ErrorBoundary';
+import reportWebVitals from './reportWebVitals';
+// Import mock service worker for development
+import './mocks/browser';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import App from './App';
-import './index.css';
-=======
-import './index.css';
-import App from './App';
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-import { BrowserRouter } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(
+  document.getElementById('root')
+);
 root.render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <App />
-      <Toaster position="top-right" />
-    </BrowserRouter>
-  </React.StrictMode>
-<<<<<<< HEAD
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
 );
 
-// Configure service worker with callbacks
-const onServiceWorkerUpdate = (registration) => {
-  // This will be called when a new service worker is available
-  console.log('New service worker available');
-  
-  // You can show a notification to the user here
-  if (window.confirm('A new version of NoteFusion AI is available. Reload to update?')) {
-    const waitingServiceWorker = registration.waiting;
-    if (waitingServiceWorker) {
-      // Send message to the waiting service worker to skip waiting
-      waitingServiceWorker.postMessage({ type: 'SKIP_WAITING' });
-      
-      // Once the new service worker is activated, reload the page
-      waitingServiceWorker.addEventListener('statechange', (event) => {
-        if (event.target.state === 'activated') {
-          window.location.reload();
-        }
-      });
-    } else {
-      window.location.reload();
-    }
-  }
-};
+// If you want your app to work offline and load faster, you can change
+// unregister() to register() below. Note this comes with some pitfalls.
+// Learn more about service workers: https://cra.link/PWA
+serviceWorkerRegistration.register();
 
-// Register service worker for PWA with configuration
-serviceWorkerRegistration.register({
-  onUpdate: onServiceWorkerUpdate,
-  onSuccess: (registration) => {
-    console.log('Service worker registration successful', registration);
-  },
-  onError: (error) => {
-    console.error('Service worker registration failed:', error);
-  }
-});
-
-// Handle service worker messages
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'RELOAD_PAGE') {
-      window.location.reload();
-    }
-  });
-}
-=======
-); 
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();

@@ -2,11 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Form, Input, Button, Card, Typography, message } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
-<<<<<<< HEAD
 import styles from './ResetPasswordPage.module.css';
-=======
 import { useAuth } from '../context/AuthContext';
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const { Title, Text } = Typography;
 
@@ -16,6 +13,7 @@ export const ResetPasswordPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const { resetPassword } = useAuth();
   const token = searchParams.get('token');
   const email = searchParams.get('email');
 
@@ -54,10 +52,13 @@ export const ResetPasswordPage: React.FC = () => {
 
     try {
       setLoading(true);
-      // In a real app, you would call your API to reset the password
-      // await resetPasswordWithToken(token, email, values.password);
-      message.success('Password has been reset successfully!');
-      navigate('/login');
+      const result = await resetPassword(token, values.password, values.confirmPassword);
+      if (result.success) {
+        message.success('Password has been reset successfully!');
+        navigate('/login');
+      } else {
+        message.error(result.message || 'Failed to reset password');
+      }
     } catch (error) {
       message.error('Failed to reset password. Please try again.');
     } finally {
@@ -67,13 +68,8 @@ export const ResetPasswordPage: React.FC = () => {
 
   if (validToken === null) {
     return (
-<<<<<<< HEAD
-      <div className={styles['authPage']}>
-        <Card className={styles['authCard']} loading>
-=======
-      <div className="auth-page">
-        <Card className="auth-card" loading>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+      <div className={styles.authPage || "auth-page"}>
+        <Card className={styles.authCard || "auth-card"} loading>
           <div style={{ height: '200px' }} />
         </Card>
       </div>
@@ -82,26 +78,16 @@ export const ResetPasswordPage: React.FC = () => {
 
   if (validToken === false) {
     return (
-<<<<<<< HEAD
-      <div className={styles['authPage']}>
-        <Card className={styles['authCard']}>
-          <div className={styles['authHeader']}>
-=======
-      <div className="auth-page">
-        <Card className="auth-card">
-          <div className="auth-header">
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+      <div className={styles.authPage || "auth-page"}>
+        <Card className={styles.authCard || "auth-card"}>
+          <div className={styles.authHeader || "auth-header"}>
             <Title level={3}>Invalid Reset Link</Title>
             <Text type="secondary">
               The password reset link is invalid or has expired. Please request a new one.
             </Text>
           </div>
-<<<<<<< HEAD
-          <div className={styles['authFooter']}>
-=======
-          <div className="auth-footer">
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-            <Button type="primary" onClick={() => navigate('/forgot-password')} block>
+          <div className={styles.authFooter || "auth-footer"}>
+            <Button type="primary" onClick={() => navigate('/forgot-password')} block style={{ marginBottom: '10px' }}>
               Request New Link
             </Button>
             <Button type="link" onClick={() => navigate('/login')} block>
@@ -114,15 +100,9 @@ export const ResetPasswordPage: React.FC = () => {
   }
 
   return (
-<<<<<<< HEAD
-    <div className={styles['authPage']}>
-      <Card className={styles['authCard']} hoverable>
-        <div className={styles['authHeader']}>
-=======
-    <div className="auth-page">
-      <Card className="auth-card" hoverable>
-        <div className="auth-header">
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+    <div className={styles.authPage || "auth-page"}>
+      <Card className={styles.authCard || "auth-card"} hoverable>
+        <div className={styles.authHeader || "auth-header"}>
           <Title level={3}>Create New Password</Title>
           <Text type="secondary">Enter your new password below</Text>
         </div>
@@ -131,11 +111,7 @@ export const ResetPasswordPage: React.FC = () => {
           form={form}
           name="reset-password"
           onFinish={onFinish}
-<<<<<<< HEAD
-          className={styles['authForm']}
-=======
-          className="auth-form"
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+          className={styles.authForm || "auth-form"}
           layout="vertical"
         >
           <Form.Item
@@ -189,11 +165,7 @@ export const ResetPasswordPage: React.FC = () => {
             <Button
               type="primary"
               htmlType="submit"
-<<<<<<< HEAD
-              className={styles['resetButton']}
-=======
-              className="reset-button"
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+              className={styles.resetButton || "reset-button"}
               size="large"
               loading={loading}
               block
@@ -203,26 +175,17 @@ export const ResetPasswordPage: React.FC = () => {
           </Form.Item>
         </Form>
 
-<<<<<<< HEAD
-        <div className={styles['authFooter']}>
+        <div className={styles.authFooter || "auth-footer"}>
           <Text>
             Remembered your password?{' '}
-            <a onClick={() => navigate('/login')} className={styles['loginLink']}>
-=======
-        <div className="auth-footer">
-          <Text>
-            Remembered your password?{' '}
-            <a onClick={() => navigate('/login')} className="login-link">
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+            <a onClick={() => navigate('/login')} className={styles.loginLink || "login-link"}>
               Log in
             </a>
           </Text>
         </div>
       </Card>
-<<<<<<< HEAD
-=======
 
-      <style jsx global>{`
+      <style>{`
         .auth-page {
           display: flex;
           justify-content: center;
@@ -263,7 +226,6 @@ export const ResetPasswordPage: React.FC = () => {
           font-weight: 500;
         }
       `}</style>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     </div>
   );
 };

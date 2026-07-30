@@ -1,258 +1,142 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  # Backend Service
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: notefusion-backend
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app
+  # -------------------------------------------------
+  # PostgreSQL database
+  # -------------------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: notefusion-db
+    restart: unless-stopped
+    env_file:
+      - ./.env
     environment:
-      - ENV=development
-      - DEBUG=true
-      - DATABASE_URL=postgresql+asyncpg://notefusion:notefusion123@db:5432/notefusion
-      - SECRET_KEY=your-secret-key-here
-      - JWT_SECRET_KEY=your-jwt-secret-key-here
-      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
-      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000
-      - CORS_ORIGINS=http://localhost:3000,http://localhost:8000
+      POSTGRES_DB: ${POSTGRES_DB:-notefusion}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"   # only accessible from this machine
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------
+  # Redis cache / pub-sub broker
+  # -------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: notefusion-redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1"]   # no password needed locally
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------
+  # Backend API (FastAPI)
+  # -------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notefusion-api
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      # Override host values so the API talks to the other containers
+      POSTGRES_SERVER: db
+      REDIS_HOST: redis
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-notefusion}"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"   # only accessible from this machine
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s  # give the app time to start before checking
 
-  # Frontend Service
-
-  # Database Service
-
-  # Frontend Service
+  # -------------------------------------------------
+  # Frontend development server (Vite)
+  # -------------------------------------------------
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      target: development
     container_name: notefusion-frontend
+    env_file:
+      - ./.env
+    environment:
+      VITE_BACKEND_HOST: api         # inside Docker, the API is "api"
+      VITE_BACKEND_PORT: "8000"
+      VITE_SOCKET_URL: ws://api:8000
     ports:
       - "3000:3000"
-      - "24678:24678"  # For Vite HMR
-    environment:
-      - NODE_ENV=development
-      - VITE_API_URL=http://localhost:8000/api/v1
-      - VITE_WS_URL=ws://localhost:8000/ws
-      - VITE_ENABLE_DEV_TOOLS=true
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
-    networks:
-      - app-network
-      - frontend-network
     depends_on:
-      - backend
-    restart: unless-stopped
+      api:
+        condition: service_healthy
+    command: npm run dev -- --host 0.0.0.0 --port 3000
+    volumes:
+      - ./frontend:/frontend
+      - /frontend/node_modules
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Database Service
-  db:
-    image: postgres:13-alpine
-    container_name: notefusion-db
-    environment:
-      - POSTGRES_USER=notefusion
-      - POSTGRES_PASSWORD=notefusion123
-      - POSTGRES_DB=notefusion
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U notefusion -d notefusion"]
-      interval: 5s
+      interval: 15s
       timeout: 5s
       retries: 5
-    networks:
-      - app-network
+      start_period: 30s
 
-  # Redis Service
-  redis:
-    image: redis:7-alpine
-    container_name: notefusion-redis
-    command: redis-server --requirepass ${REDIS_PASSWORD:-your-redis-password}
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  # MailHog for email testing
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: mailhog
-    ports:
-      - "1025:1025" # SMTP
-      - "8025:8025" # Web UI
-    networks:
-      - app-network
-    restart: unless-stopped
-
-  # pgAdmin
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@notefusion.ai}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    networks:
-      - app-network
-    restart: unless-stopped
-
-networks:
-  app-network:
-    driver: bridge
-  frontend-network:
-    driver: bridge
-
-volumes:
-  postgres_data:
-  redis_data:
-  pgadmin_data:
-  #   restart: unless-stopped
-  #     - app-network
-  #   restart: unless-stopped
-
-  # Monitoring Services
-  # Prometheus - Metrics collection and alerting
+  # -------------------------------------------------
+  # Prometheus (metrics collector)
+  # -------------------------------------------------
   prometheus:
     image: prom/prometheus:latest
-    container_name: prometheus
+    container_name: notefusion-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
-      - '--web.enable-lifecycle'
+      - "--config.file=/etc/prometheus/prometheus.yml"
     ports:
       - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus:/etc/prometheus
-      - prometheus_data:/prometheus
-    networks:
-      - app-network
-    restart: unless-stopped
     depends_on:
-      - backend
+      api:
+        condition: service_healthy
 
-  # Grafana - Visualization and dashboards
+  # -------------------------------------------------
+  # Grafana (dashboard UI for Prometheus)
+  # -------------------------------------------------
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
-    ports:
-      - "3001:3000"
-    volumes:
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
-      - grafana_data:/var/lib/grafana
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin123}
-      - GF_USERS_ALLOW_SIGN_UP=false
-    networks:
-      - app-network
+    container_name: notefusion-grafana
     restart: unless-stopped
+    ports:
+      - "3001:3000"    # host port 3001 so it doesn't clash with the frontend
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
     depends_on:
       - prometheus
 
-  # Node Exporter - Host metrics
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: node-exporter
-    command:
-      - '--path.rootfs=/host'
-    pid: host
-    volumes:
-      - '/:/host:ro,rslave'
-    ports:
-      - "9100:9100"
-    networks:
-      - app-network
-    restart: unless-stopped
-
-  # cAdvisor - Container metrics
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    container_name: cadvisor
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk:ro
-    devices:
-      - /dev/kmsg:/dev/kmsg
-    ports:
-      - "8080:8080"
-    networks:
-      - app-network
-    restart: unless-stopped
-
-  # Redis Exporter
-  redis-exporter:
-    image: oliver006/redis_exporter:latest
-    container_name: redis-exporter
-    environment:
-      - REDIS_ADDR=redis://redis:6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-your-redis-password}
-    ports:
-      - "9121:9121"
-    networks:
-      - app-network
-    depends_on:
-      - redis
-    restart: unless-stopped
-
-  # Postgres Exporter
-  postgres-exporter:
-    image: prometheuscommunity/postgres-exporter:latest
-    container_name: postgres-exporter
-    environment:
-      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER:-notefusion}:${POSTGRES_PASSWORD:-notefusion123}@db:5432/${POSTGRES_DB:-notefusion}?sslmode=disable
-    ports:
-      - "9187:9187"
-    networks:
-      - app-network
-    depends_on:
-      - db
-    restart: unless-stopped
-
-  # Traefik Reverse Proxy (optional - for production)
-  # traefik:
-  #   image: traefik:v2.9
-  #   container_name: traefik
-  #   command:
-  #     - "--api.insecure=true"
-  #     - "--providers.docker=true"
-  #     - "--providers.docker.exposedbydefault=false"
-  #     - "--entrypoints.web.address=:80"
-  #     - "--entrypoints.websecure.address=:443"
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #     - "8080:8080" # Dashboard
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #   networks:
-  #     - app-network
+volumes:
+  pgdata:
+  redisdata:

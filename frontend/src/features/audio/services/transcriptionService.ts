@@ -20,7 +20,7 @@ class TranscriptionService {
 
   private constructor() {
     this.api = axios.create({
-      baseURL: '/api/audio',
+      baseURL: '/audio',
       headers: {
         'Content-Type': 'application/json',
       },

@@ -1,42 +1,18 @@
-import { apiClient } from '@/lib/api';
+import { api } from '../../../lib/api';
+import { 
+  Notification, 
+  NotificationStatus, 
+  NotificationType,
+  NotificationFilters,
+  NotificationCounts,
+  MarkAsReadResponse,
+  MarkAllAsReadResponse,
+  DeleteResponse,
+} from '../types';
+import { webSocketService } from '../services/websocket';
 
 // Re-export the WebSocket service
 export { webSocketService };
-
-export interface NotificationFilters {
-  is_read?: boolean;
-  status?: NotificationStatus;
-  type?: NotificationType;
-  start_date?: string;
-  end_date?: string;
-  limit?: number;
-  offset?: number;
-  sort_by?: 'created_at' | 'read_at' | 'title';
-  sort_order?: 'asc' | 'desc';
-}
-
-export interface NotificationCounts {
-  total: number;
-  unread: number;
-  read: number;
-  [key: string]: number; // For notification type counts
-}
-
-export interface MarkAsReadResponse {
-  success: boolean;
-  notification: Notification;
-}
-
-export interface MarkAllAsReadResponse {
-  success: boolean;
-  updated_count: number;
-}
-
-export interface DeleteResponse {
-  success: boolean;
-  deleted: boolean;
-  id: string;
-}
 
 /**
  * Fetches notifications based on the provided filters
@@ -44,7 +20,7 @@ export interface DeleteResponse {
 export const getNotifications = async (
   filters: NotificationFilters = {}
 ): Promise<{ data: Notification[]; total: number }> => {
-  const response = await api.get('/api/notifications', { 
+  const response = await api.get('/notifications', { 
     params: {
       limit: 20, // Default limit
       offset: 0, // Default offset
@@ -64,7 +40,7 @@ export const getNotifications = async (
  * Fetches a single notification by ID
  */
 export const getNotification = async (id: string): Promise<Notification> => {
-  const response = await api.get(`/api/notifications/${id}`);
+  const response = await api.get(`/notifications/${id}`);
   return response.data;
 };
 
@@ -72,7 +48,7 @@ export const getNotification = async (id: string): Promise<Notification> => {
  * Fetches notification counts (total, read, unread, etc.)
  */
 export const getNotificationCounts = async (): Promise<NotificationCounts> => {
-  const response = await api.get('/api/notifications/counts');
+  const response = await api.get('/notifications/counts');
   return response.data;
 };
 
@@ -80,7 +56,7 @@ export const getNotificationCounts = async (): Promise<NotificationCounts> => {
  * Marks a notification as read
  */
 export const markNotificationAsRead = async (id: string): Promise<MarkAsReadResponse> => {
-  const response = await api.patch(`/api/notifications/${id}/read`);
+  const response = await api.patch(`/notifications/${id}/read`);
   return response.data;
 };
 
@@ -88,7 +64,7 @@ export const markNotificationAsRead = async (id: string): Promise<MarkAsReadResp
  * Marks all notifications as read for the current user
  */
 export const markAllNotificationsAsRead = async (): Promise<MarkAllAsReadResponse> => {
-  const response = await api.patch('/api/notifications/read-all');
+  const response = await api.patch('/notifications/read-all');
   return response.data;
 };
 
@@ -96,7 +72,7 @@ export const markAllNotificationsAsRead = async (): Promise<MarkAllAsReadRespons
  * Deletes a notification
  */
 export const deleteNotification = async (id: string): Promise<DeleteResponse> => {
-  const response = await api.delete(`/api/notifications/${id}`);
+  const response = await api.delete(`/notifications/${id}`);
   return response.data;
 };
 
@@ -104,7 +80,7 @@ export const deleteNotification = async (id: string): Promise<DeleteResponse> =>
  * Deletes all notifications for the current user
  */
 export const deleteAllNotifications = async (): Promise<{ success: boolean; deleted_count: number }> => {
-  const response = await api.delete('/api/notifications');
+  const response = await api.delete('/notifications');
   return response.data;
 };
 
@@ -112,7 +88,7 @@ export const deleteAllNotifications = async (): Promise<{ success: boolean; dele
  * Subscribes to push notifications
  */
 export const subscribeToPushNotifications = async (subscription: PushSubscription): Promise<{ success: boolean }> => {
-  const response = await api.post('/api/notifications/subscribe', { 
+  const response = await api.post('/notifications/subscribe', { 
     subscription,
     device: {
       userAgent: navigator.userAgent,
@@ -123,6 +99,6 @@ export const subscribeToPushNotifications = async (subscription: PushSubscriptio
 };
 
 export const unsubscribeFromPushNotifications = async (): Promise<{ success: boolean }> => {
-  const response = await apiClient.post('/api/v1/notifications/unsubscribe');
+  const response = await api.post('/notifications/unsubscribe');
   return response.data;
 };

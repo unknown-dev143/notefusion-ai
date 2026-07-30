@@ -109,8 +109,6 @@ const AINoteOrganizer: React.FC<AINoteOrganizerProps> = ({
         node.title
       );
       
-      const title = (
-
       if (node.children) {
         return (
           <Tree.TreeNode
@@ -119,12 +117,12 @@ const AINoteOrganizer: React.FC<AINoteOrganizerProps> = ({
               <div className={styles.treeNode}>
                 <span className={styles.nodeTitle}>
                   {node.type === 'folder' ? <FolderOutlined /> : <FileOutlined />}
-                  {title}
+                  {titleNode}
                 </span>
                 {node.tags && node.tags.length > 0 && (
                   <span className={styles.nodeTags}>
                     {node.tags.slice(0, 2).map(tag => (
-                      <Tag key={tag} color="blue" size="small">
+                      <Tag key={tag} color="blue">
                         {tag}
                       </Tag>
                     ))}
@@ -139,7 +137,7 @@ const AINoteOrganizer: React.FC<AINoteOrganizerProps> = ({
             }
             icon={null}
           >
-            {renderTreeNodes(node.children)}
+            {renderTreeNodes(node.children as NoteNode[])}
           </Tree.TreeNode>
         );
       }
@@ -151,7 +149,7 @@ const AINoteOrganizer: React.FC<AINoteOrganizerProps> = ({
             <div className={styles.treeNode}>
               <span className={styles.nodeTitle}>
                 {node.type === 'folder' ? <FolderOutlined /> : <FileOutlined />}
-                {title}
+                {titleNode}
               </span>
               {node.lastModified && (
                 <span className={styles.nodeMeta}>
@@ -258,14 +256,14 @@ const AINoteOrganizer: React.FC<AINoteOrganizerProps> = ({
                 >
                   <div className={styles.tagsContainer}>
                     {suggestedTags.map((tag) => (
-                      <CheckableTag
+                      <Tag.CheckableTag
                         key={tag}
                         checked={selectedTags.includes(tag)}
                         onChange={(checked) => handleTagSelect(tag, checked)}
                         className={styles.tagItem}
                       >
                         {tag}
-                      </CheckableTag>
+                      </Tag.CheckableTag>
                     ))}
                   </div>
                 </Card>

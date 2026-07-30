@@ -1,9 +1,7 @@
 import React, { useRef } from 'react';
-<<<<<<< HEAD
 import './ImportExportMenu.css';
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-import { Button, Dropdown, Menu, message } from 'antd';
+import { Button, Dropdown, message } from 'antd';
+import type { MenuProps } from 'antd';
 import { 
   ExportOutlined, 
   ImportOutlined, 
@@ -18,11 +16,9 @@ import {
   exportToMarkdown, 
   exportToTxt, 
   importFromFile 
-<<<<<<< HEAD
 } from '../utils/exportUtils';
-=======
-} from '@/utils/exportUtils';
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+import { microsoftService } from '../services/microsoftService';
+import { CloudOutlined, WindowsOutlined } from '@ant-design/icons';
 
 interface ImportExportMenuProps {
   content: string;
@@ -81,57 +77,67 @@ const ImportExportMenu: React.FC<ImportExportMenuProps> = ({
     }
   };
 
-  const menu = (
-    <Menu>
-      <Menu.ItemGroup title="Export">
-        <Menu.Item 
-          key="export-pdf" 
-          icon={<FilePdfOutlined />}
-          onClick={() => handleExport('pdf')}
-        >
-          Export as PDF
-        </Menu.Item>
-        <Menu.Item 
-          key="export-docx" 
-          icon={<FileWordOutlined />}
-          onClick={() => handleExport('docx')}
-        >
-          Export as Word
-        </Menu.Item>
-        <Menu.Item 
-          key="export-md" 
-          icon={<FileMarkdownOutlined />}
-          onClick={() => handleExport('md')}
-        >
-          Export as Markdown
-        </Menu.Item>
-        <Menu.Item 
-          key="export-txt" 
-          icon={<FileTextOutlined />}
-          onClick={() => handleExport('txt')}
-        >
-          Export as Text
-        </Menu.Item>
-      </Menu.ItemGroup>
-      <Menu.Divider />
-      <Menu.Item 
-        key="import" 
-        icon={<ImportOutlined />}
-        onClick={() => fileInputRef.current?.click()}
-      >
-        Import File
-      </Menu.Item>
-    </Menu>
-  );
+  const menuItems: MenuProps['items'] = [
+    {
+      key: 'export-group',
+      type: 'group',
+      label: 'Export',
+      children: [
+        {
+          key: 'export-pdf',
+          label: 'Export as PDF',
+          icon: <FilePdfOutlined />,
+          onClick: () => handleExport('pdf')
+        },
+        {
+          key: 'export-docx',
+          label: 'Export as Word',
+          icon: <FileWordOutlined />,
+          onClick: () => handleExport('docx')
+        },
+        {
+          key: 'export-md',
+          label: 'Export as Markdown',
+          icon: <FileMarkdownOutlined />,
+          onClick: () => handleExport('md')
+        },
+        {
+          key: 'export-txt',
+          label: 'Export as Text',
+          icon: <FileTextOutlined />,
+          onClick: () => handleExport('txt')
+        },
+        {
+          key: 'export-onedrive',
+          label: 'Save to OneDrive',
+          icon: <WindowsOutlined />,
+          onClick: () => microsoftService.uploadToOneDrive(title, content)
+        },
+      ]
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'import',
+      label: 'Import File',
+      icon: <ImportOutlined />,
+      onClick: () => fileInputRef.current?.click()
+    },
+    {
+      key: 'import-onedrive',
+      label: 'Import from OneDrive',
+      icon: <CloudOutlined />,
+      onClick: () => microsoftService.listOneDriveFiles()
+    },
+  ];
 
   return (
-<<<<<<< HEAD
     <div className="import-export-menu">
       <Dropdown 
-        overlay={menu} 
+        menu={{ items: menuItems }} 
         trigger={['click']} 
         disabled={disabled}
-        aria-label="Import/Export options"
       >
         <Button 
           type="text" 
@@ -139,16 +145,11 @@ const ImportExportMenu: React.FC<ImportExportMenuProps> = ({
           className="export-button"
           aria-label="Open import/export menu"
         />
-=======
-    <>
-      <Dropdown overlay={menu} trigger={['click']} disabled={disabled}>
-        <Button type="text" icon={<ExportOutlined />} />
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       </Dropdown>
       <input
         type="file"
         ref={fileInputRef}
-<<<<<<< HEAD
+        style={{ display: 'none' }}
         className="file-input"
         accept=".md,.txt,.docx"
         onChange={handleImport}
@@ -156,13 +157,6 @@ const ImportExportMenu: React.FC<ImportExportMenuProps> = ({
         title="Select file to import"
       />
     </div>
-=======
-        style={{ display: 'none' }}
-        accept=".md,.txt,.docx"
-        onChange={handleImport}
-      />
-    </>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   );
 };
 

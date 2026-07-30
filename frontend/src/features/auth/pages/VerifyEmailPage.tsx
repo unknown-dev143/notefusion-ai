@@ -3,10 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, Typography, Space, Button, Result, Spin, message } from 'antd';
 import { useAuth } from '../context/AuthContext';
 import { MailOutlined } from '@ant-design/icons';
-<<<<<<< HEAD
 import styles from './VerifyEmailPage.module.css';
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const { Title, Text } = Typography;
 
@@ -49,11 +46,12 @@ const VerifyEmailPage: React.FC = () => {
     
     setLoading(true);
     try {
-      const { success, message: msg } = await resendVerificationEmail(email);
+      const result = await resendVerificationEmail(email) as any;
+      const success = result?.success ?? result === true;
       if (success) {
         message.success('Verification email resent successfully!');
       } else {
-        message.error(msg);
+        message.error(result?.message || 'Failed to resend verification email');
       }
     } catch (error) {
       message.error('Failed to resend verification email');
@@ -62,24 +60,16 @@ const VerifyEmailPage: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (loading && status === 'verifying') {
     return (
-<<<<<<< HEAD
-      <div className={styles.loadingContainer}>
-=======
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+      <div className={styles.loadingContainer || ""} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
         <Spin size="large" />
       </div>
     );
   }
 
   return (
-<<<<<<< HEAD
-    <div className={styles.container}>
-=======
-    <div style={{ maxWidth: '500px', margin: '40px auto' }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+    <div className={styles.container || ""} style={{ maxWidth: '600px', margin: '40px auto', padding: '0 20px' }}>
       <Card>
         {status === 'verifying' && (
           <Result
@@ -117,22 +107,14 @@ const VerifyEmailPage: React.FC = () => {
 
         {status === 'resend' && (
           <Space direction="vertical" size="large" style={{ width: '100%' }}>
-<<<<<<< HEAD
-            <Title level={3} className={styles.title}>
-=======
-            <Title level={3} style={{ textAlign: 'center' }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+            <Title level={3} className={styles.title || ""} style={{ textAlign: 'center' }}>
               Verify Your Email
             </Title>
-            <Text>
+            <Text style={{ textAlign: 'center', display: 'block' }}>
               We've sent a verification link to <strong>{email || 'your email address'}</strong>.
               Please check your inbox and click the link to verify your email.
             </Text>
-<<<<<<< HEAD
-            <div className={styles.buttonContainer}>
-=======
-            <div style={{ textAlign: 'center' }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+            <div className={styles.buttonContainer || ""} style={{ textAlign: 'center' }}>
               <Button
                 type="primary"
                 icon={<MailOutlined />}

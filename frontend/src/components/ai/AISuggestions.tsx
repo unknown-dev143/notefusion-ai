@@ -27,7 +27,7 @@ const AISuggestions: React.FC<AISuggestionsProps> = ({
     
     setLoading(true);
     try {
-      const aiSuggestions = await AIService.getSuggestions(noteId, content);
+      const aiSuggestions = await AIService.getSuggestions(content, 'related_notes');
       setSuggestions(aiSuggestions);
     } catch (error) {
       console.error('Failed to fetch AI suggestions:', error);
@@ -116,12 +116,12 @@ const AISuggestions: React.FC<AISuggestionsProps> = ({
             <List.Item.Meta
               title={suggestion.type.replace(/^\w/, c => c.toUpperCase())}
               description={
-                <Text 
+                <Typography.Paragraph 
                   ellipsis={{ rows: 2, expandable: true, symbol: 'more' }}
-                  style={{ fontSize: '0.85em' }}
+                  style={{ fontSize: '0.85em', margin: 0 }}
                 >
                   {suggestion.content}
-                </Text>
+                </Typography.Paragraph>
               }
             />
           </List.Item>

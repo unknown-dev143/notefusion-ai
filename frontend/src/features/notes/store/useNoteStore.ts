@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { Note, NoteFilters, NoteState } from '../types';
 import { noteService } from '../api/noteService';
 
-const initialState: Omit<NoteState, 'filters'> & { filters: Partial<NoteFilters> } = {
+const initialState: Pick<NoteState, 'notes' | 'currentNote' | 'isLoading' | 'error' | 'filters'> = {
   notes: [],
   currentNote: null,
   isLoading: false,
@@ -13,7 +13,7 @@ const initialState: Omit<NoteState, 'filters'> & { filters: Partial<NoteFilters>
   },
 };
 
-export const useNoteStore = create<NoteState>((set, get) => ({
+export const useNoteStore = (create as any)((set: any, get: any) => ({
   ...initialState,
   
   // Set filters

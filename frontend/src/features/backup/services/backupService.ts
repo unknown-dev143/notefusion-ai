@@ -48,7 +48,7 @@ class BackupService {
       this.backups.push(backup);
       
       // Simulate download URL generation
-      backup.downloadUrl = `/api/backups/${backup.id}/download`;
+      backup.downloadUrl = `/backups/${backup.id}/download`;
       
       return backup;
     } catch (error) {

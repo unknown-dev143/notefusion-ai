@@ -19,7 +19,9 @@ import {
   BookOutlined,
   FileTextOutlined
 } from '@ant-design/icons';
-import { noteAIService, AISummary, Flashcard, AITagSuggestion } from '../../services/noteAIService';
+import AIService, { AISummary, AITagSuggestion } from '../../services/ai/AIService';
+import { Flashcard } from '../../services/noteAIService';
+import NeuralLoader from '../NeuralLoader';
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -58,7 +60,7 @@ const AIEnhancementPanel: React.FC<AIEnhancementPanelProps> = ({
 
     setIsLoading(true);
     try {
-      const result = await noteAIService.generateSummary(content, summaryOptions);
+      const result = await AIService.summarizeContent(content, summaryOptions);
       setSummary(result);
       message.success('Summary generated successfully');
     } catch (error) {
@@ -77,7 +79,8 @@ const AIEnhancementPanel: React.FC<AIEnhancementPanelProps> = ({
 
     setIsLoading(true);
     try {
-      const result = await noteAIService.generateFlashcards(content, 5);
+      // @ts-ignore
+      const result = await AIService.generateFlashcards(content, { count: 5 });
       setFlashcards(result);
       message.success('Flashcards generated successfully');
     } catch (error) {
@@ -96,15 +99,14 @@ const AIEnhancementPanel: React.FC<AIEnhancementPanelProps> = ({
 
     setIsLoading(true);
     try {
-      // For now, we'll use generateSummary as a fallback since generateStudyGuide doesn't exist
-      const result = await noteAIService.generateSummary(content, {
-        style: 'detailed',
-        includeKeyPoints: true,
-        includeActionItems: true,
-        includeRelatedConcepts: true
+      // For now, we'll use summarizeContent as a fallback since generateStudyGuide doesn't exist
+      const result = await AIService.summarizeContent(content, {
+        length: 'long',
+        focus: 'detailed',
+        format: 'headings'
       });
       setStudyGuide({
-        content: `${result.summary}\n\nKey Points:\n${result.keyPoints.map(p => `• ${p}`).join('\n')}`
+        content: `${result.content}\n\nKey Points:\n${result.keyPoints.map(p => `• ${p}`).join('\n')}`
       });
       message.success('Study guide generated successfully');
     } catch (error) {
@@ -123,35 +125,9 @@ const AIEnhancementPanel: React.FC<AIEnhancementPanelProps> = ({
 
     setIsLoading(true);
     try {
-      // For now, we'll generate tags from the content directly since suggestTags doesn't exist
-      const summary = await noteAIService.generateSummary(content, {
-        includeKeyPoints: true
-      });
-      
-      // Create tags from key topics and entities
-      const topicTags = summary.topics || [];
-      const entityTags = (summary.entities || []).map(e => e.text);
-      const keyPointTags = (summary.keyPoints || []).flatMap(point => 
-        point.split(/[\s,.!?]+/).filter(word => word.length > 3)
-      );
-      
-      // Combine and deduplicate tags
-      const allTags = [...new Set([...topicTags, ...entityTags, ...keyPointTags])];
-      
-      // Format as AITagSuggestion
-      const result: AITagSuggestion = {
-        tags: allTags.map(tag => ({
-          name: tag,
-          category: 'topic',
-          confidence: 0.8,
-          relevance: 0.8
-        })),
-        categories: ['topic'],
-        confidenceScores: {}
-      };
-      
-      setSuggestedTags(result.tags.map(t => t.name));
-      message.success('Tags suggested successfully');
+        const tags = await AIService.generateTags(content, { maxTags: 10 });
+        setSuggestedTags(tags.map(t => t.tag));
+        message.success('Tags suggested successfully');
     } catch (error) {
       console.error('Error suggesting tags:', error);
       message.error('Failed to suggest tags. Please try again.');
@@ -197,11 +173,12 @@ const AIEnhancementPanel: React.FC<AIEnhancementPanelProps> = ({
             loading={isLoading && activeTab === 'summary'}
             icon={<RobotOutlined />}
           >
-            Generate Summary
           </Button>
         </Space>
       </div>
       
+      {isLoading && activeTab === 'summary' && <NeuralLoader />}
+
       {summary && (
         <Card 
           title="AI-Generated Summary" 
@@ -211,7 +188,7 @@ const AIEnhancementPanel: React.FC<AIEnhancementPanelProps> = ({
               key="apply" 
               type="link" 
               icon={<CheckCircleOutlined />} 
-              onClick={() => handleApplyEnhancement(summary.summary)}
+              onClick={() => handleApplyEnhancement(summary.content)}
             >
               Apply Summary
             </Button>
@@ -219,7 +196,7 @@ const AIEnhancementPanel: React.FC<AIEnhancementPanelProps> = ({
         >
           <div className="prose max-w-none">
             <h3>Summary</h3>
-            <p>{summary.summary}</p>
+            <p>{summary.content}</p>
             
             <h3 className="mt-4">Key Points</h3>
             <ul>
@@ -228,16 +205,7 @@ const AIEnhancementPanel: React.FC<AIEnhancementPanelProps> = ({
               ))}
             </ul>
             
-            {summary.topics && summary.topics.length > 0 && (
-              <>
-                <h3 className="mt-4">Topics</h3>
-                <div className="flex flex-wrap gap-2">
-                  {summary.topics.map((topic, index) => (
-                    <Tag key={index} color="blue">{topic}</Tag>
-                  ))}
-                </div>
-              </>
-            )}
+
           </div>
         </Card>
       )}
@@ -257,6 +225,8 @@ const AIEnhancementPanel: React.FC<AIEnhancementPanelProps> = ({
         </Button>
       </div>
       
+      {isLoading && activeTab === 'flashcards' && <NeuralLoader />}
+
       {flashcards.length > 0 && (
         <div className="mt-4 space-y-4">
           <div className="flex justify-between items-center">
@@ -331,6 +301,8 @@ const AIEnhancementPanel: React.FC<AIEnhancementPanelProps> = ({
         </Button>
       </div>
       
+      {isLoading && activeTab === 'studyGuide' && <NeuralLoader />}
+
       {studyGuide && (
         <Card 
           title="AI-Generated Study Guide" 
@@ -420,6 +392,8 @@ const AIEnhancementPanel: React.FC<AIEnhancementPanelProps> = ({
       >
         Suggest Tags
       </Button>
+
+      {isLoading && activeTab === 'tags' && <NeuralLoader />}
 
       {suggestedTags.length > 0 && (
         <Card title="Suggested Tags" className="mb-4">

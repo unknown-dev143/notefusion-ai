@@ -5,6 +5,18 @@ export interface BaseEntity {
   userId: string;
 }
 
+export interface NoteAnnotation {
+  id: string;
+  authorId: string;
+  authorName: string;
+  content: string;
+  createdAt: string;
+  blockId?: string;
+  position?: { x: number; y: number };
+}
+
+export type NoteObjectType = 'Meeting' | 'Person' | 'Project' | 'Concept' | 'Task' | 'Literature' | 'Generic';
+
 export interface Note extends BaseEntity {
   title: string;
   content: string;
@@ -12,12 +24,21 @@ export interface Note extends BaseEntity {
   isPinned: boolean;
   isArchived: boolean;
   isDeleted?: boolean;
+  color?: string;
   folderId?: string | null;
   reminder?: string | null;
   lastExportedAt?: string;
   exportFormats?: string[];
   version: number;
   lastEditedBy?: string;
+  type?: 'text' | 'video' | 'whiteboard';
+  objectType?: NoteObjectType;
+  attributes?: Record<string, any>;
+  annotations?: NoteAnnotation[];
+  metadata?: Record<string, any>;
+  is_public?: boolean;
+  share_token?: string;
+  price?: number;
 }
 
 export interface CreateNoteDto {
@@ -43,6 +64,8 @@ export interface UpdateNoteDto {
   lastExportedAt?: string;
   exportFormats?: string[];
   lastEditedBy?: string;
+  type?: 'text' | 'video' | 'whiteboard';
+  metadata?: Record<string, any>;
 }
 
 export interface NoteFilters {

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Badge, BadgeProps } from '@/components/ui/badge';
-import { Clock, Check, X, AlertTriangle } from 'lucide-react';
+import { Badge, BadgeProps } from '../../../components/ui/badge';
+import { LuClock, LuCheck, LuX, LuTriangleAlert as LuAlertTriangle } from 'react-icons/lu';
 import { ReminderStatus } from '../types';
 
 interface ReminderBadgeProps extends Omit<BadgeProps, 'variant'> {
@@ -10,10 +10,10 @@ interface ReminderBadgeProps extends Omit<BadgeProps, 'variant'> {
 }
 
 const statusIcons = {
-  [ReminderStatus.PENDING]: Clock,
-  [ReminderStatus.COMPLETED]: Check,
-  [ReminderStatus.DISMISSED]: X,
-  [ReminderStatus.EXPIRED]: AlertTriangle,
+  [ReminderStatus.PENDING]: LuClock,
+  [ReminderStatus.COMPLETED]: LuCheck,
+  [ReminderStatus.DISMISSED]: LuX,
+  [ReminderStatus.EXPIRED]: LuAlertTriangle,
 };
 
 const statusVariants = {
@@ -36,7 +36,7 @@ export function ReminderBadge({
   className = '',
   ...props
 }: ReminderBadgeProps) {
-  const Icon = statusIcons[status] || Clock;
+  const Icon = statusIcons[status] || LuClock;
   
   return (
     <Badge

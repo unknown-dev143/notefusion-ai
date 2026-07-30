@@ -1,7 +1,7 @@
 import { Note, CreateNoteDto, UpdateNoteDto, NoteFilters } from '../types';
 
 export class NoteService {
-  private baseUrl = '/api/notes';
+  private baseUrl = '/notes';
 
   async getAllNotes(filters: Partial<NoteFilters> = {}): Promise<Note[]> {
     const query = new URLSearchParams();

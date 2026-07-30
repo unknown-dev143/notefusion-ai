@@ -1,118 +1,190 @@
-# Dependencies
-node_modules/
+# ============================================================
+# NoteFusion AI — .gitignore
+# ============================================================
+
+# ----- Python -----
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyo
+*.pyd
+.Python
 
-# Environment variables
+# ----- Virtual Environments -----
+venv/
+venv_*/
+venv_auth/
+venv_new/
+venv_clean/
+ENV/
+env/
+.venv/
+
+# ----- Environment Variables (NEVER commit real secrets) -----
 .env
 .env.local
+.env.dev
+.env.bak
 .env.development.local
 .env.test.local
 .env.production.local
+docker.env
+# .env.production.example is safe to commit (placeholders only)
 
-# Build directories
-/dist
-/build
-/out
-.next/
-
-# Debug logs
+# ----- Node / Frontend -----
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+frontend/node_modules/
+dist/
+build/
+.next/
+out/
 
-# Local development
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# ----- Build / Coverage -----
+coverage/
+.nyc_output/
+htmlcov/
+*.egg-info/
+.eggs/
 
-# Editor directories and files
-.idea
-.vscode
+# ----- Databases (local dev only) -----
+*.db
+*.sqlite
+*.sqlite3
+
+# ----- Logs & Debug Output -----
+*.log
+logs/
+*.txt
+!README*.txt
+!requirements*.txt
+
+# ----- Test / Debug scripts (dev junk) -----
+check_*.py
+check_*.bat
+check_*.ps1
+debug_*.py
+debug_*.bat
+debug_*.txt
+test_*.html
+test_*.bat
+simple_test.*
+simple_*.py
+simple_*.bat
+http_test.py
+port_check.py
+minimal_*.py
+minimal_*.bat
+minimal_test.py
+working_server.py
+temp_server.py
+fastapi_test.py
+run_test.py
+run_test.bat
+run_tests.bat
+run_tests.py
+run_tests.bat.backup
+verify_*.py
+verify_*.bat
+get_token*.py
+get_auth_token.py
+create_test_*.py
+create_temp_*.ps1
+seed_*.py
+repair_db.py
+init_*.py
+generate_*.py
+fix_*.py
+fix_*.bat
+fix_*.js
+fix_*.ps1
+update_*.py
+update_*.bat
+update_*.js
+update_firebase_config.bat
+import_out.txt
+import_trace.txt
+verbose_import.txt
+verbose_simple.txt
+
+# ----- Backup Directories -----
+notefusion-ai-backup*/
+notefusion-ai-clean*/
+notefusion-ai-new/
+notefusion-ai-temp/
+notefusion-ai.worktrees/
+notefusion-app/
+notefusion-backup/
+notefusion-vite/
+notes-frontend/
+app_old_backup/
+backend_backup*/
+backend_broken_backup*/
+backup_*/
+frontend_backup*/
+temp-*/
+temp_workdir/
+pwa-test/
+vite-test-project/
+test-router/
+
+# ----- Docker override (local only) -----
+docker-compose.override.yml
+
+# ----- TypeScript Error Files -----
+frontend/tsc_*.txt
+frontend/vite-error.txt
+frontend/test_output.txt
+
+# ----- Misc Local Files -----
+*.bak
+*.bak2
+*.backup
+*.new
+*.old
+conflicts.txt
+path.txt
+pip_list.txt
+seed.log
+err.txt
+error.txt
+error.log
+error_trace.txt
+backend_crash.txt
+backend_error.txt
+backend_run.txt
+database_error.txt
+openai_error.txt
+python_env_debug.txt
+python_output.txt
+import_out.txt
+apps.txt
+auth_routes.txt
+user_py_content.txt
+query
+
+# ----- IDE & OS -----
+.idea/
+.vscode/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
+*.swp
+*.swo
 *.sw?
-
-# Virtual environment
-venv/
-venv_clean/
-
-# IDE specific files
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Logs
-logs
-*.log
-
-# Local development
-.DS_Store
-.env
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Virtual Environment
-venv/
-ENV/
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Node
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Build
-dist/
-build/
-.next/
-
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Local development
-.DS_Store
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Logs
-logs
-*.log
-
-# Backend
-data/
-instance/
-
-# Frontend
-coverage/
-.vercel
-
-# System Files
 .DS_Store
 Thumbs.db
+
+# ----- Pytest -----
+.pytest_cache/
+pytest.ini
+conftest.py
+
+# ----- Security -----
+*.pem
+*.key
+*.cert
+*.p12

@@ -11,6 +11,13 @@ const CACHEABLE_ROUTES = [
   OFFLINE_PAGE
 ];
 
+const offlineResponse = () =>
+  new Response('Offline', {
+    status: 503,
+    statusText: 'Service Unavailable',
+    headers: { 'Content-Type': 'text/plain' },
+  });
+
 // Install event - Cache static assets
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -59,14 +66,19 @@ const apiFirst = async (request) => {
   } catch (error) {
     // If network fails, try to get from cache
     const cachedResponse = await caches.match(request);
-    return cachedResponse || Response.error();
+    return cachedResponse || offlineResponse();
   }
 };
 
 // Cache First, then Network strategy for static assets
 const cacheFirst = async (request) => {
   const cachedResponse = await caches.match(request);
-  return cachedResponse || fetch(request);
+  if (cachedResponse) return cachedResponse;
+  try {
+    return await fetch(request);
+  } catch (error) {
+    return offlineResponse();
+  }
 };
 
 // Handle fetch events with different strategies
@@ -94,7 +106,10 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
-        .catch(() => caches.match(OFFLINE_PAGE))
+        .catch(async () => {
+          const fallback = await caches.match(OFFLINE_PAGE);
+          return fallback || offlineResponse();
+        })
     );
     return;
   }
@@ -102,7 +117,10 @@ self.addEventListener('fetch', (event) => {
   // For all other requests, try network first, then cache
   event.respondWith(
     fetch(request)
-      .catch(() => caches.match(request))
+      .catch(async () => {
+        const fallback = await caches.match(request);
+        return fallback || offlineResponse();
+      })
   );
 });
 

@@ -5,6 +5,16 @@
  * Integrates with Sentry and Google Analytics for comprehensive error monitoring.
  */
 
+import React from 'react';
+
+// Type declarations for global properties
+declare global {
+  interface Window {
+    gtag?: (command: string, ...args: any[]) => void;
+    Sentry?: any;
+  }
+}
+
 type ErrorSeverity = 'critical' | 'error' | 'warning' | 'info';
 
 interface ErrorContext {

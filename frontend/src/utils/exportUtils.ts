@@ -1,5 +1,5 @@
 import { saveAs } from 'file-saver';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { marked } from 'marked';
 
 export const exportToPdf = async (content: string, title: string = 'document') => {
@@ -8,7 +8,7 @@ export const exportToPdf = async (content: string, title: string = 'document') =
   
   // Create a temporary div to render the HTML
   const element = document.createElement('div');
-  element.innerHTML = marked(content);
+  element.innerHTML = await marked(content);
   element.style.position = 'absolute';
   element.style.left = '-9999px';
   document.body.appendChild(element);
@@ -34,7 +34,6 @@ export const exportToDocx = async (content: string, title: string = 'document') 
       children: [
         new Paragraph({
           text: title,
-          heading: HeadingLevel.HEADING_1,
         }),
         new Paragraph({
           children: [
@@ -82,7 +81,9 @@ export const importFromFile = (file: File): Promise<string> => {
           const mammoth = await import('mammoth');
           const arrayBuffer = event.target.result as ArrayBuffer;
           // Prefer raw text for now to keep formatting simple
-          const { value } = await mammoth.extractRawText({ arrayBuffer });
+          const mammothAny: any = mammoth;
+          const mammothInstance = mammothAny.default || mammothAny;
+          const { value } = await mammothInstance.extractRawText({ buffer: arrayBuffer });
           resolve(value || '');
         } catch (err) {
           reject(new Error('DOCX import requires the "mammoth" package. Please install it to enable .docx import.'));

@@ -2,6 +2,8 @@
  * Error recovery strategies for different types of errors
  */
 
+import React from 'react';
+
 type RecoveryStrategy = 'retry' | 'refresh' | 'clearData' | 'navigateAway';
 
 interface RecoveryOptions {

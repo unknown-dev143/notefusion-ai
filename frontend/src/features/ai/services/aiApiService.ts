@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_AI_API_URL || '/api/ai';
+const API_BASE_URL = import.meta.env.VITE_AI_API_URL || '/ai';
 
-<<<<<<< HEAD
 export interface SummaryOptions {
   length?: 'short' | 'medium' | 'long';
   format?: 'paragraph' | 'bullet-points' | 'key-points';
@@ -31,8 +30,6 @@ export const generateSummary = async (
   }
 };
 
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 export const getAIResponse = async (prompt: string, options = {}) => {
   try {
     const response = await axios.post(

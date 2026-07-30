@@ -1,4 +1,4 @@
-import api from './api';
+import api from './index';
 
 export interface PricingTier {
   id: string;

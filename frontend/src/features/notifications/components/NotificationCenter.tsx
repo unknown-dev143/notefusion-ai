@@ -2,36 +2,46 @@ import React, { useState, useEffect } from 'react';
 import { Bell, Check, X, Clock, AlertCircle, Info } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
+import { cn } from '../../../lib/utils';
+import { Button } from '../../../components/ui/button';
+import { Badge } from '../../../components/ui/badge';
+import { ScrollArea } from '../../../components/ui/scroll-area';
+import { Separator } from '../../../components/ui/separator';
+import { Notification as NotificationType } from '../types';
 import { 
   markNotificationAsRead, 
   markAllNotificationsAsRead, 
   deleteNotification,
-  getNotifications,
-  Notification as NotificationType
+  getNotifications
 } from '../api/notifications';
 
 interface NotificationCenterProps {
   className?: string;
   maxItems?: number;
+  maxHeight?: number | string;
+  showMarkAsRead?: boolean;
+  showDelete?: boolean;
+  onClose?: () => void;
 }
 
 export function NotificationCenter({ 
   className = '',
-  maxItems = 10 
+  maxItems = 10,
+  maxHeight = 'auto',
+  showMarkAsRead = true,
+  showDelete = true,
+  onClose
 }: NotificationCenterProps) {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   
   // Fetch notifications
-  const { data: notifications = [], isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['notifications'],
-    queryFn: getNotifications,
+    queryFn: () => getNotifications(),
   });
+
+  const notifications = data?.data || [];
   
   // Mark as read mutation
   const markAsReadMutation = useMutation({

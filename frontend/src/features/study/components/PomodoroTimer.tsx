@@ -14,7 +14,8 @@ import {
   Switch, 
   Select, 
   message,
-  theme as antdTheme
+  theme as antdTheme,
+  Tooltip
 } from 'antd';
 import { 
   PlayCircleOutlined, 
@@ -132,6 +133,7 @@ const formatTime = (seconds: number): string => {
 const PomodoroTimer: React.FC = () => {
   // Theme and token
   const { token } = useToken();
+  const [form] = Form.useForm();
   
   // Settings state
   const [settings, setSettings] = useState<TimerSettings>(() => {
@@ -170,7 +172,9 @@ const PomodoroTimer: React.FC = () => {
   // Session statistics
   const [sessionCount, setSessionCount] = useState<number>(0);
   const [totalFocusTime, setTotalFocusTime] = useState<number>(0);
-  const [completedTasks, setCompletedTasks] = useState<number>(0); // Initialize completedTasks
+  const [completedTasks, setCompletedTasks] = useState<number>(0);
+  
+  const isDarkMode = settings.theme === 'dark' || (settings.theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const alarmSoundRef = useRef<HTMLAudioElement | null>(null); // Initialize with null
@@ -412,11 +416,17 @@ const PomodoroTimer: React.FC = () => {
    * Resets the timer to its initial state
    * @returns {void}
    */
-  const resetTimer = (): void => {
-    setIsActive(false);
-    setTimerState('idle');
-    setTimeLeft(settings.workDuration);
-  };
+   const resetTimer = (): void => {
+     // Clear any running interval to prevent timer after reset
+     if (timerRef.current) {
+       clearInterval(timerRef.current);
+       timerRef.current = null;
+     }
+     setIsActive(false);
+     setTimerState('idle');
+     // Reset to default work duration (25 minutes)
+     setTimeLeft(DEFAULT_TIMER_SETTINGS.workDuration);
+   };
 
   /**
    * Adds a new task to the task list
@@ -532,17 +542,25 @@ const PomodoroTimer: React.FC = () => {
     setShowSettings(true);
   };
 
-  const handleSettingsSubmit = (values: Partial<TimerSettings>) => {
-    const newSettings = {
-      ...settings,
-      ...values
-    };
-    setSettings(newSettings);
-    localStorage.setItem('pomodoroSettings', JSON.stringify(newSettings));
-    setShowSettings(false);
-    message.success('Settings saved');
+const handleSettingsSave = (values: Partial<TimerSettings>) => {
+  // Convert minute inputs to seconds
+  const converted = {
+    workDuration: values.workDuration !== undefined ? Number(values.workDuration) * 60 : settings.workDuration,
+    shortBreakDuration: values.shortBreakDuration !== undefined ? Number(values.shortBreakDuration) * 60 : settings.shortBreakDuration,
+    longBreakDuration: values.longBreakDuration !== undefined ? Number(values.longBreakDuration) * 60 : settings.longBreakDuration,
+  } as Partial<TimerSettings>;
+  const newSettings = {
+    ...settings,
+    ...values,
+    ...converted,
   };
-
+  setSettings(newSettings);
+  localStorage.setItem('pomodoroSettings', JSON.stringify(newSettings));
+  setShowSettings(false);
+  message.success('Settings saved');
+  // Update displayed time regardless of timer state
+  setTimeLeft(newSettings.workDuration ?? DEFAULT_TIMER_SETTINGS.workDuration);
+};
   const resetSettings = () => {
     setSettings(DEFAULT_TIMER_SETTINGS);
     localStorage.setItem('pomodoroSettings', JSON.stringify(DEFAULT_TIMER_SETTINGS));
@@ -640,7 +658,6 @@ const PomodoroTimer: React.FC = () => {
             aria-valuemax={timerState === 'work' ? settings.workDuration : 
                           timerState === 'break' ? settings.shortBreakDuration : 
                           settings.longBreakDuration}
-            role="progressbar"
             aria-valuetext={`${formatTime(timeLeft)} remaining`}
           />
           
@@ -794,27 +811,32 @@ const PomodoroTimer: React.FC = () => {
           <Button key="cancel" onClick={() => setShowSettings(false)}>
             Cancel
           </Button>,
-          <Button key="save" type="primary" onClick={() => {
-            form.validateFields().then(values => {
-              handleSettingsSave(values);
-            });
-          }}>
-            Save Settings
+          <Button key="save" type="primary" onClick={() => form.submit()}>  Save Settings
           </Button>,
         ]}
       >
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={settings}
-          onFinish={handleSettingsSave}
-        >
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{
+              workDuration: settings.workDuration / 60,
+              shortBreakDuration: settings.shortBreakDuration / 60,
+              longBreakDuration: settings.longBreakDuration / 60,
+              longBreakInterval: settings.longBreakInterval,
+              autoStartBreaks: settings.autoStartBreaks,
+              autoStartPomodoros: settings.autoStartPomodoros,
+              soundEnabled: settings.soundEnabled,
+              soundVolume: settings.soundVolume,
+              theme: settings.theme,
+            }}
+            onFinish={handleSettingsSave}
+          >
           <Form.Item
             label="Work Duration (minutes)"
             name="workDuration"
             rules={[{ required: true, message: 'Please input work duration' }]}
           >
-            <InputNumber min={1} max={120} step={1} />
+            <InputNumber min={1} max={120} step={1} aria-label="Work Duration (minutes)" />
           </Form.Item>
           
           <Form.Item
@@ -822,7 +844,7 @@ const PomodoroTimer: React.FC = () => {
             name="shortBreakDuration"
             rules={[{ required: true, message: 'Please input short break duration' }]}
           >
-            <InputNumber min={1} max={30} step={1} />
+            <InputNumber min={1} max={30} step={1} aria-label="Short Break Duration (minutes)" />
           </Form.Item>
           
           <Form.Item
@@ -830,7 +852,7 @@ const PomodoroTimer: React.FC = () => {
             name="longBreakDuration"
             rules={[{ required: true, message: 'Please input long break duration' }]}
           >
-            <InputNumber min={1} max={60} step={1} />
+            <InputNumber min={1} max={60} step={1} aria-label="Long Break Duration (minutes)" />
           </Form.Item>
           
           <Form.Item
@@ -893,7 +915,7 @@ const PomodoroTimer: React.FC = () => {
         </Form>
       </Modal>
       
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .pomodoro-timer {
           max-width: 500px;
           margin: 0 auto;
@@ -935,16 +957,12 @@ const PomodoroTimer: React.FC = () => {
             width: 180px !important;
             height: 180px !important;
           }
-        }
-      `}</style>
-            }
-            
-            .timer-card .ant-card-body {
-              padding: 16px !important;
-            }
+
+          .timer-card .ant-card-body {
+            padding: 16px !important;
           }
-        `
-      }} />
+        }
+      ` }} />
     </div>
   );
 };

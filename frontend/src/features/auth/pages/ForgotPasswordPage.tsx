@@ -9,13 +9,13 @@ const { Title, Text } = Typography;
 export const ForgotPasswordPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const { resetPassword } = useAuth();
+  const { forgotPassword } = useAuth();
   const [form] = Form.useForm();
 
   const onFinish = async (values: { email: string }) => {
     try {
       setLoading(true);
-      await resetPassword(values.email);
+      await forgotPassword(values.email);
       setEmailSent(true);
       message.success('Password reset email sent! Please check your inbox.');
     } catch (error) {
@@ -101,7 +101,7 @@ export const ForgotPasswordPage: React.FC = () => {
         </div>
       </Card>
 
-      <style jsx global>{`
+      <style>{`
         .auth-page {
           display: flex;
           justify-content: center;
@@ -110,6 +110,7 @@ export const ForgotPasswordPage: React.FC = () => {
           background: #f0f2f5;
           padding: 20px;
         }
+
 
         .auth-card {
           width: 100%;

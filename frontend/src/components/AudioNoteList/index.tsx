@@ -1,8 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import { Button, Typography, Empty, Skeleton, Pagination } from 'antd';
 import { PlayCircleOutlined, DeleteOutlined, LoadingOutlined } from '@ant-design/icons';
-import { FixedSizeList } from 'react-window';
-import AutoSizer from 'react-virtualized-auto-sizer';
+// @ts-ignore
+import { List as FixedSizeList } from 'react-window';
+// @ts-ignore
+import { AutoSizer } from 'react-virtualized-auto-sizer';
 import type { AudioNote } from '../../services/audioService';
 import styles from './AudioNoteList.module.css';
 import './AudioNoteList.css';

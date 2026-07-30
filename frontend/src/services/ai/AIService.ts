@@ -1,45 +1,5 @@
-<<<<<<< HEAD
-import axios, { AxiosRequestConfig, CancelTokenSource } from 'axios';
-import { aiCache, withCache } from '../../utils/cache';
-import { debounce } from 'lodash';
+import api from '../../api';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
-// Request cancellation
-const pendingRequests: Record<string, CancelTokenSource> = {};
-
-// Cache TTLs (in milliseconds)
-const CACHE_TTL = {
-  SHORT: 5 * 60 * 1000, // 5 minutes
-  MEDIUM: 30 * 60 * 1000, // 30 minutes
-  LONG: 24 * 60 * 60 * 1000, // 24 hours
-};
-
-=======
-import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-export interface AISuggestion {
-  id: string;
-  type: 'summarize' | 'improve' | 'expand' | 'simplify' | 'action_items' | 'custom';
-  content: string;
-  confidence: number;
-  timestamp: string;
-}
-
-export interface AITemplate {
-  id: string;
-  name: string;
-  description: string;
-  prompt: string;
-  category: 'productivity' | 'creative' | 'academic' | 'business' | 'custom';
-  isPremium: boolean;
-}
-
-<<<<<<< HEAD
-// Extended interfaces for AI responses
 export interface AISummary {
   id: string;
   content: string;
@@ -50,195 +10,37 @@ export interface AISummary {
 
 export interface AITagSuggestion {
   tag: string;
-  category?: string;
   confidence: number;
+  category?: string;
 }
 
-export interface AIContentStructure {
-  title?: string;
-  sections: Array<{
-    heading: string;
-    content: string;
-    level: number;
-  }>;
-  keyPoints: string[];
-  tags: string[];
+export interface AITemplate {
+  id: string;
+  name: string;
+  description: string;
+  prompt: string;
+  category: 'business' | 'academic' | 'creative' | 'technical';
+  isPremium: boolean;
+  createdAt: string;
+  usageCount?: number;
+}
+
+export interface AISuggestion {
+  id: string;
+  type: 'summary' | 'tags' | 'action_items' | 'related_notes';
+  content: string;
+  confidence: number;
+  createdAt: string;
 }
 
 class AIService {
-  // Get AI suggestions for a note with caching and request cancellation
-=======
-class AIService {
-  // Get AI suggestions for a note
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-  static async getSuggestions(
-    noteId: string,
-    context: string,
-    type?: AISuggestion['type']
-  ): Promise<AISuggestion[]> {
-<<<<<<< HEAD
-    const cacheKey = `suggestions_${noteId}_${type || 'all'}`;
-    
-    // Cancel previous request if it exists
-    if (pendingRequests[cacheKey]) {
-      pendingRequests[cacheKey].cancel('Request canceled by user');
-    }
-    
-    // Create a new cancel token for this request
-    const source = axios.CancelToken.source();
-    pendingRequests[cacheKey] = source;
-    
+  // Generate content based on prompt
+  static async generateContent(prompt: string, content: string, options: any = {}): Promise<any> {
     try {
-      // Try to get from cache first
-      const cached = aiCache.get<AISuggestion[]>(cacheKey);
-      if (cached) {
-        return cached;
-      }
-      
-      const response = await axios.post(
-        `${API_BASE_URL}/ai/suggestions`,
-        { noteId, context, type },
-        { cancelToken: source.token }
-      );
-      
-      // Cache the result
-      aiCache.set(cacheKey, response.data, CACHE_TTL.MEDIUM);
-      
-      return response.data;
-    } catch (error) {
-      if (!axios.isCancel(error)) {
-        console.error('Error getting AI suggestions:', error);
-        throw error;
-      }
-      return [];
-    } finally {
-      // Clean up the request
-      delete pendingRequests[cacheKey];
-    }
-  }
-
-  // Apply a template to generate content with caching
-  static applyTemplate = withCache(
-    async (templateId: string, content: string): Promise<string> => {
-      try {
-        const response = await axios.post(
-          `${API_BASE_URL}/ai/apply-template`,
-          { templateId, content }
-        );
-        return response.data.content;
-      } catch (error) {
-        console.error('Error applying template:', error);
-        throw error;
-      }
-    },
-    {
-      keyPrefix: 'template',
-      ttl: CACHE_TTL.MEDIUM,
-      getKey: (templateId: string, content: string) => 
-        `template_${templateId}_${content.substring(0, 50).replace(/\s+/g, '_')}`
-    }
-  );
-
-  // Get available templates with caching
-  static getTemplates = withCache(
-    async (category?: string): Promise<AITemplate[]> => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/ai/templates`, {
-          params: { category },
-        });
-        return response.data;
-      } catch (error) {
-        console.error('Error getting AI templates:', error);
-        throw error;
-      }
-    },
-    {
-      keyPrefix: 'templates',
-      ttl: CACHE_TTL.LONG, // Templates don't change often
-      getKey: (category?: string) => `templates_${category || 'all'}`
-    }
-  );
-=======
-    try {
-      const response = await axios.post(`${API_BASE_URL}/ai/suggestions`, {
-        noteId,
-        context,
-        type
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error getting AI suggestions:', error);
-      throw error;
-    }
-  }
-
-  // Apply an AI template to generate content
-  static async applyTemplate(
-    templateId: string,
-    variables: Record<string, string>,
-    noteId?: string
-  ): Promise<{ content: string }> {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/ai/templates/apply`, {
-        templateId,
-        variables,
-        noteId
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error applying AI template:', error);
-      throw error;
-    }
-  }
-
-  // Get available AI templates
-  static async getTemplates(category?: string): Promise<AITemplate[]> {
-    try {
-      const params = category ? { category } : {};
-      const response = await axios.get(`${API_BASE_URL}/ai/templates`, { params });
-      return response.data;
-    } catch (error) {
-      console.error('Error getting AI templates:', error);
-      throw error;
-    }
-  }
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-
-  // Generate content using AI
-  static async generateContent(
-    prompt: string,
-    context: string,
-<<<<<<< HEAD
-    options: {
-      maxLength?: number;
-      temperature?: number;
-      creativity?: number;
-      format?: 'text' | 'markdown' | 'html';
-      tone?: 'professional' | 'casual' | 'academic' | 'creative';
-    } = {}
-=======
-    options?: {
-      maxLength?: number;
-      temperature?: number;
-      creativity?: number;
-    }
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-  ): Promise<{ content: string }> {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/ai/generate`, {
+      const response = await api.post('/ai/generate', {
         prompt,
-        context,
-<<<<<<< HEAD
-        options: {
-          maxLength: 1000,
-          temperature: 0.7,
-          format: 'markdown',
-          tone: 'professional',
-          ...options
-        }
-=======
+        content,
         options
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       });
       return response.data;
     } catch (error) {
@@ -246,7 +48,64 @@ class AIService {
       throw error;
     }
   }
-<<<<<<< HEAD
+
+  // Get content structure
+  static async getContentStructure(content: string): Promise<any> {
+    try {
+      const response = await api.post('/ai/structure', {
+        content
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error getting content structure:', error);
+      throw error;
+    }
+  }
+
+  // Generate action items
+  static async generateActionItems(content: string): Promise<any> {
+    try {
+      const response = await api.post('/ai/action-items', {
+        content
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error generating action items:', error);
+      throw error;
+    }
+  }
+
+  // Get templates
+  static async getTemplates(): Promise<AITemplate[]> {
+    try {
+      const response = await api.get('/ai/templates');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      throw error;
+    }
+  }
+
+  // Save template
+  static async saveTemplate(template: Omit<AITemplate, 'id'>): Promise<AITemplate> {
+    try {
+      const response = await api.post('/ai/templates', template);
+      return response.data;
+    } catch (error) {
+      console.error('Error saving template:', error);
+      throw error;
+    }
+  }
+
+  // Delete template
+  static async deleteTemplate(templateId: string): Promise<void> {
+    try {
+      await api.delete(`/ai/templates/${templateId}`);
+    } catch (error) {
+      console.error('Error deleting template:', error);
+      throw error;
+    }
+  }
 
   // Summarize content
   static async summarizeContent(
@@ -258,7 +117,7 @@ class AIService {
     } = {}
   ): Promise<AISummary> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/ai/summarize`, {
+      const response = await api.post('/ai/summarize', {
         content,
         options: {
           length: 'medium',
@@ -284,80 +143,102 @@ class AIService {
     } = {}
   ): Promise<AITagSuggestion[]> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/ai/tags`, {
+      const response = await api.post('/ai/tags', {
         content,
         options: {
-          maxTags: 5,
+          maxTags: 10,
           minConfidence: 0.7,
           ...options
         }
       });
-      return response.data.tags;
+      return response.data;
     } catch (error) {
       console.error('Error generating tags:', error);
       throw error;
     }
   }
 
-  // Generate content using a template
-  static async generateFromTemplate(
-    templateId: string,
-    variables: Record<string, any>,
-    options: {
-      temperature?: number;
-      maxTokens?: number;
-    } = {}
+  // Get suggestions for content
+  static async getSuggestions(
+    content: string,
+    type: 'summary' | 'tags' | 'action_items' | 'related_notes'
+  ): Promise<AISuggestion[]> {
+    try {
+      const response = await api.post('/ai/suggestions', {
+        content,
+        type
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error getting suggestions:', error);
+      throw error;
+    }
+  }
+
+  // Improve content
+  static async improveContent(
+    content: string,
+    improvements: string[]
   ): Promise<{ content: string }> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/ai/templates/generate`, {
-        templateId,
-        variables,
+      const response = await api.post('/ai/improve', {
+        content,
+        improvements
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error improving content:', error);
+      throw error;
+    }
+  }
+
+  // Generate flashcards
+  static async generateFlashcards(
+    content: string,
+    options: {
+      count?: number;
+      difficulty?: 'easy' | 'medium' | 'hard';
+    } = {}
+  ): Promise<any[]> {
+    try {
+      const response = await api.post('/ai/flashcards', {
+        content,
         options: {
-          temperature: 0.7,
-          maxTokens: 1000,
+          count: 5,
+          difficulty: 'medium',
           ...options
         }
       });
       return response.data;
     } catch (error) {
-      console.error('Error generating from template:', error);
+      console.error('Error generating flashcards:', error);
       throw error;
     }
   }
 
-  // Get content structure
-  static async getContentStructure(content: string): Promise<{
-    headings: Array<{ level: number; text: string; id: string }>;
-    sections: Array<{ title: string; content: string }>;
-    wordCount: number;
-    readingTime: number;
-  }> {
+  // Generate quiz questions
+  static async generateQuiz(
+    content: string,
+    options: {
+      questionCount?: number;
+      questionTypes?: string[];
+    } = {}
+  ): Promise<any> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/ai/structure`, { content });
+      const response = await api.post('/ai/quiz', {
+        content,
+        options: {
+          questionCount: 5,
+          questionTypes: ['multiple-choice', 'true-false'],
+          ...options
+        }
+      });
       return response.data;
     } catch (error) {
-      console.error('Error getting content structure:', error);
+      console.error('Error generating quiz:', error);
       throw error;
     }
   }
-
-  // Generate action items from content
-  static async generateActionItems(content: string): Promise<Array<{
-    action: string;
-    priority: 'high' | 'medium' | 'low';
-    estimatedTime?: string;
-    dependencies?: string[];
-  }>> {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/ai/action-items`, { content });
-      return response.data.items;
-    } catch (error) {
-      console.error('Error generating action items:', error);
-      throw error;
-    }
-  }
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 }
 
 export default AIService;

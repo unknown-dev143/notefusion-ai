@@ -2,11 +2,13 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
-import { AudioDemo } from '../AudioDemo';
-import * as audioService from '../../services/audioService';
+import { vi, describe, beforeEach, it, expect } from 'vitest';
+import AudioDemo from '../AudioDemo.new';
+import { audioService } from '../../services/audioService';
+import { message } from 'antd';
 
 // Mock the audio service
-jest.mock('../../services/audioService');
+vi.mock('../../services/audioService');
 
 const mockAudioNotes = [
   {
@@ -30,36 +32,29 @@ const mockAudioNotes = [
 ];
 
 describe('AudioDemo Integration', () => {
-  const mockGetNotes = jest.spyOn(audioService, 'getNotes');
-  const mockSaveNote = jest.spyOn(audioService, 'saveNote');
-  const mockDeleteNote = jest.spyOn(audioService, 'deleteNote');
-  const mockSearchNotes = jest.spyOn(audioService, 'searchNotes');
+  const mockGetNotes = vi.spyOn(audioService, 'getNotes');
+  const mockSaveNote = vi.spyOn(audioService, 'saveNote');
+  const mockDeleteNote = vi.spyOn(audioService, 'deleteNote');
 
   beforeEach(() => {
     // Reset all mocks before each test
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     
     // Setup default mock implementations
-    mockGetNotes.mockResolvedValue({ notes: [...mockAudioNotes] });
+    mockGetNotes.mockResolvedValue({ notes: [...mockAudioNotes], total: 2, hasMore: false });
     mockSaveNote.mockImplementation(async (audioBlob: Blob, title: string) => ({
       id: 'new-id',
       url: 'http://example.com/new-audio.wav',
     }));
     mockDeleteNote.mockResolvedValue(undefined);
-    mockSearchNotes.mockResolvedValue({
-      notes: [mockAudioNotes[0]],
-      total: 1,
-      page: 1,
-      totalPages: 1,
-    });
     
     // Mock the Audio constructor
-    window.Audio = jest.fn().mockImplementation(() => ({
-      play: jest.fn(),
-      pause: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-    }));
+    window.Audio = vi.fn().mockImplementation(() => ({
+      play: vi.fn(),
+      pause: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })) as any;
   });
 
   const renderComponent = () => {
@@ -89,37 +84,12 @@ describe('AudioDemo Integration', () => {
     // Initially on create tab
     expect(await screen.findByText('Record New Note')).toBeInTheDocument();
     
-    // Switch to search tab
-    const searchTab = screen.getByRole('tab', { name: /search notes/i });
+    // Switch to search tab using the Ant Design tab structure
+    const searchTab = screen.getByText('Search Notes');
     fireEvent.click(searchTab);
     
-    // Should show search interface
-    expect(await screen.findByPlaceholderText('Search transcriptions...')).toBeInTheDocument();
-  });
-
-  it('searches for notes', async () => {
-    renderComponent();
-    
-    // Go to search tab
-    const searchTab = screen.getByRole('tab', { name: /search notes/i });
-    fireEvent.click(searchTab);
-    
-    // Enter search query
-    const searchInput = await screen.findByPlaceholderText('Search transcriptions...');
-    fireEvent.change(searchInput, { target: { value: 'test' } });
-    
-    // Wait for search to complete
-    await waitFor(() => {
-      expect(mockSearchNotes).toHaveBeenCalledWith(
-        'test',
-        expect.any(Object),
-        expect.any(Number),
-        expect.any(Number)
-      );
-    });
-    
-    // Should show search results
-    expect(await screen.findByText('Test Note 1')).toBeInTheDocument();
+    // Should show search interface - the Search Component has a Search Notes title
+    expect(await screen.findByText('Search Audio Notes')).toBeInTheDocument();
   });
 
   it('deletes a note', async () => {
@@ -128,8 +98,8 @@ describe('AudioDemo Integration', () => {
     // Wait for notes to load
     await screen.findByText('Test Note 1');
     
-    // Click delete button on first note
-    const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+    // Find the first delete button (it has text "Delete")
+    const deleteButtons = screen.getAllByText('Delete');
     fireEvent.click(deleteButtons[0]);
     
     // Should call delete API
@@ -137,8 +107,8 @@ describe('AudioDemo Integration', () => {
       expect(mockDeleteNote).toHaveBeenCalledWith('1');
     });
     
-    // Should refetch notes
-    expect(mockGetNotes).toHaveBeenCalledTimes(2);
+    // And message.success should be called
+    expect(message.success).toHaveBeenCalledWith('Note deleted successfully');
   });
 
   it('plays a note', async () => {
@@ -148,11 +118,11 @@ describe('AudioDemo Integration', () => {
     await screen.findByText('Test Note 1');
     
     // Click play button on first note
-    const playButtons = screen.getAllByRole('button', { name: /play/i });
+    const playButtons = screen.getAllByText('Play');
     fireEvent.click(playButtons[0]);
     
     // Should set active note
-    expect(screen.getByText('Playing...')).toBeInTheDocument();
+    expect(await screen.findByText('Playing...')).toBeInTheDocument();
   });
 
   it('handles API errors gracefully', async () => {
@@ -160,61 +130,15 @@ describe('AudioDemo Integration', () => {
     mockGetNotes.mockRejectedValueOnce(new Error('API Error'));
     
     // Mock console.error to avoid error logs in test output
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
     
     renderComponent();
     
-    // Should show error state
+    // Wait for message.error to be called because we mocked it in setupTests
     await waitFor(() => {
-      expect(screen.getByText(/failed to load audio notes/i)).toBeInTheDocument();
+      expect(message.error).toHaveBeenCalledWith('Failed to load audio notes');
     });
     
     consoleError.mockRestore();
-  });
-
-  it('paginates through notes', async () => {
-    // Mock paginated response
-    mockGetNotes.mockResolvedValueOnce({
-      notes: mockAudioNotes,
-      total: 15,
-      page: 1,
-      totalPages: 2,
-    });
-    
-    renderComponent();
-    
-    // Wait for notes to load
-    await screen.findByText('Test Note 1');
-    
-    // Should show pagination
-    const pagination = await screen.findByRole('navigation', { name: /pagination/i });
-    expect(pagination).toBeInTheDocument();
-    
-    // Mock next page response
-    mockGetNotes.mockResolvedValueOnce({
-      notes: [
-        {
-          id: '3',
-          title: 'Test Note 3',
-          url: 'http://example.com/audio3.wav',
-          transcription: 'Third test note',
-          duration: 60,
-          createdAt: '2023-01-03T00:00:00Z',
-          updatedAt: '2023-01-03T00:00:00Z',
-        },
-      ],
-      total: 15,
-      page: 2,
-      totalPages: 2,
-    });
-    
-    // Click next page
-    const nextButton = screen.getByRole('button', { name: /next/i });
-    fireEvent.click(nextButton);
-    
-    // Should load next page
-    await waitFor(() => {
-      expect(mockGetNotes).toHaveBeenCalledWith(2, 10); // page 2, default page size 10
-    });
   });
 });

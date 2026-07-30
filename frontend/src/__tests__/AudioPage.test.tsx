@@ -1,100 +1,47 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { AudioPage } from '../features/audio/pages/AudioPage';
 
-// Mock the AudioPage component
-vi.mock('../../pages/AudioPage', () => ({
-  __esModule: true,
-  default: function MockAudioPage() {
-    return (
-      <div data-testid="audio-page">
-        <h1>Audio Page</h1>
-        <button data-testid="record-button">Record</button>
-        <div data-testid="audio-visualizer"></div>
-      </div>
-    );
-  },
+// Mock child components to isolate AudioPage testing
+vi.mock('../features/audio/components/TextToSpeech', () => ({
+  TextToSpeech: () => <div data-testid="text-to-speech-mock">TextToSpeech Mock</div>
+}));
+vi.mock('../features/audio/components/SpeechToText', () => ({
+  SpeechToText: () => <div data-testid="speech-to-text-mock">SpeechToText Mock</div>
+}));
+vi.mock('../features/audio/components/AudioTranscriber', () => ({
+  AudioTranscriber: () => <div data-testid="audio-transcriber-mock">AudioTranscriber Mock</div>
+}));
+vi.mock('../features/audio/components/AudioNoteTaker', () => ({
+  AudioNoteTaker: () => <div data-testid="audio-note-taker-mock">AudioNoteTaker Mock</div>
 }));
 
-// Mock Web Audio API
-class MockAudioContext {
-  createAnalyser() { return {}; }
-  createMediaStreamDestination() { return {}; }
-  createMediaElementSource() { return { connect: vi.fn() }; }
-  resume() { return Promise.resolve(); }
-  suspend() { return Promise.resolve(); }
-}
-
-global.AudioContext = vi.fn().mockImplementation(() => ({
-  ...new MockAudioContext(),
-  sampleRate: 44100,
-  currentTime: 0,
-  state: 'suspended',
-}));
-
-// Mock MediaDevices API
-global.navigator.mediaDevices = {
-  getUserMedia: vi.fn().mockResolvedValue({} as MediaStream),
-} as any;
+// Mock window.matchMedia for Ant Design Tabs
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(), // Deprecated
+    removeListener: vi.fn(), // Deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
 
 describe('AudioPage', () => {
-  const renderComponent = () => {
-    return render(
-      <BrowserRouter>
-        <div id="root">
-          {/* @ts-ignore */}
-          <AudioPage />
-        </div>
-      </BrowserRouter>
-    );
-  };
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.useFakeTimers();
+  it('renders the AudioPage component with title', () => {
+    render(<AudioPage />);
+    expect(screen.getByText('Audio Tools')).toBeInTheDocument();
   });
 
-  afterEach(() => {
-    cleanup();
-    vi.useRealTimers();
+  it('renders all tab labels', () => {
+    render(<AudioPage />);
+    expect(screen.getByText('Text to Speech')).toBeInTheDocument();
+    expect(screen.getByText('Speech to Text')).toBeInTheDocument();
+    expect(screen.getByText('Audio Transcriber')).toBeInTheDocument();
+    expect(screen.getByText('Audio Notes')).toBeInTheDocument();
   });
-
-  it('renders the AudioPage component', () => {
-    renderComponent();
-    expect(screen.getByTestId('audio-page')).toBeInTheDocument();
-    expect(screen.getByText('Audio Page')).toBeInTheDocument();
-  });
-
-  it('shows record button', () => {
-    renderComponent();
-    const recordButton = screen.getByTestId('record-button');
-    expect(recordButton).toBeInTheDocument();
-    expect(recordButton).toHaveTextContent('Record');
-  });
-
-  it('initializes audio context on mount', () => {
-    renderComponent();
-    expect(AudioContext).toHaveBeenCalledTimes(1);
-  });
-
-  it('handles recording start/stop', async () => {
-    renderComponent();
-    const recordButton = screen.getByTestId('record-button');
-    
-    // Start recording
-    fireEvent.click(recordButton);
-    expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledWith({
-      audio: true,
-      video: false,
-    });
-    
-    // Simulate recording in progress
-    // Test would continue with stopping recording
-  });
-
-  // Add more test cases for:
-  // - Audio visualization updates
-  // - Error handling
-  // - Component unmount cleanup
-  // - Any other functionality specific to AudioPage
 });

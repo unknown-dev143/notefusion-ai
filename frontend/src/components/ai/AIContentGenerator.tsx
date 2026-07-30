@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Button, Input, Select, Space, Typography, Card, Alert, Spin, Switch } from 'antd';
-import { FileTextOutlined, MagicWand, CheckOutlined } from '@ant-design/icons';
+import { FileTextOutlined, ExperimentOutlined, CheckOutlined } from '@ant-design/icons';
 import styles from './AIAssistant.module.css';
 
 const { TextArea } = Input;
@@ -193,7 +193,7 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
 
           <Button
             type="primary"
-            icon={<MagicWand />}
+            icon={<ExperimentOutlined />}
             onClick={handleGenerate}
             loading={isLoading}
             disabled={(contentType === 'custom' && !customPrompt) || (useContext && !content)}

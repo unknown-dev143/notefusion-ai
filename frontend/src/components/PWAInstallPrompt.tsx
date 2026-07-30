@@ -1,186 +1,131 @@
 import React, { useState, useEffect } from 'react';
-import { usePWA } from '../hooks/usePWA';
-import { Button, Snackbar, Alert, Box, Typography, Paper } from '@mui/material';
-import InstallDesktopIcon from '@mui/icons-material/InstallDesktop';
-import CloudOffIcon from '@mui/icons-material/CloudOff';
-import CloudQueueIcon from '@mui/icons-material/CloudQueue';
+import { X, Download, Smartphone } from 'lucide-react';
 
-const PWAInstallPrompt: React.FC = () => {
-  const { isPWAInstalled, isOffline, canInstall, installPWA, canNotify, requestNotificationPermission } = usePWA();
-  const [showInstallBanner, setShowInstallBanner] = useState<boolean>(false);
-  const [showNotificationPrompt, setShowNotificationPrompt] = useState<boolean>(false);
-  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(
-    'Notification' in window ? Notification.permission : 'denied'
-  );
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+export const PWAInstallPrompt: React.FC = () => {
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    // Show install banner if PWA can be installed and isn't already installed
-    if (canInstall && !isPWAInstalled) {
-      const timer = setTimeout(() => {
-        setShowInstallBanner(true);
-      }, 3000); // Show after 3 seconds
-      return () => clearTimeout(timer);
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true);
+      return;
     }
-  }, [canInstall, isPWAInstalled]);
 
-  useEffect(() => {
-    // Show notification permission prompt if not already granted/denied
-    if ('Notification' in window && notificationPermission === 'default') {
-      const timer = setTimeout(() => {
-        setShowNotificationPrompt(true);
-      }, 5000); // Show after 5 seconds
-      return () => clearTimeout(timer);
-    }
-  }, [notificationPermission]);
+    // Listen for install prompt
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      const installEvent = e as BeforeInstallPromptEvent;
+      setDeferredPrompt(installEvent);
+      
+      // Show prompt after 30 seconds
+      setTimeout(() => {
+        const dismissed = localStorage.getItem('pwa-install-dismissed');
+        if (!dismissed) {
+          setShowPrompt(true);
+        }
+      }, 30000);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Check if app was installed
+    window.addEventListener('appinstalled', () => {
+      setIsInstalled(true);
+      setShowPrompt(false);
+      setDeferredPrompt(null);
+    });
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
 
   const handleInstallClick = async () => {
-    const installed = await installPWA();
-    if (installed) {
-      setShowInstallBanner(false);
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      console.log('User accepted PWA install');
+    } else {
+      console.log('User dismissed PWA install');
     }
+
+    setDeferredPrompt(null);
+    setShowPrompt(false);
   };
 
-  const handleEnableNotifications = async () => {
-    const permission = await requestNotificationPermission();
-    setNotificationPermission(permission);
-    setShowNotificationPrompt(false);
-    
-    if (permission === 'granted') {
-      // Show a welcome notification
-      new Notification('Notifications Enabled', {
-        body: 'You will now receive notifications from NoteFusion AI',
-        icon: '/logo192.png',
-      });
-    }
+  const handleDismiss = () => {
+    setShowPrompt(false);
+    localStorage.setItem('pwa-install-dismissed', 'true');
   };
 
-  const handleCloseInstallBanner = () => {
-    setShowInstallBanner(false);
-  };
-
-  const handleCloseNotificationPrompt = () => {
-    setShowNotificationPrompt(false);
-  };
+  if (isInstalled || !showPrompt || !deferredPrompt) {
+    return null;
+  }
 
   return (
-    <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1400 }}>
-      {/* Install Banner */}
-      <Snackbar
-        open={showInstallBanner}
-        onClose={handleCloseInstallBanner}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        sx={{ mb: 2 }}
-      >
-        <Paper elevation={3} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-          <Box display="flex" alignItems="center" gap={2}>
-            <InstallDesktopIcon color="primary" fontSize="large" />
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold">Install NoteFusion AI</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Add to your home screen for a better experience
-              </Typography>
-            </Box>
-            <Button 
-              variant="contained" 
-              color="primary" 
-              onClick={handleInstallClick}
-              sx={{ ml: 'auto' }}
-            >
-              Install
-            </Button>
-            <Button 
-              color="inherit" 
-              onClick={handleCloseInstallBanner}
-            >
-              Not Now
-            </Button>
-          </Box>
-        </Paper>
-      </Snackbar>
-
-      {/* Notification Permission Prompt */}
-      <Snackbar
-        open={showNotificationPrompt}
-        onClose={handleCloseNotificationPrompt}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        sx={{ mb: 2, mr: 2 }}
-      >
-        <Paper elevation={3} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1, maxWidth: 400 }}>
-          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            Enable Notifications
-          </Typography>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Get notified about important updates and reminders from NoteFusion AI
-          </Typography>
-          <Box display="flex" justifyContent="flex-end" gap={1} mt={1}>
-            <Button 
-              size="small" 
-              onClick={handleCloseNotificationPrompt}
-              color="inherit"
-            >
-              Later
-            </Button>
-            <Button 
-              size="small" 
-              variant="contained" 
-              color="primary"
-              onClick={handleEnableNotifications}
-            >
-              Enable
-            </Button>
-          </Box>
-        </Paper>
-      </Snackbar>
-
-      {/* Offline Status */}
-      {isOffline && (
-        <Box 
-          sx={{
-            bgcolor: 'warning.light',
-            color: 'warning.contrastText',
-            p: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 1
-          }}
+    <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-96 z-50 animate-slide-up">
+      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl shadow-2xl p-6 text-white border-2 border-blue-400">
+        <button
+          onClick={handleDismiss}
+          className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
+          aria-label="Dismiss"
         >
-          <CloudOffIcon fontSize="small" />
-          <Typography variant="caption">
-            You are currently offline. Some features may be limited.
-          </Typography>
-        </Box>
-      )}
+          <X size={20} />
+        </button>
 
-      {/* Online Status */}
-      {!isOffline && !isPWAInstalled && (
-        <Box 
-          sx={{
-            position: 'fixed',
-            bottom: 16,
-            right: 16,
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
-            p: 1,
-            borderRadius: '50%',
-            width: 40,
-            height: 40,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: 3,
-            cursor: 'pointer',
-            '&:hover': {
-              bgcolor: 'primary.dark',
-            },
-          }}
+        <div className="flex items-start gap-4 mb-4">
+          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <Smartphone size={24} />
+          </div>
+          <div>
+            <h3 className="text-lg font-black mb-1">Install NoteFusion AI</h3>
+            <p className="text-sm text-blue-100 font-medium">
+              Get instant access from your home screen
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-2 mb-4 text-sm text-blue-50">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">⚡</span>
+            <span>Works offline</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🚀</span>
+            <span>Faster loading</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-lg">📱</span>
+            <span>App-like experience</span>
+          </div>
+        </div>
+
+        <button
           onClick={handleInstallClick}
-          title="Install NoteFusion AI"
+          className="w-full bg-white text-blue-600 py-3 px-4 rounded-2xl font-black text-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2 shadow-lg"
         >
-          <InstallDesktopIcon />
-        </Box>
-      )}
-    </Box>
+          <Download size={18} />
+          Install App
+        </button>
+
+        <button
+          onClick={handleDismiss}
+          className="w-full mt-2 text-white/80 hover:text-white py-2 text-sm font-bold transition-colors"
+        >
+          Maybe later
+        </button>
+      </div>
+    </div>
   );
 };
 

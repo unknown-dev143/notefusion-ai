@@ -2,10 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Tag, Space, Button, Tooltip } from 'antd';
 import { HistoryOutlined, RollbackOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-<<<<<<< HEAD
 import styles from './PricingHistory.module.css';
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 interface PriceHistory {
   id: string;
@@ -22,7 +19,6 @@ interface PriceHistory {
 const PricingHistory: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<PriceHistory[]>([]);
-  const [selectedRecord, setSelectedRecord] = useState<PriceHistory | null>(null);
 
   useEffect(() => {
     fetchPriceHistory();
@@ -44,7 +40,6 @@ const PricingHistory: React.FC = () => {
           changedAt: '2025-08-15T10:30:00Z',
           reason: 'Annual price adjustment'
         },
-        // Add more mock data as needed
       ];
       setHistory(mockData);
     } catch (error) {
@@ -55,7 +50,6 @@ const PricingHistory: React.FC = () => {
   };
 
   const handleRevert = (record: PriceHistory) => {
-    setSelectedRecord(record);
     // Show confirmation modal and handle revert
     console.log('Reverting to:', record);
   };
@@ -72,19 +66,11 @@ const PricingHistory: React.FC = () => {
       key: 'priceChange',
       render: (_, record) => (
         <Space>
-<<<<<<< HEAD
-          <span className={styles.previousPrice}>
+          <span className={styles.previousPrice || ""} style={{ textDecoration: 'line-through', color: '#999' }}>
             ${record.previousPrice.toFixed(2)}
           </span>
           <span>→</span>
-          <span className={styles.newPrice}>
-=======
-          <span style={{ textDecoration: 'line-through', color: '#999' }}>
-            ${record.previousPrice.toFixed(2)}
-          </span>
-          <span>→</span>
-          <span style={{ fontWeight: 'bold' }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+          <span className={styles.newPrice || ""} style={{ fontWeight: 'bold' }}>
             ${record.newPrice.toFixed(2)}
           </span>
         </Space>
@@ -138,9 +124,9 @@ const PricingHistory: React.FC = () => {
 
   return (
     <div className="pricing-history">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium">
-          <HistoryOutlined className="mr-2" />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: 500, margin: 0 }}>
+          <HistoryOutlined style={{ marginRight: '8px' }} />
           Price Change History
         </h3>
         <Button 
@@ -161,12 +147,12 @@ const PricingHistory: React.FC = () => {
         pagination={{ pageSize: 10 }}
         expandable={{
           expandedRowRender: (record) => (
-            <div className="p-4 bg-gray-50 rounded">
-              <p className="font-medium mb-2">Change Details:</p>
-              <p className="mb-1">
-                <span className="font-medium">Reason:</span> {record.reason || 'No reason provided'}
+            <div style={{ padding: '16px', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+              <p style={{ fontWeight: 500, marginBottom: '8px' }}>Change Details:</p>
+              <p style={{ marginBottom: '4px' }}>
+                <span style={{ fontWeight: 500 }}>Reason:</span> {record.reason || 'No reason provided'}
               </p>
-              <p className="text-xs text-gray-500">
+              <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>
                 Record ID: {record.id}
               </p>
             </div>

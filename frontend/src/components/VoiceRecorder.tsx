@@ -1,169 +1,206 @@
-<<<<<<< HEAD
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Button, Card, Space, Typography, Tag, message } from 'antd';
+import { 
+  AudioOutlined, 
+  StopOutlined, 
+  PauseOutlined, 
+  CaretRightOutlined,
+  ThunderboltFilled
+} from '@ant-design/icons';
+import './VoiceRecorder.css';
+
+const { Text } = Typography;
 
 interface VoiceRecorderProps {
-  onDataAvailable: (data: Blob) => void;
+  onTranscriptUpdate: (fullTranscript: string) => void;
   isRecording: boolean;
-  onStatusChange: (status: string) => void;
+  setIsRecording: (recording: boolean) => void;
 }
 
-const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
-  onDataAvailable,
-  isRecording,
-  onStatusChange,
+const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ 
+  onTranscriptUpdate, 
+  isRecording, 
+  setIsRecording 
 }) => {
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
-  const [error, setError] = useState<string>('');
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [wsConnection, setWsConnection] = useState<WebSocket | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    let stream: MediaStream;
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      if (wsConnection) {
+        wsConnection.close();
+      }
+    };
+  }, [wsConnection]);
 
-    const initializeRecorder = async () => {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder.current = new MediaRecorder(stream);
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
 
-        mediaRecorder.current.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            onDataAvailable(event.data);
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0 && wsConnection && wsConnection.readyState === WebSocket.OPEN) {
+          wsConnection.send(event.data);
+        }
+      };
+
+      recorder.onstart = () => {
+        setIsRecording(true);
+        setIsPaused(false);
+        setRecordingTime(0);
+        
+        intervalRef.current = setInterval(() => {
+          setRecordingTime(prev => prev + 1);
+        }, 1000);
+
+        // Start WebSocket connection for real-time transcription
+        // Using WS_BASE_URL from a central config or hardcoded for now
+        const wsUrl = process.env.REACT_APP_WS_URL || 'ws://localhost:8001/ws/recording';
+        const ws = new WebSocket(wsUrl);
+        
+        ws.onopen = () => {
+          console.log('VoiceRecorder: WebSocket connected');
+        };
+        
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.transcript) {
+              onTranscriptUpdate(data.full_transcript || data.transcript);
+            }
+          } catch (e) {
+            console.error('Error parsing WS message:', e);
           }
         };
-
-        mediaRecorder.current.onstart = () => {
-          onStatusChange('Recording...');
+        
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          message.error('Transcription service unavailable');
         };
+        
+        setWsConnection(ws);
+      };
 
-        mediaRecorder.current.onstop = () => {
-          onStatusChange('Stopped');
-        };
-
-        mediaRecorder.current.onerror = (event: Event) => {
-          const errorMessage = (event as any).error?.message || 'Unknown error';
-          setError('Recording error: ' + errorMessage);
-          onStatusChange('Error');
-        };
-
-      } catch (err) {
-        setError('Error accessing microphone: ' + err);
-        onStatusChange('Error');
-      }
-    };
-
-    initializeRecorder();
-
-    return () => {
-      if (stream) {
+      recorder.onstop = () => {
+        setIsRecording(false);
+        setIsPaused(false);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+        if (wsConnection) {
+          wsConnection.close();
+        }
         stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [onDataAvailable, onStatusChange]);
+      };
 
-  useEffect(() => {
-    if (isRecording && mediaRecorder.current?.state === 'inactive') {
-      mediaRecorder.current?.start(1000); // Send data every second
-    } else if (!isRecording && mediaRecorder.current?.state === 'recording') {
-      mediaRecorder.current?.stop();
+      recorder.start(1000); // Collect data every second
+      setMediaRecorder(recorder);
+      message.success('Recording started');
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      message.error('Could not access microphone');
     }
-  }, [isRecording]);
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+      message.success('Recording saved');
+    }
+  };
+
+  const togglePause = () => {
+    if (mediaRecorder) {
+      if (isPaused) {
+        mediaRecorder.resume();
+        setIsPaused(false);
+      } else {
+        mediaRecorder.pause();
+        setIsPaused(true);
+      }
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Voice Recorder</h3>
-        <div className={`h-3 w-3 rounded-full ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-gray-300'}`} />
-      </div>
-      {error && (
-        <div className="mt-2 text-red-500 text-sm">
-          {error}
+    <Card className="voice-recorder-card">
+      <Space direction="vertical" align="center" style={{ width: '100%' }} size="middle">
+        <div className="recorder-status">
+          {isRecording ? (
+            <Space>
+              <div className="recording-dot" />
+              <Text strong style={{ fontSize: '18px', fontFamily: 'monospace' }}>
+                {formatTime(recordingTime)}
+              </Text>
+            </Space>
+          ) : (
+            <Tag color="default">Ready to Record</Tag>
+          )}
         </div>
-      )}
-    </div>
+
+        <div className="recorder-controls">
+          {!isRecording ? (
+            <Button 
+              type="primary" 
+              shape="round" 
+              size="large" 
+              icon={<AudioOutlined />} 
+              onClick={startRecording}
+              className="record-btn-start"
+            >
+              Start Recording
+            </Button>
+          ) : (
+            <Space size="large">
+              <Button 
+                shape="circle" 
+                size="large" 
+                icon={isPaused ? <CaretRightOutlined /> : <PauseOutlined />} 
+                onClick={togglePause}
+                title={isPaused ? 'Resume' : 'Pause'}
+              />
+              <Button 
+                type="primary" 
+                danger 
+                shape="circle" 
+                size="large" 
+                icon={<StopOutlined />} 
+                onClick={stopRecording}
+                title="Stop"
+              />
+            </Space>
+          )}
+        </div>
+
+        {isRecording && (
+          <div className="transcription-indicator">
+            <Space>
+              <ThunderboltFilled style={{ color: '#faad14' }} />
+              <Text type="secondary" style={{ fontSize: '12px' }}>Live AI Transcription Active</Text>
+            </Space>
+            <div className="wave-animation">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="wave-bar" style={{ animationDelay: `${i * 0.1}s` }} />
+              ))}
+            </div>
+          </div>
+        )}
+      </Space>
+    </Card>
   );
 };
 
 export default VoiceRecorder;
-=======
-import React, { useEffect, useRef, useState } from 'react';
-
-interface VoiceRecorderProps {
-  onDataAvailable: (data: Blob) => void;
-  isRecording: boolean;
-  onStatusChange: (status: string) => void;
-}
-
-const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
-  onDataAvailable,
-  isRecording,
-  onStatusChange,
-}) => {
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
-  const [error, setError] = useState<string>('');
-
-  useEffect(() => {
-    let stream: MediaStream;
-
-    const initializeRecorder = async () => {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder.current = new MediaRecorder(stream);
-
-        mediaRecorder.current.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            onDataAvailable(event.data);
-          }
-        };
-
-        mediaRecorder.current.onstart = () => {
-          onStatusChange('Recording...');
-        };
-
-        mediaRecorder.current.onstop = () => {
-          onStatusChange('Stopped');
-        };
-
-        mediaRecorder.current.onerror = (event: Event) => {
-          const errorMessage = (event as any).error?.message || 'Unknown error';
-          setError('Recording error: ' + errorMessage);
-          onStatusChange('Error');
-        };
-
-      } catch (err) {
-        setError('Error accessing microphone: ' + err);
-        onStatusChange('Error');
-      }
-    };
-
-    initializeRecorder();
-
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [onDataAvailable, onStatusChange]);
-
-  useEffect(() => {
-    if (isRecording && mediaRecorder.current?.state === 'inactive') {
-      mediaRecorder.current?.start(1000); // Send data every second
-    } else if (!isRecording && mediaRecorder.current?.state === 'recording') {
-      mediaRecorder.current?.stop();
-    }
-  }, [isRecording]);
-
-  return (
-    <div className="p-4 bg-white rounded-lg shadow">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Voice Recorder</h3>
-        <div className={`h-3 w-3 rounded-full ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-gray-300'}`} />
-      </div>
-      {error && (
-        <div className="mt-2 text-red-500 text-sm">
-          {error}
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default VoiceRecorder;
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e

@@ -102,7 +102,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
    * Stops the current recording session and processes the recorded audio
    */
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
       mediaRecorderRef.current.stop();
       setIsRecording(false);
@@ -170,7 +170,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.wav');
       
-      const response = await axios.post('/api/audio/transcribe', formData, {
+      const response = await axios.post('/audio/transcribe', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -186,9 +186,11 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
     } catch (error) {
       console.error('Error transcribing audio:', error);
       message.error('Failed to transcribe audio');
+      return '';
     } finally {
       setIsTranscribing(false);
     }
+    return '';
   };
   
   /**
@@ -289,7 +291,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
           <Button
             type="text"
             icon={<SaveOutlined />}
-            onClick={saveRecording}
+            onClick={() => saveAudioNote(`Audio Recording ${new Date().toLocaleTimeString()}`)}
             className={styles.saveButton}
           >
             Save

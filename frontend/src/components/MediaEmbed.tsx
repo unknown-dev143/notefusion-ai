@@ -1,10 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Button, message, Modal, Upload, Space } from 'antd';
 import { UploadOutlined, PlayCircleOutlined, PictureOutlined, FileOutlined } from '@ant-design/icons';
-<<<<<<< HEAD
-import './MediaEmbed/MediaEmbed.css';
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+import './MediaEmbed.css';
 
 type MediaType = 'image' | 'video' | 'audio' | 'file';
 
@@ -53,30 +50,21 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
   const renderMediaPreview = () => {
     if (!embedUrl) return null;
     
+    const previewStyle: React.CSSProperties = { maxWidth: '100%', maxHeight: '300px', display: 'block', margin: '16px auto' };
+    
     switch (selectedType) {
       case 'image':
-<<<<<<< HEAD
-        return <img src={embedUrl} alt="Preview" className="media-embed-preview" />;
+        return <img src={embedUrl} alt="Preview" className="media-embed-preview" style={previewStyle} />;
       case 'video':
         return (
-          <video controls className="media-embed-video">
-=======
-        return <img src={embedUrl} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />;
-      case 'video':
-        return (
-          <video controls style={{ maxWidth: '100%', maxHeight: '200px' }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+          <video controls className="media-embed-video" style={previewStyle}>
             <source src={embedUrl} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         );
       case 'audio':
         return (
-<<<<<<< HEAD
-          <audio controls className="media-embed-audio">
-=======
-          <audio controls style={{ width: '100%' }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+          <audio controls className="media-embed-audio" style={{ width: '100%', marginTop: '16px' }}>
             <source src={embedUrl} type="audio/mp3" />
             Your browser does not support the audio element.
           </audio>
@@ -87,14 +75,8 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
   };
 
   return (
-<<<<<<< HEAD
-    <div className="media-embed-container">
+    <div className="media-embed-container" style={{ display: 'inline-flex', gap: '4px' }}>
       <Button 
-        className="media-embed-button"
-=======
-    <>
-      <Button 
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         type="text" 
         icon={<PictureOutlined />} 
         onClick={() => {
@@ -102,12 +84,9 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
           setIsModalVisible(true);
         }}
         title="Embed Image"
+        className="media-embed-button"
       />
       <Button 
-<<<<<<< HEAD
-        className="media-embed-button"
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         type="text" 
         icon={<PlayCircleOutlined />} 
         onClick={() => {
@@ -115,6 +94,7 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
           setIsModalVisible(true);
         }}
         title="Embed Video"
+        className="media-embed-button"
       />
       <Upload 
         accept=".pdf,.doc,.docx,.txt" 
@@ -123,14 +103,11 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
         disabled={isUploading || uploading}
       >
         <Button 
-<<<<<<< HEAD
-          className="media-embed-button"
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           type="text" 
           icon={<FileOutlined />} 
           loading={isUploading || uploading}
           title="Upload File"
+          className="media-embed-button"
         />
       </Upload>
 
@@ -142,8 +119,7 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
         okText="Embed"
         cancelText="Cancel"
       >
-<<<<<<< HEAD
-        <Space direction="vertical" className="media-embed-modal">
+        <Space direction="vertical" style={{ width: '100%' }} className="media-embed-modal">
           <div>
             <input
               type="text"
@@ -151,6 +127,7 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
               placeholder={`Enter ${selectedType} URL`}
               value={embedUrl}
               onChange={(e) => setEmbedUrl(e.target.value)}
+              style={{ width: '100%', marginBottom: '16px' }}
             />
           </div>
           
@@ -158,24 +135,7 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
             {renderMediaPreview()}
           </div>
           
-          <div className="media-upload-section">
-=======
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <div>
-            <input
-              type="text"
-              className="ant-input"
-              placeholder={`Enter ${selectedType} URL`}
-              value={embedUrl}
-              onChange={(e) => setEmbedUrl(e.target.value)}
-              style={{ width: '100%', marginBottom: '16px' }}
-            />
-          </div>
-          
-          {renderMediaPreview()}
-          
-          <div style={{ marginTop: '16px' }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+          <div className="media-upload-section" style={{ marginTop: '16px' }}>
             <Upload 
               accept={
                 selectedType === 'image' 
@@ -197,7 +157,7 @@ const MediaEmbed: React.FC<MediaEmbedProps> = ({ onEmbed, onUpload, isUploading 
           </div>
         </Space>
       </Modal>
-    </>
+    </div>
   );
 };
 

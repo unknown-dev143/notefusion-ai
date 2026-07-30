@@ -30,7 +30,7 @@ describe('NoteAIService', () => {
       const resultPromise = service.withRetry(mockFn, { maxRetries: 3 });
       
       // Fast-forward time for the first retry
-      vi.advanceTimersByTime(1000);
+      await vi.advanceTimersByTimeAsync(1500);
       
       const result = await resultPromise;
       expect(result).toBe('success');
@@ -51,7 +51,7 @@ describe('NoteAIService', () => {
       const resultPromise = service.withRetry(mockFn);
       
       // Fast-forward time for the retry-after delay (2 seconds)
-      vi.advanceTimersByTime(2000);
+      await vi.advanceTimersByTimeAsync(2500);
       
       const result = await resultPromise;
       expect(result).toBe('success');
@@ -68,19 +68,21 @@ describe('NoteAIService', () => {
 
     it('should respect abort signal', async () => {
       const controller = new AbortController();
-      const mockFn = vi.fn()
-        .mockImplementation(() => new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Timeout')), 1000);
-        }));
+      const mockFn = vi.fn().mockRejectedValue(new Error('Temporary error'));
 
       const resultPromise = service.withRetry(mockFn, { 
         signal: controller.signal 
       });
 
-      // Abort before the request completes
+      // Abort while waiting for the next retry
       controller.abort();
       
-      await expect(resultPromise).rejects.toThrow('Request was aborted');
+      const expectPromise = expect(resultPromise).rejects.toThrow('Request was aborted');
+      
+      // Advance timers to trigger the next retry attempt
+      await vi.advanceTimersByTimeAsync(1500);
+      
+      await expectPromise;
     });
   });
 });

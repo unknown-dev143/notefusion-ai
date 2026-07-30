@@ -197,9 +197,9 @@ export class NoteAIService {
   private readonly BASE_AI_ENDPOINT = '/ai';
   private readonly SUMMARY_ENDPOINT = `${this.BASE_AI_ENDPOINT}/summarize`;
   private readonly GENERATE_FLASHCARDS_ENDPOINT = `${this.BASE_AI_ENDPOINT}/generate-flashcards`;
-  private readonly STUDY_GUIDE_ENDPOINT = '/api/study-guide';
-  private readonly RELATED_NOTES_ENDPOINT = '/api/related-notes';
-  private readonly ANALYZE_CONTENT_ENDPOINT = '/api/analyze-content';
+  private readonly STUDY_GUIDE_ENDPOINT = '/study-guide';
+  private readonly RELATED_NOTES_ENDPOINT = '/related-notes';
+  private readonly ANALYZE_CONTENT_ENDPOINT = '/analyze-content';
   private cache = new Map<string, { data: unknown; timestamp: number; ttl?: number }>();
   private pendingRequests = new Map<string, Promise<unknown>>();
 
@@ -587,7 +587,7 @@ export class NoteAIService {
     while (attempt < maxRetries && !success) {
       try {
         attempt++;
-        await apiService.post<{ success: boolean }>('/api/analytics', { 
+        await apiService.post<{ success: boolean }>('/analytics', { 
           events: batch,
           attempt,
           timestamp: new Date().toISOString()

@@ -1,0 +1,72 @@
+
+.paymentContainer {
+  padding: 4rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.planCard {
+  background: white;
+  border-radius: 32px;
+  padding: 3rem 2rem;
+  text-align: center;
+  border: 4px solid #f1f5f9;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.planCard:hover {
+  transform: translateY(-12px);
+  border-color: #2563eb;
+  box-shadow: 0 40px 60px -20px rgba(37, 99, 235, 0.15);
+}
+
+.popular {
+  border-color: #3b82f6;
+  background: linear-gradient(to bottom, #ffffff, #eff6ff);
+}
+
+.popularBadge {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #3b82f6;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.buyButton {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  background: #1e293b;
+  color: white;
+  border: none;
+  margin-top: auto;
+}
+
+.buyButton:hover {
+  background: #0f172a;
+  transform: scale(1.02);
+}
+
+.popular .buyButton {
+  background: #2563eb;
+}
+
+.popular .buyButton:hover {
+  background: #1d4ed8;
+}

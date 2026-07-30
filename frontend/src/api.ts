@@ -14,11 +14,11 @@ interface ApiResponse<T> {
 
 // User types
 interface User {
-  id: string;
+  id: number;
   email: string;
-  full_name: string;
+  username: string;
   is_active?: boolean;
-  is_superuser?: boolean;
+  is_admin?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -35,6 +35,10 @@ interface Note extends NoteBase {
   created_at: string;
   updated_at: string;
   user_id: string;
+  tags?: string[] | string;
+  is_public?: boolean;
+  share_token?: string;
+  price?: number;
 }
 
 // Flashcard types
@@ -68,6 +72,21 @@ interface Project extends ProjectBase {
   user_id: string;
 }
 
+// Activity types
+interface ActivityLog {
+  id: number;
+  user_id: number;
+  activity_type: string;
+  timestamp: string;
+}
+
+interface StreakInfo {
+  current_streak: number;
+  longest_streak: number;
+  last_activity: string | null;
+  total_active_days: number;
+}
+
 // Auth types
 interface TokenResponse {
   access_token: string;
@@ -80,7 +99,7 @@ interface LoginCredentials {
 }
 
 interface RegisterData extends LoginCredentials {
-  full_name: string;
+  username: string;
 }
 
 // ====================================
@@ -111,8 +130,42 @@ const getConfig = (key: string, defaultValue: string): string => {
   return defaultValue;
 };
 
-const API_BASE_URL = getConfig('API_URL', 'http://localhost:8000/api');
-const WS_BASE_URL = getConfig('WS_URL', 'ws://localhost:8000');
+// Normalize API + WS URLs.
+// Supports either:
+// - API_URL = http://localhost:8000/api/v1
+// - API_URL = http://localhost:8000 (we append /api/v1)
+// - REACT_APP_API_URL = http://localhost:8000 (we append /api/v1)
+const normalizeApiBaseUrl = (raw: string): string => {
+  if (!raw) return 'http://localhost:8000/api/v1';
+  const trimmed = raw.replace(/\/+$/, '');
+  if (trimmed.endsWith('/v1')) return trimmed;
+  if (trimmed.endsWith('/api')) return `${trimmed}/v1`;
+  // If it's already something like http://localhost:8000/api/v1/... trim to base
+  const apiV1Idx = trimmed.indexOf('/v1');
+  if (apiV1Idx !== -1) return trimmed.slice(0, apiV1Idx + '/v1'.length);
+  return `${trimmed}/api/v1`;
+};
+
+const normalizeWsBaseUrl = (raw: string): string => {
+  if (!raw) return 'ws://localhost:8000';
+  return raw.replace(/\/+$/, '');
+};
+
+const RAW_API_URL =
+  getConfig('API_URL', '') ||
+  ((window as any)?._env_?.REACT_APP_API_URL as string | undefined) ||
+  (process?.env?.REACT_APP_API_URL as string | undefined) ||
+  'http://localhost:8000';
+
+const RAW_WS_URL =
+  getConfig('WS_URL', '') ||
+  ((window as any)?._env_?.REACT_APP_WS_URL as string | undefined) ||
+  ((window as any)?._env_?.REACT_APP_WS_URL as string | undefined) ||
+  (process?.env?.REACT_APP_WS_URL as string | undefined) ||
+  'ws://localhost:8000';
+
+const API_BASE_URL = normalizeApiBaseUrl(RAW_API_URL);
+const WS_BASE_URL = normalizeWsBaseUrl(RAW_WS_URL);
 const REQUEST_TIMEOUT = 10000; // 10 seconds
 const MAX_RETRIES = 2;
 
@@ -244,9 +297,8 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers = config.headers || {};
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -254,14 +306,30 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for error handling
+// Response interceptor for error handling and gamification
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Check for gamification header
+    const gamificationHeader = response.headers['x-gamification-update'];
+    if (gamificationHeader) {
+      try {
+        const gamificationData = JSON.parse(gamificationHeader);
+        // Dispatch custom event for UI components to listen to
+        window.dispatchEvent(new CustomEvent('gamification-update', { 
+          detail: gamificationData 
+        }));
+      } catch (e) {
+        console.error('Failed to parse gamification header', e);
+      }
+    }
+    return response;
+  },
   (error: unknown) => {
     const axiosError = error as AxiosError;
     
     if (axiosError.response?.status === 401) {
       localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
@@ -290,7 +358,7 @@ export const authApi = {
     formData.append('username', credentials.email);
     formData.append('password', credentials.password);
     
-    const response = await api.post<TokenResponse>('/auth/token', formData.toString(), {
+    const response = await api.post<TokenResponse>('/auth/login', formData.toString(), {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
@@ -305,7 +373,7 @@ export const authApi = {
   },
   
   async getCurrentUser(): Promise<User> {
-    const response = await api.get<User>('/users/me');
+    const response = await api.get<User>('/auth/me');
     return response.data;
   },
   
@@ -316,6 +384,7 @@ export const authApi = {
   
   logout(): void {
     localStorage.removeItem('token');
+    localStorage.removeItem('authToken');
     delete api.defaults.headers.common.Authorization;
   },
   
@@ -353,6 +422,31 @@ export const notesApi = {
   
   async deleteNote(id: string): Promise<void> {
     await api.delete(`/notes/${id}`);
+  },
+  
+  async neuralSearch(query: string): Promise<Note[]> {
+    const response = await api.post<Note[]>('/notes/neural-search', { query });
+    return response.data;
+  },
+  
+  async togglePublic(id: string): Promise<Note> {
+    const response = await api.post<Note>(`/notes/${id}/toggle-public`);
+    return response.data;
+  },
+  
+  async getSharedNote(token: string): Promise<Note> {
+    const response = await api.get<Note>(`/notes/shared/${token}`);
+    return response.data;
+  },
+  
+  async purchaseNote(id: string): Promise<{status: string, message: string}> {
+    const response = await api.post<{status: string, message: string}>(`/notes/${id}/purchase`);
+    return response.data;
+  },
+  
+  async getMarketplace(): Promise<Note[]> {
+    const response = await api.get<Note[]>('/notes/market/all');
+    return response.data;
   }
 };
 
@@ -446,6 +540,39 @@ export const aiApi = {
       count
     });
     return response.data.questions;
+  },
+
+  async refineSketch(image: string, context: string = ''): Promise<{refined_image_url: string, original_interpretation: string}> {
+    const response = await api.post('/ai/refine-sketch', { image, context });
+    return response.data;
+  },
+
+  async generateFlashcardsFromNote(noteId: string): Promise<any> {
+    const response = await api.post(`/learning/generate-from-note/${noteId}`);
+    return response.data;
+  }
+};
+
+// Activity API
+export const activitiesApi = {
+  async logActivity(activityType: string): Promise<ActivityLog> {
+    const response = await api.post<ActivityLog>('/activities', { activity_type: activityType });
+    return response.data;
+  },
+  
+  async getStreak(): Promise<StreakInfo> {
+    const response = await api.get<StreakInfo>('/activities/streak');
+    return response.data;
+  },
+  
+  async getVelocity(): Promise<number[]> {
+    const response = await api.get<number[]>('/activities/velocity');
+    return response.data;
+  },
+  
+  async getQuests(): Promise<{text: string, xp: string, done: boolean}[]> {
+    const response = await api.get<{text: string, xp: string, done: boolean}[]>('/activities/quests');
+    return response.data;
   }
 };
 
@@ -473,5 +600,7 @@ export type {
   ProjectBase, 
   TokenResponse, 
   LoginCredentials, 
-  RegisterData 
+  RegisterData,
+  ActivityLog,
+  StreakInfo
 };

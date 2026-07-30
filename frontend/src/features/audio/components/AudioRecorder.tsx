@@ -55,7 +55,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [form] = Form.useForm();
   const waveformRef = useRef<HTMLDivElement>(null);
-  const wavesurfer = useRef<WaveSurfer | null>(null);
+  const wavesurfer = useRef<any>(null);
   
   const audioChunksRef = useRef<Blob[]>([]);
   const transcriptionResultsRef = useRef<TranscriptionResult[]>([]);
@@ -243,6 +243,35 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
     };
   }, []);
 
+  const {
+    isRecording,
+    isPaused,
+    recordingTime,
+    startRecording,
+    stopRecording,
+    pauseRecording,
+    resumeRecording,
+    audioBlob,
+    error: recordingError,
+    isSupported,
+  } = useAudioRecorder({
+    ...rest,
+    onStart: useCallback(() => {
+      setProcessedChunks([]);
+      setTranscription(null);
+      setWaveformData([]);
+      if (rest.onStart) rest.onStart();
+    }, [rest]),
+    onStop: handleRecordingStop,
+    onError: useCallback((error: Error) => {
+      console.error('Recording error:', error);
+      message.error(`Recording error: ${error.message}`);
+      if (rest.onError) rest.onError(error);
+    }, [rest]),
+    onChunk: handleChunk,
+    chunkInterval: chunkInterval || 5000, // Default to 5 seconds per chunk
+  });
+
   // Update waveform data when recording
   useEffect(() => {
     if (isRecording && wavesurfer.current) {
@@ -271,34 +300,6 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
       };
     }
   }, [isRecording]);
-
-  const {
-    isRecording,
-    isPaused,
-    recordingTime,
-    startRecording,
-    stopRecording,
-    pauseRecording,
-    resumeRecording,
-    audioBlob,
-    error: recordingError,
-  } = useAudioRecorder({
-    ...rest,
-    onStart: useCallback(() => {
-      setProcessedChunks([]);
-      setTranscription(null);
-      setWaveformData([]);
-      if (rest.onStart) rest.onStart();
-    }, [rest]),
-    onStop: handleRecordingStop,
-    onError: useCallback((error: Error) => {
-      console.error('Recording error:', error);
-      message.error(`Recording error: ${error.message}`);
-      if (rest.onError) rest.onError(error);
-    }, [rest]),
-    onChunk: handleChunk,
-    chunkInterval: chunkInterval || 5000, // Default to 5 seconds per chunk
-  });
 
   if (!isSupported) {
     return (
@@ -437,6 +438,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
             {maxDuration && maxDuration > 0 && ` / ${formatDisplayTime(maxDuration)}`}
           </span>
         )}
+        </Space>
       </div>
       
       {/* Processing Indicator */}

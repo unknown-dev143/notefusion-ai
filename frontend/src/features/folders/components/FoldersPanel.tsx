@@ -12,10 +12,7 @@ import {
 } from '@ant-design/icons';
 import MoveFolderDialog from './MoveFolderDialog';
 import { Folder } from '../types/folder';
-<<<<<<< HEAD
 import styles from './FoldersPanel.module.css';
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 export interface FoldersPanelProps {
   folders: Folder[];
@@ -36,7 +33,6 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
   onDeleteFolder,
   onMoveFolder: _onMoveFolder,
 }) => {
-  // Remove unused user from props
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -46,7 +42,6 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
   const [moveTargetId, setMoveTargetId] = useState<string | null>(null);
   const [contextMenuPosition, setContextMenuPosition] = useState<{x: number, y: number} | null>(null);
 
-  // Expand all folders by default
   useEffect(() => {
     if (folders.length > 0) {
       setExpandedKeys(prev => {
@@ -56,7 +51,6 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
     }
   }, [folders]);
 
-  // Build tree data nodes from folders
   const buildTreeData = (folders: Folder[]): DataNode[] => {
     return folders.map(folder => ({
       key: folder.id,
@@ -66,17 +60,14 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
     }));
   };
 
-  // Handle folder selection
   const handleSelect = (selectedKeys: React.Key[]) => {
     onSelectFolder(selectedKeys[0] as string);
   };
 
-  // Handle folder expand/collapse
   const handleExpand = (expandedKeys: React.Key[]) => {
     setExpandedKeys(expandedKeys);
   };
 
-  // Handle right-click context menu
   const handleContextMenu = (info: { event: React.MouseEvent; node: EventDataNode<DataNode> }) => {
     info.event.preventDefault();
     const folder = findFolderById(folders, info.node.key as string);
@@ -89,7 +80,6 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
     }
   };
 
-  // Find folder by ID in the folder tree
   const findFolderById = (folderList: Folder[], id: string): Folder | null => {
     for (const folder of folderList) {
       if (folder.id === id) return folder;
@@ -157,10 +147,9 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
   };
 
   const renderTitle = (folder: Folder) => {
-
     if (editingFolder?.id === folder.id) {
       return (
-        <div className="folder-item">
+        <div className={styles['folderItem'] || "folder-item"}>
           <Input
             autoFocus
             value={editingFolder.name}
@@ -168,11 +157,8 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
             onPressEnter={handleRenameFolder}
             onBlur={handleRenameFolder}
             size="small"
-<<<<<<< HEAD
-            className={styles['folderInput']}
-=======
+            className={styles['folderInput'] || ""}
             style={{ width: '80%' }}
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           />
         </div>
       );
@@ -180,30 +166,18 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
 
     return (
       <div 
-<<<<<<< HEAD
-        className={styles['folderItem']}
-=======
-        className={`folder-item ${selectedFolderId === folder.id ? 'selected' : ''}`}
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+        className={`${styles['folderItem'] || 'folder-item'} ${selectedFolderId === folder.id ? (styles['selected'] || 'selected') : ''}`}
         onContextMenu={(e) => {
           e.preventDefault();
           setContextMenuFolder(folder);
           setContextMenuPosition({ x: e.clientX, y: e.clientY });
         }}
       >
-<<<<<<< HEAD
-        <span className={styles['folderName']}>
+        <span className={styles['folderName'] || "folder-name"}>
           {expandedKeys.includes(folder.id) ? <FolderOpenOutlined /> : <FolderOutlined />}
           <span>{folder.name}</span>
         </span>
-        <span className={styles['folderActions']}>
-=======
-        <span className="folder-name">
-          {expandedKeys.includes(folder.id) ? <FolderOpenOutlined /> : <FolderOutlined />}
-          <span>{folder.name}</span>
-        </span>
-        <span className="folder-actions">
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+        <span className={styles['folderActions'] || "folder-actions"}>
           <Button 
             type="text" 
             size="small" 
@@ -269,22 +243,14 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
   };
 
   return (
-<<<<<<< HEAD
-    <div className={styles['foldersPanel']}>
-      <div className={styles['actionBar']}>
-=======
-    <div className="folders-panel">
-      <div className="folders-header">
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+    <div className={styles['foldersPanel'] || "folders-panel"}>
+      <div className={styles['actionBar'] || styles['foldersHeader'] || "folders-header"}>
         <h3>Folders</h3>
         <Button 
           type="primary" 
           icon={<PlusOutlined />} 
           size="small"
-<<<<<<< HEAD
-          className={styles['newFolderButton']}
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+          className={styles['newFolderButton'] || ""}
           onClick={() => {
             setContextMenuFolder(null);
             setNewFolderName('');
@@ -295,11 +261,7 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
         </Button>
       </div>
       
-<<<<<<< HEAD
-      <div className={styles['treeContainer']}>
-=======
-      <div className="folders-tree">
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+      <div className={styles['treeContainer'] || styles['foldersTree'] || "folders-tree"}>
         <Tree
           showIcon
           expandedKeys={expandedKeys}
@@ -323,22 +285,13 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
           onChange={(e) => setNewFolderName(e.target.value)}
           onPressEnter={handleCreateFolder}
           autoFocus
-<<<<<<< HEAD
-          className={styles['folderInput']}
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+          className={styles['folderInput'] || ""}
         />
       </Modal>
 
       {contextMenuPosition && (
         <div
-<<<<<<< HEAD
-          className={styles['folderContextMenu']}
-          style={{
-            left: contextMenuPosition.x,
-            top: contextMenuPosition.y,
-=======
-          className="folder-context-menu"
+          className={styles['folderContextMenu'] || "folder-context-menu"}
           style={{
             position: 'fixed',
             left: contextMenuPosition.x,
@@ -348,7 +301,6 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
             borderRadius: '4px',
             padding: '4px 0',
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           }}
           onClick={(e) => e.stopPropagation()}
           onContextMenu={(e) => e.preventDefault()}
@@ -357,32 +309,22 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
             items={contextMenuItems} 
             mode="vertical"
             selectable={false}
-<<<<<<< HEAD
-            className={styles['contextMenu']}
-=======
+            className={styles['contextMenu'] || ""}
             style={{ border: 'none', boxShadow: 'none' }}
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           />
         </div>
       )}
 
       {contextMenuPosition && (
         <div
-<<<<<<< HEAD
-          className={styles['contextMenuOverlay']}
-          style={{
-=======
+          className={styles['contextMenuOverlay'] || ""}
           style={{
             position: 'fixed',
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-<<<<<<< HEAD
-=======
             zIndex: 999,
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           }}
           onClick={() => setContextMenuPosition(null)}
         />
@@ -395,8 +337,6 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
         folders={folders}
         currentFolderId={moveTargetId}
       />
-<<<<<<< HEAD
-=======
 
       <style>{`
         .folders-panel {
@@ -441,11 +381,7 @@ const FoldersPanel: React.FC<FoldersPanelProps> = ({
         .folder-item:hover .folder-actions {
           visibility: visible;
         }
-        .context-menu-item:hover {
-          background: #f5f5f5;
-        }
       `}</style>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     </div>
   );
 };

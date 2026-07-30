@@ -97,10 +97,10 @@ export const api = {
 
 // API endpoints
 export const API_ENDPOINTS = {
-  NOTES: '/api/notes',
-  NOTE_BY_ID: (id: string) => `/api/notes/${id}`,
-  NOTE_RESTORE: (id: string) => `/api/notes/${id}/restore`,
-  NOTE_TOGGLE_PIN: (id: string) => `/api/notes/${id}/pin`,
+  NOTES: '/notes',
+  NOTE_BY_ID: (id: string) => `/notes/${id}`,
+  NOTE_RESTORE: (id: string) => `/notes/${id}/restore`,
+  NOTE_TOGGLE_PIN: (id: string) => `/notes/${id}/pin`,
   // Add more endpoints as needed
 };
 

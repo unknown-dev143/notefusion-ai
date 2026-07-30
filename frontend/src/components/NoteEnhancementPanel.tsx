@@ -1,8 +1,8 @@
 import { FC, useState, useCallback } from 'react';
 import { FaMagic, FaQuestion, FaKey, FaListUl } from 'react-icons/fa';
 import type { IconType } from 'react-icons';
-import { Button } from './ui/Button';
-import Tooltip from './ui/Tooltip';
+import { Button } from './ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './ui/Tooltip';
 
 declare global {
   namespace JSX {
@@ -194,27 +194,34 @@ export const NoteEnhancementPanel: FC<NoteEnhancementPanelProps> = ({
         : tooltip;
 
       return (
-        <Tooltip key={type} content={buttonTooltip}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleEnhance(type)}
-            disabled={isButtonDisabled}
-            className={`flex items-center gap-2 ${isContentTooShort ? 'opacity-50' : ''}`}
-            aria-label={`Enhance with ${label}`}
-            aria-busy={isLoading[type] ? 'true' : 'false'}
-            data-testid={`enhance-${type}-button`}
-          >
-            {isLoading[type] ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
-            ) : (
-              renderIcon(icon)
-            )}
-            <span className={isContentTooShort ? 'text-gray-500' : ''}>
-              {label}
-            </span>
-          </Button>
-        </Tooltip>
+        <TooltipProvider key={type}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleEnhance(type)}
+                disabled={isButtonDisabled}
+                className={`flex items-center gap-2 ${isContentTooShort ? 'opacity-50' : ''}`}
+                aria-label={`Enhance with ${label}`}
+                aria-busy={isLoading[type] ? 'true' : 'false'}
+                data-testid={`enhance-${type}-button`}
+              >
+                {isLoading[type] ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
+                ) : (
+                  renderIcon(icon)
+                )}
+                <span className={isContentTooShort ? 'text-gray-500' : ''}>
+                  {label}
+                </span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{buttonTooltip}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       );
     });
   };

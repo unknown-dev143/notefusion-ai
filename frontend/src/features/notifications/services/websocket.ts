@@ -1,4 +1,5 @@
 import { Notification } from '../types';
+import { WS_BASE_URL } from '../../../api';
 
 type NotificationCallback = (notification: Notification) => void;
 type ConnectionStatusCallback = (isConnected: boolean) => void;
@@ -6,6 +7,8 @@ type ConnectionStatusCallback = (isConnected: boolean) => void;
 class WebSocketService {
   private socket: WebSocket | null = null;
   private notificationCallbacks: NotificationCallback[] = [];
+  private notificationUpdateCallbacks: ((update: any) => void)[] = [];
+  private notificationDeleteCallbacks: ((deleted: any) => void)[] = [];
   private connectionStatusCallbacks: ConnectionStatusCallback[] = [];
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
@@ -25,10 +28,9 @@ class WebSocketService {
     this.connectionPromise = new Promise((resolve) => {
       try {
         // Get the WebSocket URL from environment variables or use a default
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-        const wsUrl = process.env.REACT_APP_WS_URL || `${wsProtocol}${window.location.host}`;
+        const wsUrl = WS_BASE_URL || 'ws://localhost:8000/ws';
         
-        this.socket = new WebSocket(`${wsUrl}/ws/notifications`);
+        this.socket = new WebSocket(`${wsUrl.replace(/\/$/, '')}/notifications`);
 
         this.socket.onopen = () => {
           this.isConnected = true;
@@ -43,6 +45,10 @@ class WebSocketService {
             const data = JSON.parse(event.data);
             if (data.type === 'notification') {
               this.notifyCallbacks(data.payload);
+            } else if (data.type === 'notification_update') {
+              this.notifyUpdateCallbacks(data.payload);
+            } else if (data.type === 'notification_delete') {
+              this.notifyDeleteCallbacks(data.payload);
             }
           } catch (error) {
             console.error('Error processing WebSocket message:', error);
@@ -106,6 +112,20 @@ class WebSocketService {
     };
   };
 
+  public onNotificationUpdate = (callback: (update: any) => void): (() => void) => {
+    this.notificationUpdateCallbacks.push(callback);
+    return () => {
+      this.notificationUpdateCallbacks = this.notificationUpdateCallbacks.filter(cb => cb !== callback);
+    };
+  };
+
+  public onNotificationDelete = (callback: (deleted: any) => void): (() => void) => {
+    this.notificationDeleteCallbacks.push(callback);
+    return () => {
+      this.notificationDeleteCallbacks = this.notificationDeleteCallbacks.filter(cb => cb !== callback);
+    };
+  };
+
   public onConnectionStatusChange = (callback: ConnectionStatusCallback): (() => void) => {
     this.connectionStatusCallbacks.push(callback);
     // Immediately notify current status
@@ -129,6 +149,26 @@ class WebSocketService {
         callback(notification);
       } catch (error) {
         console.error('Error in notification callback:', error);
+      }
+    });
+  };
+
+  private notifyUpdateCallbacks = (update: any) => {
+    this.notificationUpdateCallbacks.forEach(callback => {
+      try {
+        callback(update);
+      } catch (error) {
+        console.error('Error in notification update callback:', error);
+      }
+    });
+  };
+
+  private notifyDeleteCallbacks = (deleted: any) => {
+    this.notificationDeleteCallbacks.forEach(callback => {
+      try {
+        callback(deleted);
+      } catch (error) {
+        console.error('Error in notification delete callback:', error);
       }
     });
   };

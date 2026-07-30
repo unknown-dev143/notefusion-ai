@@ -83,15 +83,7 @@ import {
 } from '@ant-design/icons';
 import ErrorBoundary from '../../../components/ErrorBoundary';
 
-// Define Note interface
-export interface Note {
-  id?: string;
-  title: string;
-  content: string;
-  tags?: string[];
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+import { Note } from '../types/note';
 
 // Custom DrawingBlot for embedding drawings in Quill
 const BlockEmbed = Quill.import('blots/block/embed');

@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
-import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useAuth } from '../../../features/auth/context/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { Notification } from '../types';
 

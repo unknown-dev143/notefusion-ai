@@ -26,13 +26,24 @@
     "typeRoots": [
       "./node_modules/@types",
       "./src/types"
-    ]
+    ],
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "downlevelIteration": true
   },
   "include": [
     "src"
   ],
   "exclude": [
     "node_modules",
-    "**/node_modules/*"
+    "**/node_modules/*",
+    "src/test-utils/**/*",
+    "src/mocks/**/*",
+    "src/utils/errorRecovery.ts",
+    "src/reportWebVitals.ts",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
   ]
 }

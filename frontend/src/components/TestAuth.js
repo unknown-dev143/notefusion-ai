@@ -6,7 +6,7 @@ export default function TestAuth() {
     const user = auth.currentUser;
     if (user) {
       const token = await user.getIdToken();
-      fetch("http://localhost:8000/api/protected", {
+      fetch("http://localhost:8001/api/protected", {
         headers: {
           Authorization: "Bearer " + token
         }

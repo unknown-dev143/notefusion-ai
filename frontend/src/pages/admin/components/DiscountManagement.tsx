@@ -13,12 +13,6 @@ import {
   Switch,
   message
 } from 'antd';
-<<<<<<< HEAD
-import { DiscountCode } from '../../../types/discount';
-import { formatDate } from '../../../utils/date';
-import { CheckOutlined, CloseOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import styles from './DiscountManagement.module.css';
-=======
 import { 
   PlusOutlined, 
   EditOutlined, 
@@ -27,9 +21,9 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined
 } from '@ant-design/icons';
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import type { ColumnsType } from 'antd/es/table';
 import moment from 'moment';
+import styles from './DiscountManagement.module.css';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -83,7 +77,6 @@ const DiscountManagement: React.FC = () => {
           createdBy: 'admin@example.com',
           createdAt: '2025-05-25T10:30:00Z',
         },
-        // Add more mock data as needed
       ];
       setDiscounts(mockData);
     } catch (error) {
@@ -164,13 +157,9 @@ const DiscountManagement: React.FC = () => {
       dataIndex: 'code',
       key: 'code',
       render: (text, record) => (
-<<<<<<< HEAD
-        <div className="discount-code">
-=======
-        <div>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-          <div className="font-medium">{text}</div>
-          <div className="text-xs text-gray-500">{record.description}</div>
+        <div className={styles['discountCode'] || ""}>
+          <div style={{ fontWeight: 500 }}>{text}</div>
+          <div style={{ fontSize: '12px', color: '#8c8c8c' }}>{record.description}</div>
         </div>
       ),
     },
@@ -178,7 +167,7 @@ const DiscountManagement: React.FC = () => {
       title: 'Discount',
       key: 'discount',
       render: (_, record) => (
-        <span className="font-medium">
+        <span style={{ fontWeight: 500 }}>
           {record.discountType === 'percentage' 
             ? `${record.value}%` 
             : `$${record.value.toFixed(2)}`}
@@ -188,38 +177,26 @@ const DiscountManagement: React.FC = () => {
     {
       title: 'Usage',
       key: 'usage',
-<<<<<<< HEAD
       render: (_, record) => {
         const progress = Math.min(100, (record.uses / (record.maxUses || 100)) * 100);
         return (
-          <div className={styles.discountUsage}>
-            <div>
+          <div className={styles['discountUsage'] || ""} style={{ width: '100%' }}>
+            <div style={{ fontSize: '12px', marginBottom: '4px' }}>
               {record.uses} / {record.maxUses || '∞'} uses
             </div>
-            <div className={styles.discountUsageBar}>
+            <div style={{ width: '100%', backgroundColor: '#f0f0f0', borderRadius: '10px', height: '6px', overflow: 'hidden' }}>
               <div 
-                className={`${styles.discountUsageFill} ${record.maxUses && record.uses >= record.maxUses ? styles.full : ''}`} 
-                style={{ '--progress-width': `${progress}%` } as React.CSSProperties}
+                style={{ 
+                  width: `${progress}%`, 
+                  height: '100%', 
+                  backgroundColor: record.maxUses && record.uses >= record.maxUses ? '#ff4d4f' : '#1890ff',
+                  transition: 'width 0.3s ease'
+                }} 
               />
             </div>
           </div>
         );
       },
-=======
-      render: (_, record) => (
-        <div>
-          <div>
-            {record.uses} / {record.maxUses || '∞'} uses
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-1.5">
-            <div 
-              className="bg-blue-600 h-1.5 rounded-full" 
-              style={{ width: `${Math.min(100, (record.uses / (record.maxUses || 100)) * 100)}%` }}
-            />
-          </div>
-        </div>
-      ),
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     },
     {
       title: 'Validity',
@@ -231,25 +208,16 @@ const DiscountManagement: React.FC = () => {
         const isActive = now >= validFrom && now <= validUntil;
         
         return (
-<<<<<<< HEAD
-          <div className="discount-validity">
-            <div className={`status-indicator ${isActive ? 'status-active' : 'status-inactive'}`}>
-              {isActive ? (
-                <CheckCircleOutlined className="icon" />
-              ) : (
-                <CloseCircleOutlined className="icon" />
-=======
           <div>
-            <div className="flex items-center">
+            <div style={{ display: 'flex', alignItems: 'center' }}>
               {isActive ? (
-                <CheckCircleOutlined className="text-green-500 mr-1" />
+                <CheckCircleOutlined style={{ color: '#52c41a', marginRight: '4px' }} />
               ) : (
-                <CloseCircleOutlined className="text-red-500 mr-1" />
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+                <CloseCircleOutlined style={{ color: '#ff4d4f', marginRight: '4px' }} />
               )}
               <span>{isActive ? 'Active' : 'Inactive'}</span>
             </div>
-            <div className="text-xs text-gray-500">
+            <div style={{ fontSize: '12px', color: '#8c8c8c' }}>
               {validFrom.toLocaleDateString()} - {validUntil.toLocaleDateString()}
             </div>
           </div>
@@ -261,11 +229,7 @@ const DiscountManagement: React.FC = () => {
       dataIndex: 'isActive',
       key: 'status',
       render: (isActive: boolean) => (
-<<<<<<< HEAD
-        <Tag className={`discount-tag ${isActive ? 'active' : 'expired'}`}>
-=======
-        <Tag color={isActive ? 'green' : 'red'}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+        <Tag color={isActive ? 'green' : 'red'} className={styles['discountTag'] || ""}>
           {isActive ? 'Active' : 'Inactive'}
         </Tag>
       ),
@@ -274,53 +238,32 @@ const DiscountManagement: React.FC = () => {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-<<<<<<< HEAD
-        <div className="discount-actions">
-=======
-        <Space size="middle">
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+        <Space size="middle" className={styles['discountActions'] || ""}>
           <Button 
             type="text" 
             icon={<EditOutlined />} 
             onClick={() => handleEdit(record)}
-<<<<<<< HEAD
-            className="action-button"
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           />
           <Button 
             type="text" 
             danger 
             icon={<DeleteOutlined />} 
             onClick={() => handleDelete(record.id)}
-<<<<<<< HEAD
-            className="action-button"
-          />
-        </div>
-=======
           />
         </Space>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       ),
     },
   ];
 
   return (
     <div className="discount-management">
-<<<<<<< HEAD
-      <div className="discount-header">
-=======
-      <div className="flex justify-between items-center mb-6">
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-        <h3 className="text-lg font-medium">Discount Codes</h3>
-        <div className="flex space-x-4">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: 500, margin: 0 }}>Discount Codes</h3>
+        <div style={{ display: 'flex', gap: '16px' }}>
           <Input
             placeholder="Search discount codes..."
             prefix={<SearchOutlined />}
-<<<<<<< HEAD
-=======
             style={{ width: 250 }}
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           />
           <Button 
             type="primary" 
@@ -333,10 +276,6 @@ const DiscountManagement: React.FC = () => {
       </div>
 
       <Table 
-<<<<<<< HEAD
-        className="discount-table"
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
         columns={columns} 
         dataSource={discounts}
         rowKey="id"
@@ -352,10 +291,6 @@ const DiscountManagement: React.FC = () => {
         width={700}
       >
         <Form
-<<<<<<< HEAD
-          className="discount-form"
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
@@ -365,7 +300,7 @@ const DiscountManagement: React.FC = () => {
             discountType: 'percentage',
           }}
         >
-          <div className="grid grid-cols-2 gap-4">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <Form.Item
               name="code"
               label="Code"
@@ -383,7 +318,7 @@ const DiscountManagement: React.FC = () => {
             </Form.Item>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <Form.Item
               name="discountType"
               label="Discount Type"
@@ -414,10 +349,7 @@ const DiscountManagement: React.FC = () => {
                   <InputNumber 
                     min={0}
                     max={getFieldValue('discountType') === 'percentage' ? 100 : undefined}
-<<<<<<< HEAD
-=======
                     style={{ width: '100%' }}
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                     addonAfter={getFieldValue('discountType') === 'percentage' ? '%' : '$'}
                   />
                 </Form.Item>
@@ -425,17 +357,13 @@ const DiscountManagement: React.FC = () => {
             </Form.Item>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <Form.Item
               name="maxUses"
               label="Maximum Uses"
               tooltip="Leave empty for unlimited uses"
             >
-<<<<<<< HEAD
-              <InputNumber min={1} />
-=======
               <InputNumber min={1} style={{ width: '100%' }} />
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             </Form.Item>
 
             <Form.Item
@@ -445,10 +373,7 @@ const DiscountManagement: React.FC = () => {
             >
               <InputNumber 
                 min={0} 
-<<<<<<< HEAD
-=======
                 style={{ width: '100%' }} 
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                 prefix="$"
                 precision={2}
               />
@@ -462,10 +387,7 @@ const DiscountManagement: React.FC = () => {
           >
             <RangePicker 
               showTime 
-<<<<<<< HEAD
-=======
               style={{ width: '100%' }} 
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               format="YYYY-MM-DD HH:mm"
             />
           </Form.Item>
@@ -497,12 +419,8 @@ const DiscountManagement: React.FC = () => {
                   <Select
                     mode="multiple"
                     placeholder="Select products..."
-<<<<<<< HEAD
-=======
                     style={{ width: '100%' }}
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
                   >
-                    {/* These would be populated from your products API */}
                     <Option value="tier-1">Basic Plan</Option>
                     <Option value="tier-2">Pro Plan</Option>
                     <Option value="tier-3">Enterprise Plan</Option>
@@ -523,11 +441,7 @@ const DiscountManagement: React.FC = () => {
             />
           </Form.Item>
 
-<<<<<<< HEAD
-          <div className="discount-form-footer">
-=======
-          <div className="flex justify-end space-x-4 mt-6">
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '24px' }}>
             <Button onClick={() => setIsModalVisible(false)}>
               Cancel
             </Button>

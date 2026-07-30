@@ -1,8 +1,14 @@
-import React, { createContext, useContext, ReactNode, useMemo } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-type Permission = string;
-type Role = string;
+export type Permission = string;
+export type Role = 'admin' | 'user' | 'guest';
+
+export const ROLES: Record<string, Role> = {
+  ADMIN: 'admin',
+  USER: 'user',
+  GUEST: 'guest',
+};
 
 interface RbacContextType {
   hasPermission: (permission: Permission) => boolean;

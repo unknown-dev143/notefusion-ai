@@ -5,11 +5,14 @@ import {
   SaveOutlined, 
   CloseOutlined, 
   FilePdfOutlined, 
-  FileWordOutlined 
+  FileWordOutlined,
+  MailOutlined
 } from '@ant-design/icons';
 import RichTextEditorWithDrawing from './RichTextEditorWithDrawing.new';
 import { Note } from '../types';
 import './NoteViewer.css';
+import { microsoftService } from '../../../services/microsoftService';
+import { message } from 'antd';
 
 const { Title } = Typography;
 
@@ -113,6 +116,15 @@ const NoteViewer: React.FC<NoteViewerProps> = ({
               Export DOCX
             </Button>
           )}
+          <Button 
+            icon={<MailOutlined />}
+            onClick={() => {
+              microsoftService.sendEmailSummary('', note.title, note.content);
+              message.success('Summary shared via Outlook!');
+            }}
+          >
+            Share via Outlook
+          </Button>
         </>
       );
     }

@@ -1,48 +1,23 @@
 import React from 'react';
+import { Typography } from 'antd';
 import { NoteProvider } from '../../contexts/NoteContext';
 import NotesList from '../../components/NotesList';
-<<<<<<< HEAD
-// TODO: Install @ant-design/pro-layout or replace with alternative component
-import { PageContainer } from '@ant-design/pro-layout';
 import styles from './NotesPage.module.css';
-=======
-import { PageContainer } from '@ant-design/pro-layout';
-import { message } from 'antd';
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+
+const { Title, Paragraph } = Typography;
 
 const NotesPage: React.FC = () => {
   return (
     <NoteProvider>
-      <PageContainer 
-        title="My Notes"
-        content="Create and manage your notes"
-        header={{
-          title: 'Notes',
-          breadcrumb: {
-            items: [
-              { title: 'Home', path: '/' },
-              { title: 'Notes' },
-            ],
-          },
-        }}
-<<<<<<< HEAD
-        className={styles['notesPage']}
-      >
+      <div className={styles['notesPage']}>
+        <div style={{ marginBottom: '24px' }}>
+          <Title level={2}>My Notes</Title>
+          <Paragraph type="secondary">Create and manage your notes</Paragraph>
+        </div>
         <div className={styles['notesContainer']}>
-=======
-        style={{ height: 'calc(100vh - 64px)' }}
-      >
-        <div style={{ 
-          backgroundColor: '#fff', 
-          padding: '24px', 
-          borderRadius: '8px',
-          height: '100%',
-          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)'
-        }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
           <NotesList />
         </div>
-      </PageContainer>
+      </div>
     </NoteProvider>
   );
 };

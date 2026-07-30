@@ -71,46 +71,31 @@ const AISettings: React.FC = () => {
   const [recommendedUpgrade, setRecommendedUpgrade] = useState<AIModel | null>(null);
 
   // Fetch AI configuration
-  const { data, isLoading, error, refetch } = useQuery<AIConfigResponse>(
-    ['aiSettings'],
-    async () => {
+  const { data, isLoading, error, refetch } = useQuery<AIConfigResponse>({
+    queryKey: ['aiSettings'],
+    queryFn: async () => {
       const response = await api.get('/ai/settings');
       return response.data;
     },
-    {
-      onSuccess: (data) => {
-        if (data.settings?.ai_model) {
-          setSelectedModel(data.settings.model_id);
-          setAutoUpgrade(data.settings.is_auto_upgrade);
-        }
-        setUpdateAvailable(data.update_available);
-        setRecommendedUpgrade(data.recommended_upgrade || null);
-      },
-      onError: (error) => {
-        handleApiError(error, 'Failed to load AI settings');
-      },
-      enabled: !!currentUser,
-      retry: 1,
-      refetchOnWindowFocus: false,
-    }
-  );
+    enabled: !!currentUser,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
 
   // Update configuration mutation
-  const updateConfig = useMutation(
-    async (values: { model_id?: number; is_auto_upgrade?: boolean }) => {
+  const updateConfig = useMutation({
+    mutationFn: async (values: { model_id?: number; is_auto_upgrade?: boolean }) => {
       const response = await api.patch('/ai/settings', values);
       return response.data;
     },
-    {
-      onSuccess: (data: UserAIModelSettings) => {
-        queryClient.invalidateQueries(['aiSettings']);
-        message.success('Settings updated successfully');
-      },
-      onError: (error) => {
-        handleApiError(error, 'Failed to update settings');
-      },
-    }
-  );
+    onSuccess: (data: UserAIModelSettings) => {
+      queryClient.invalidateQueries({ queryKey: ['aiSettings'] });
+      message.success('Settings updated successfully');
+    },
+    onError: (error: any) => {
+      handleApiError(error, 'Failed to update settings');
+    },
+  });
 
   // Check for model updates
   const checkForUpdates = useCallback(async () => {
@@ -237,7 +222,7 @@ const AISettings: React.FC = () => {
               icon={<SyncOutlined />} 
               onClick={checkForUpdates}
               loading={isCheckingForUpdates}
-              disabled={updateConfig.isLoading}
+              disabled={updateConfig.isPending}
             >
               Check for Updates
             </Button>
@@ -245,8 +230,8 @@ const AISettings: React.FC = () => {
               type="primary" 
               icon={<SaveOutlined />} 
               onClick={handleSubmit}
-              loading={updateConfig.isLoading}
-              disabled={!selectedModel || updateConfig.isLoading}
+              loading={updateConfig.isPending}
+              disabled={!selectedModel || updateConfig.isPending}
             >
               Save Settings
             </Button>
@@ -261,7 +246,7 @@ const AISettings: React.FC = () => {
               value={selectedModel}
               onChange={setSelectedModel}
               loading={isLoading}
-              disabled={isLoading || updateConfig.isLoading}
+              disabled={isLoading || updateConfig.isPending}
               placeholder="Select an AI model"
               optionLabelProp="label"
               notFoundContent={isLoading ? 'Loading models...' : 'No models available'}
@@ -324,7 +309,7 @@ const AISettings: React.FC = () => {
               <Switch 
                 checked={autoUpgrade}
                 onChange={setAutoUpgrade}
-                loading={updateConfig.isLoading}
+                loading={updateConfig.isPending}
               />
             </div>
             

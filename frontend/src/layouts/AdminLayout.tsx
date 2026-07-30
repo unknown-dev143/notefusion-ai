@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { Layout, Button, Dropdown, Menu, Avatar } from 'antd';
-<<<<<<< HEAD
 import './AdminLayout.css';
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { 
   LogoutOutlined, 
   MenuFoldOutlined, 
@@ -33,31 +30,25 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     navigate('/login');
   };
 
-  const userMenu = (
-    <Menu>
-      <Menu.Item key="logout" danger onClick={handleLogout}>
-        <LogoutOutlined /> Logout
-      </Menu.Item>
-    </Menu>
-  );
+  const menuItems = [
+    {
+      key: 'logout',
+      danger: true,
+      label: 'Logout',
+      icon: <LogoutOutlined />,
+      onClick: handleLogout,
+    },
+  ];
 
   return (
-<<<<<<< HEAD
-    <Layout className="admin-layout">
-=======
-    <Layout style={{ minHeight: '100vh' }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+    <Layout className="admin-layout" style={{ minHeight: '100vh' }}>
       <Sider 
         trigger={null} 
         collapsible 
         collapsed={collapsed}
         collapsedWidth={0}
         width={200}
-<<<<<<< HEAD
         className="admin-sider"
-      >
-        <div className="admin-logo" />
-=======
         style={{
           overflow: 'auto',
           height: '100vh',
@@ -68,8 +59,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           zIndex: 10,
         }}
       >
-        <div className="logo" style={{ height: '64px', margin: '16px', background: 'rgba(255, 255, 255, 0.2)' }} />
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+        <div className="admin-logo" style={{ height: '64px', margin: '16px', background: 'rgba(255, 255, 255, 0.2)' }} />
         <Menu
           theme="dark"
           mode="inline"
@@ -102,39 +92,30 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           ]}
         />
       </Sider>
-<<<<<<< HEAD
-      <Layout className={`admin-layout-container ${collapsed ? 'collapsed' : ''}`}>
-        <Header className={`admin-header ${collapsed ? 'collapsed' : ''}`}>
-          <div className="admin-header-left">
-=======
-      <Layout style={{ marginLeft: collapsed ? 0 : 200, transition: 'all 0.2s' }}>
-        <Header style={{ 
-          padding: 0, 
-          background: '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          boxShadow: '0 1px 4px rgba(0,21,41,.08)',
-          zIndex: 9,
-          position: 'sticky',
-          top: 0,
-        }}>
+      <Layout 
+        className={`admin-layout-container ${collapsed ? 'collapsed' : ''}`}
+        style={{ marginLeft: collapsed ? 0 : 200, transition: 'all 0.2s' }}
+      >
+        <Header 
+          className={`admin-header ${collapsed ? 'collapsed' : ''}`}
+          style={{ 
+            padding: 0, 
+            background: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 1px 4px rgba(0,21,41,.08)',
+            zIndex: 9,
+            position: 'sticky',
+            top: 0,
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center' }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             <Button
               type="text"
               icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               onClick={() => setCollapsed(!collapsed)}
-<<<<<<< HEAD
               className="admin-header-button"
-            />
-          </div>
-          <div className="admin-header-right">
-            <Dropdown overlay={userMenu} trigger={['click']}>
-              <div className="admin-header-dropdown">
-                <Avatar className="user-avatar">{user?.name?.[0]?.toUpperCase() || 'A'}</Avatar>
-                <span className="user-name">{user?.name || 'Admin'}</span>
-=======
               style={{
                 fontSize: '16px',
                 width: 64,
@@ -142,27 +123,31 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               }}
             />
           </div>
-          <div style={{ paddingRight: 16 }}>
-            <Dropdown overlay={userMenu} trigger={['click']}>
-              <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                <Avatar style={{ marginRight: 8 }}>{user?.name?.[0]?.toUpperCase() || 'A'}</Avatar>
-                <span style={{ marginRight: 8 }}>{user?.name || 'Admin'}</span>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+          <div style={{ paddingRight: 16 }} className="admin-header-right">
+            <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+              <div 
+                className="admin-header-dropdown"
+                style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              >
+                <Avatar style={{ marginRight: 8 }} className="user-avatar">
+                  {user?.name?.[0]?.toUpperCase() || 'A'}
+                </Avatar>
+                <span style={{ marginRight: 8 }} className="user-name">
+                  {user?.name || 'Admin'}
+                </span>
               </div>
             </Dropdown>
           </div>
         </Header>
-<<<<<<< HEAD
-        <Content className={`admin-content ${collapsed ? 'collapsed' : ''}`}>
-          <div className="site-layout-background">
-=======
-        <Content style={{ 
-          margin: '24px 16px 0', 
-          overflow: 'initial',
-          minHeight: 'calc(100vh - 112px)',
-        }}>
+        <Content 
+          className={`admin-content ${collapsed ? 'collapsed' : ''}`}
+          style={{ 
+            margin: '24px 16px 0', 
+            overflow: 'initial',
+            minHeight: 'calc(100vh - 112px)',
+          }}
+        >
           <div className="site-layout-background" style={{ padding: 24, minHeight: '100%' }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             {children}
           </div>
         </Content>

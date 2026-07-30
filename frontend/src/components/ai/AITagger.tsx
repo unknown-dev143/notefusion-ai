@@ -49,7 +49,7 @@ const AITagger: React.FC<AITaggerProps> = ({
         .map(tag => tag.tag);
       
       setSelectedTags(prev => {
-        const newTags = [...new Set([...prev, ...highConfidenceTags])];
+        const newTags = Array.from(new Set([...prev, ...highConfidenceTags]));
         return newTags;
       });
     } catch (err) {

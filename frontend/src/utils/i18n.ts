@@ -8,7 +8,15 @@ export const languages = {
     notes: 'Notes',
     settings: 'Settings',
     free: 'Free & Open Access',
-    allFeatures: 'All Features Free'
+    allFeatures: 'All Features Free',
+    graph: 'Graph View',
+    tasks: 'Tasks',
+    aiTutor: 'AI Tutor',
+    calendar: 'Calendar',
+    home: 'Home',
+    search: 'Deep Search notes...',
+    logout: 'Sign Out',
+    profile: 'My Profile'
   },
   es: {
     welcome: 'Bienvenido a NoteFusion AI',
@@ -18,7 +26,15 @@ export const languages = {
     notes: 'Notas',
     settings: 'Configuración',
     free: 'Acceso Gratuito',
-    allFeatures: 'Todas las Características Gratis'
+    allFeatures: 'Todas las Características Gratis',
+    graph: 'Vista de Grafo',
+    tasks: 'Tareas',
+    aiTutor: 'Tutor IA',
+    calendar: 'Calendario',
+    home: 'Inicio',
+    search: 'Búsqueda profunda...',
+    logout: 'Cerrar Sesión',
+    profile: 'Mi Perfil'
   },
   fr: {
     welcome: 'Bienvenue sur NoteFusion AI',
@@ -28,7 +44,15 @@ export const languages = {
     notes: 'Notes',
     settings: 'Paramètres',
     free: 'Accès Gratuit',
-    allFeatures: 'Toutes les Fonctionnalités Gratuites'
+    allFeatures: 'Toutes les Fonctionnalités Gratuites',
+    graph: 'Vue Graphique',
+    tasks: 'Tâches',
+    aiTutor: 'Tuteur IA',
+    calendar: 'Calendrier',
+    home: 'Accueil',
+    search: 'Recherche profonde...',
+    logout: 'Déconnexion',
+    profile: 'Mon Profil'
   },
   de: {
     welcome: 'Willkommen bei NoteFusion AI',
@@ -38,7 +62,15 @@ export const languages = {
     notes: 'Notizen',
     settings: 'Einstellungen',
     free: 'Kostenloser Zugang',
-    allFeatures: 'Alle Funktionen Kostenlos'
+    allFeatures: 'Alle Funktionen Kostenlos',
+    graph: 'Graph-Ansicht',
+    tasks: 'Aufgaben',
+    aiTutor: 'KI-Tutor',
+    calendar: 'Kalender',
+    home: 'Startseite',
+    search: 'Tiefensuche...',
+    logout: 'Abmelden',
+    profile: 'Mein Profil'
   },
   zh: {
     welcome: '欢迎使用 NoteFusion AI',
@@ -48,7 +80,15 @@ export const languages = {
     notes: '笔记',
     settings: '设置',
     free: '免费开放',
-    allFeatures: '所有功能免费'
+    allFeatures: '所有功能免费',
+    graph: '图表视图',
+    tasks: '任务',
+    aiTutor: 'AI 导师',
+    calendar: '日历',
+    home: '首页',
+    search: '深度搜索...',
+    logout: '登出',
+    profile: '个人资料'
   },
   ja: {
     welcome: 'NoteFusion AIへようこそ',
@@ -58,7 +98,15 @@ export const languages = {
     notes: 'ノート',
     settings: '設定',
     free: '無料アクセス',
-    allFeatures: 'すべての機能が無料'
+    allFeatures: 'すべての機能が無料',
+    graph: 'グラフ表示',
+    tasks: 'タスク',
+    aiTutor: 'AIチューター',
+    calendar: 'カレンダー',
+    home: 'ホーム',
+    search: 'ディープ検索...',
+    logout: 'ログアウト',
+    profile: 'マイプロフィール'
   }
 };
 

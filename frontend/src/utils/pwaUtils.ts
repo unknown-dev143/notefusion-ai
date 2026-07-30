@@ -2,7 +2,7 @@
 class PWAManager {
   private static instance: PWAManager;
   private deferredPrompt: BeforeInstallPromptEvent | null = null;
-  private isUpdateAvailable = false;
+  private updateAvailable = false;
   private registration: ServiceWorkerRegistration | null = null;
 
   private constructor() {
@@ -137,7 +137,7 @@ class PWAManager {
   }
 
   public isUpdateAvailable(): boolean {
-    return this.isUpdateAvailable;
+    return this.updateAvailable;
   }
 
   public isPWAInstalled(): boolean {

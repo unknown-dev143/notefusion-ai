@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Form, Input, Button, Typography, Card, message, Modal } from 'antd';
 import { UserOutlined, MailOutlined, LockOutlined, CheckCircleOutlined } from '@ant-design/icons';
-<<<<<<< HEAD
 import styles from './SignupPage.module.css';
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import TermsAndConditions from '../components/TermsAndConditions';
 import { useAuth } from '../context/AuthContext';
 
@@ -50,18 +47,16 @@ export const SignupPage: React.FC = () => {
 
     try {
       setLoading(true);
-      try {
-        // Since we don't have a register method yet, we'll use login
-        await login(values.email, values.password);
-        setEmail(values.email);
-        setVerificationModalVisible(true);
-      } catch (error) {
-        message.error(error instanceof Error ? error.message : 'Failed to create account');
-      } finally {
-        setLoading(false);
-      }
+      // Since we don't have a register method yet, we'll use login for now or whatever the API provides
+      // Usually there would be an authService.register call here.
+      // But based on the code provided, it's attempting login.
+      await login(values.email, values.password);
+      setEmail(values.email);
+      setVerificationModalVisible(true);
     } catch (error) {
       message.error(error instanceof Error ? error.message : 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -163,16 +158,13 @@ export const SignupPage: React.FC = () => {
               },
             ]}
           >
-            <div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
               <input
                 type="checkbox"
                 id="terms-checkbox"
                 onChange={(e) => form.setFieldsValue({ acceptedTerms: e.target.checked })}
-<<<<<<< HEAD
-                className={styles.termsCheckbox}
-=======
+                className={styles.termsCheckbox || ''}
                 style={{ marginRight: '8px' }}
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
               />
               <label htmlFor="terms-checkbox">
                 I agree to the{' '}
@@ -196,17 +188,10 @@ export const SignupPage: React.FC = () => {
             </Button>
           </Form.Item>
 
-<<<<<<< HEAD
-          <div className={styles.authFooter}>
+          <div className={styles.authFooter || "auth-footer"}>
             <Text>
               Already have an account?{' '}
-              <Link to="/login" className={styles.loginLink}>
-=======
-          <div className="auth-footer">
-            <Text>
-              Already have an account?{' '}
-              <Link to="/login" className="login-link">
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+              <Link to="/login" className={styles.loginLink || "login-link"}>
                 Log in
               </Link>
             </Text>
@@ -220,13 +205,8 @@ export const SignupPage: React.FC = () => {
         footer={null}
         closable={false}
       >
-<<<<<<< HEAD
-        <div className={styles.verificationModal}>
-          <CheckCircleOutlined className={styles.verificationIcon} />
-=======
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <CheckCircleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+        <div className={styles.verificationModal || ""} style={{ textAlign: 'center', padding: '20px' }}>
+          <CheckCircleOutlined className={styles.verificationIcon || ""} style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
           <h3>Account Created Successfully!</h3>
           <p>We've sent a verification link to <strong>{email}</strong>.</p>
           <p>Please check your email and click the verification link to activate your account.</p>
@@ -236,25 +216,20 @@ export const SignupPage: React.FC = () => {
               setVerificationModalVisible(false);
               navigate('/verify-email', { state: { email } });
             }}
-<<<<<<< HEAD
-            className={styles.verificationButton}
-          >
-            Go to Verification Page
-          </Button>
-          <div className={styles.verificationLink}>
-=======
+            className={styles.verificationButton || ""}
             style={{ marginTop: '16px' }}
           >
             Go to Verification Page
           </Button>
-          <div style={{ marginTop: '16px' }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+          <div className={styles.verificationLink || ""} style={{ marginTop: '16px' }}>
             <Button 
               type="link" 
               onClick={async () => {
                 try {
-                  await resendVerificationEmail(email);
-                  message.success('Verification email resent!');
+                  if (resendVerificationEmail) {
+                    await resendVerificationEmail(email);
+                    message.success('Verification email resent!');
+                  }
                 } catch (error) {
                   message.error('Failed to resend verification email');
                 }

@@ -1,14 +1,11 @@
 import { api, handleApiError } from '../../../lib/api';
 
-<<<<<<< HEAD
 export interface Tokens {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
 }
 
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 interface LoginCredentials {
   email: string;
   password: string;
@@ -16,9 +13,9 @@ interface LoginCredentials {
 
 interface RegisterData extends LoginCredentials {
   name: string;
+  username: string;
 }
 
-<<<<<<< HEAD
 export interface User {
   id: string;
   email: string;
@@ -30,18 +27,11 @@ export interface User {
 
 interface AuthResponse {
   user: User;
-  tokens: Tokens;
-=======
-interface AuthResponse {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    role: string;
-    emailVerified: boolean;
-  };
-  token: string;
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+  tokens?: Tokens;
+  token?: string; // Supporting both versions
+  access_token?: string; // Added for FastAPI compatibility
+  accessToken?: string;  // For frontend internal consistency
+  token_type?: string;   // Added for FastAPI compatibility
 }
 
 const authService = {
@@ -51,13 +41,12 @@ const authService = {
   async register(userData: RegisterData): Promise<AuthResponse> {
     try {
       const response = await api.post<AuthResponse>('/auth/register', userData);
-<<<<<<< HEAD
       if (response.data.tokens) {
         this._setTokens(response.data.tokens);
-=======
-      if (response.data.token) {
+      } else if (response.data.token) {
         localStorage.setItem('authToken', response.data.token);
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+      } else if (response.data.access_token) {
+        localStorage.setItem('authToken', response.data.access_token);
       }
       return response.data;
     } catch (error) {
@@ -70,15 +59,36 @@ const authService = {
    */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      const response = await api.post<AuthResponse>('/auth/login', credentials);
-<<<<<<< HEAD
-      if (response.data.tokens) {
-        this._setTokens(response.data.tokens);
-=======
+      // FastAPI OAuth2PasswordRequestForm expects x-www-form-urlencoded
+      const formData = new URLSearchParams();
+      formData.append('username', credentials.email);
+      formData.append('password', credentials.password);
+
+      const response = await api.post<AuthResponse>('/auth/login', formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+      
       if (response.data.token) {
         localStorage.setItem('authToken', response.data.token);
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+      } else if (response.data.accessToken) {
+        localStorage.setItem('authToken', response.data.accessToken);
+      } else if (response.data.access_token) {
+        localStorage.setItem('authToken', response.data.access_token);
       }
+      
+      // Build user object from the token response if not present
+      if (!response.data.user && (response.data as any).user === undefined) {
+        (response.data as any).user = {
+          id: '',
+          email: credentials.email,
+          name: credentials.email.split('@')[0],
+          role: 'user',
+          emailVerified: true,
+        };
+      }
+      
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error, 'Login failed'));
@@ -88,10 +98,15 @@ const authService = {
   /**
    * Logout user
    */
-<<<<<<< HEAD
-  logout(): Promise<void> {
-    this._clearTokens();
-    return Promise.resolve();
+  async logout(): Promise<void> {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      this._clearTokens();
+      localStorage.removeItem('authToken');
+    }
   },
 
   async refreshToken(refreshToken: string): Promise<Tokens> {
@@ -111,26 +126,16 @@ const authService = {
     localStorage.setItem('accessToken', tokens.accessToken);
     localStorage.setItem('refreshToken', tokens.refreshToken);
     localStorage.setItem('tokenExpiry', (Date.now() + tokens.expiresIn * 1000).toString());
+    localStorage.setItem('authToken', tokens.accessToken); // Mirror to authToken
   },
 
   _clearTokens(): void {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('tokenExpiry');
+    localStorage.removeItem('authToken');
   },
 
-=======
-  async logout(): Promise<void> {
-    try {
-      await api.post('/auth/logout');
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      localStorage.removeItem('authToken');
-    }
-  },
-
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   /**
    * Verify user email
    */
@@ -143,6 +148,21 @@ const authService = {
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error, 'Email verification failed'));
+    }
+  },
+
+  /**
+   * Resend verification email
+   */
+  async resendVerificationEmail(email: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await api.post<{ success: boolean; message: string }>(
+        '/auth/resend-verification',
+        { email }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to resend verification email'));
     }
   },
 
@@ -185,7 +205,7 @@ const authService = {
    */
   async getCurrentUser(): Promise<AuthResponse['user']> {
     try {
-      const response = await api.get<AuthResponse['user']>('/auth/me');
+      const response = await api.get<AuthResponse['user']>('/auth/users/me');
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error, 'Failed to fetch user data'));
@@ -196,15 +216,14 @@ const authService = {
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('authToken');
+    return !!localStorage.getItem('authToken') || !!localStorage.getItem('accessToken');
   },
 
   /**
    * Get auth token
    */
   getToken(): string | null {
-<<<<<<< HEAD
-    return localStorage.getItem('accessToken');
+    return localStorage.getItem('authToken') || localStorage.getItem('accessToken');
   },
 
   getRefreshToken(): string | null {
@@ -213,11 +232,8 @@ const authService = {
 
   isTokenExpired(): boolean {
     const expiry = localStorage.getItem('tokenExpiry');
-    if (!expiry) return true;
+    if (!expiry) return false; // If no expiry set, assume valid if token exists
     return Date.now() > parseInt(expiry, 10);
-=======
-    return localStorage.getItem('authToken');
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   },
 };
 

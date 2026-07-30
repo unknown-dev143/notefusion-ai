@@ -16,8 +16,8 @@ export const useAIShortcuts = () => {
         toggleAIAssistant();
       }
     },
-    [toggleAIAssistant, enableShortcuts],
-    { enableOnFormTags: true }
+    { enableOnTags: ['INPUT', 'TEXTAREA', 'SELECT'] },
+    [toggleAIAssistant, enableShortcuts]
   );
 
   // Quick summary shortcut
@@ -30,8 +30,8 @@ export const useAIShortcuts = () => {
         toggleAIAssistant(true);
       }
     },
-    [dispatch, toggleAIAssistant, enableShortcuts],
-    { enableOnFormTags: true }
+    { enableOnTags: ['INPUT', 'TEXTAREA', 'SELECT'] },
+    [dispatch, toggleAIAssistant, enableShortcuts]
   );
 
   // Quick tag shortcut
@@ -44,8 +44,8 @@ export const useAIShortcuts = () => {
         toggleAIAssistant(true);
       }
     },
-    [dispatch, toggleAIAssistant, enableShortcuts],
-    { enableOnFormTags: true }
+    { enableOnTags: ['INPUT', 'TEXTAREA', 'SELECT'] },
+    [dispatch, toggleAIAssistant, enableShortcuts]
   );
 
   // Quick organize shortcut
@@ -58,8 +58,8 @@ export const useAIShortcuts = () => {
         toggleAIAssistant(true);
       }
     },
-    [dispatch, toggleAIAssistant, enableShortcuts],
-    { enableOnFormTags: true }
+    { enableOnTags: ['INPUT', 'TEXTAREA', 'SELECT'] },
+    [dispatch, toggleAIAssistant, enableShortcuts]
   );
 
   // Quick generate shortcut
@@ -72,8 +72,8 @@ export const useAIShortcuts = () => {
         toggleAIAssistant(true);
       }
     },
-    [dispatch, toggleAIAssistant, enableShortcuts],
-    { enableOnFormTags: true }
+    { enableOnTags: ['INPUT', 'TEXTAREA', 'SELECT'] },
+    [dispatch, toggleAIAssistant, enableShortcuts]
   );
 
   // Undo last action
@@ -90,8 +90,8 @@ export const useAIShortcuts = () => {
         }
       }
     },
-    [dispatch, enableShortcuts, state.history.length],
-    { enableOnFormTags: true }
+    { enableOnTags: ['INPUT', 'TEXTAREA', 'SELECT'] },
+    [dispatch, enableShortcuts, state.history.length]
   );
 
   // Toggle AI Assistant with specific tab

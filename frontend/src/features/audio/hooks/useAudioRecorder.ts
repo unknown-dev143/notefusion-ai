@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 export interface UseAudioRecorderOptions {
-  onStart?: () => void;
-  onStop?: (audioBlob: Blob) => void;
-  onError?: (error: Error) => void;
-  onChunk?: (chunk: Blob, chunkIndex: number) => Promise<void>;
+  onStart?: () => void | Promise<void>;
+  onStop?: (audioBlob: Blob) => void | Promise<void>;
+  onError?: (error: Error) => void | Promise<void>;
+  onChunk?: (chunk: Blob, chunkIndex: number) => void | Promise<void>;
   chunkInterval?: number; // Time in milliseconds between chunks (default: 5000ms)
   mimeType?: string; // Default: 'audio/webm;codecs=opus'
 }

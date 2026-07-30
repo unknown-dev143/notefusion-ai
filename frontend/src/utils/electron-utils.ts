@@ -1,7 +1,7 @@
 // Check if the app is running inside Electron
 const isElectron = () => {
   // Renderer process
-  if (typeof window !== 'undefined' && typeof window.process === 'object' && window.process.type === 'renderer') {
+  if (typeof window !== 'undefined' && typeof window.process === 'object' && (window.process as any).type === 'renderer') {
     return true;
   }
 

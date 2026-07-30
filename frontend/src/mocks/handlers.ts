@@ -20,7 +20,7 @@ let notes: Note[] = [
 
 export const handlers: HttpHandler[] = [
   // Get all notes
-  http.get('/api/notes', async ({ request }) => {
+  http.get('/notes', async ({ request }) => {
     const url = new URL(request.url);
     const search = url.searchParams.get('search');
     const isArchived = url.searchParams.get('isArchived');
@@ -62,7 +62,7 @@ export const handlers: HttpHandler[] = [
   }),
 
   // Get single note
-  http.get('/api/notes/:id', async ({ params }) => {
+  http.get('/notes/:id', async ({ params }) => {
     const { id } = params as { id: string };
     const note = notes.find(n => n.id === id);
 
@@ -76,7 +76,7 @@ export const handlers: HttpHandler[] = [
   }),
 
   // Create note
-  http.post('/api/notes', async ({ request }) => {
+  http.post('/notes', async ({ request }) => {
     const newNote = (await request.json()) as Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'userId' | 'isPinned' | 'isArchived' | 'isDeleted'>;
     
     // Ensure required fields are present
@@ -99,7 +99,7 @@ export const handlers: HttpHandler[] = [
   }),
 
   // Update note
-  http.patch('/api/notes/:id', async ({ params, request }) => {
+  http.patch('/notes/:id', async ({ params, request }) => {
     const { id } = params as { id: string };
     const updates = await request.json() as Partial<Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'userId'>>;
     
@@ -143,7 +143,7 @@ export const handlers: HttpHandler[] = [
   }),
 
   // Delete note
-  http.delete('/api/notes/:id', async ({ params }) => {
+  http.delete('/notes/:id', async ({ params }) => {
     const { id } = params as { id: string };
     const noteIndex = notes.findIndex(n => n.id === id);
 
@@ -158,7 +158,7 @@ export const handlers: HttpHandler[] = [
   }),
 
   // Toggle pin status
-  http.patch('/api/notes/:id/toggle-pin', async ({ params }) => {
+  http.patch('/notes/:id/toggle-pin', async ({ params }) => {
     const { id } = params as { id: string };
     const noteIndex = notes.findIndex(n => n.id === id);
 
@@ -193,7 +193,7 @@ export const handlers: HttpHandler[] = [
   }),
 
   // Restore note
-  http.patch('/api/notes/:id/restore', async ({ params }) => {
+  http.patch('/notes/:id/restore', async ({ params }) => {
     const { id } = params as { id: string };
     const noteIndex = notes.findIndex(n => n.id === id);
 

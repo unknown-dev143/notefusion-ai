@@ -34,3 +34,18 @@ export interface UpdateNoteDto {
   lastEditedBy?: string;
   version?: number;
 }
+export interface AICategory {
+  id: string;
+  name: string;
+  confidence: number;
+}
+
+export interface AITag {
+  id: string;
+  name: string;
+}
+
+export interface AISummary {
+  keyPoints: string[];
+  actionItems?: string[];
+}

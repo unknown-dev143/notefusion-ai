@@ -1,22 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO, isBefore, isAfter } from 'date-fns';
-import { Plus, Bell, Clock, Check, X, Calendar, RefreshCw, Filter } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { 
+  LuPlus, 
+  LuBell, 
+  LuClock, 
+  LuCheck, 
+  LuX, 
+  LuCalendar, 
+  LuRefreshCw, 
+  LuFilter 
+} from 'react-icons/lu';
+import { Button } from '../../../components/ui/button';
+import { Badge } from '../../../components/ui/badge';
+import { Card, CardContent } from '../../../components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../components/ui/dropdown-menu';
 import { Reminder, ReminderStatus, ReminderType } from '../types';
 import { getReminders, updateReminderStatus, deleteReminder } from '../api/reminders';
 import { ReminderForm } from './ReminderForm';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '../../../components/ui/use-toast';
 
 type FilterType = 'all' | 'upcoming' | 'overdue' | 'completed' | 'dismissed';
 
 const statusVariant = {
   [ReminderStatus.PENDING]: 'outline',
-  [ReminderStatus.COMPLETED]: 'success',
+  [ReminderStatus.COMPLETED]: 'success', // Note: Check badge variants if success exists, fallback to default/secondary if not
   [ReminderStatus.DISMISSED]: 'secondary',
   [ReminderStatus.EXPIRED]: 'destructive',
 } as const;
@@ -37,9 +46,9 @@ export function ReminderList() {
   const [filter, setFilter] = useState<FilterType>('upcoming');
   
   // Fetch reminders
-  const { data: reminders = [], isLoading, error } = useQuery({
+  const { data: reminders = [], isLoading, error } = useQuery<Reminder[]>({
     queryKey: ['reminders'],
-    queryFn: getReminders,
+    queryFn: () => getReminders(),
   });
 
   // Filter reminders based on the selected filter
@@ -113,7 +122,7 @@ export function ReminderList() {
         <div className="flex items-center space-x-4">
           <h2 className="text-2xl font-bold">Reminders</h2>
           <Badge variant="outline" className="flex items-center gap-1">
-            <Bell className="h-4 w-4" />
+            <LuBell className="h-4 w-4" />
             {filteredReminders.length}
           </Badge>
         </div>
@@ -122,7 +131,7 @@ export function ReminderList() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                <Filter className="mr-2 h-4 w-4" />
+                <LuFilter className="mr-2 h-4 w-4" />
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
               </Button>
             </DropdownMenuTrigger>
@@ -139,7 +148,7 @@ export function ReminderList() {
             setEditingReminder(null);
             setIsFormOpen(true);
           }}>
-            <Plus className="mr-2 h-4 w-4" />
+            <LuPlus className="mr-2 h-4 w-4" />
             New Reminder
           </Button>
         </div>
@@ -148,7 +157,7 @@ export function ReminderList() {
       {filteredReminders.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Bell className="h-12 w-12 text-muted-foreground mb-4" />
+            <LuBell className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium">No reminders found</h3>
             <p className="text-sm text-muted-foreground">
               {filter === 'all' 
@@ -156,7 +165,7 @@ export function ReminderList() {
                 : `You don't have any ${filter} reminders.`}
             </p>
             <Button className="mt-4" onClick={() => setIsFormOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
+              <LuPlus className="mr-2 h-4 w-4" />
               Create Reminder
             </Button>
           </CardContent>
@@ -195,14 +204,14 @@ export function ReminderList() {
                     </Badge>
                     {reminder.is_recurring && (
                       <Badge variant="outline" className="ml-2">
-                        <RefreshCw className="h-3 w-3 mr-1" />
+                        <LuRefreshCw className="h-3 w-3 mr-1" />
                         Recurring
                       </Badge>
                     )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <LuCalendar className="h-4 w-4 text-muted-foreground" />
                       {format(parseISO(reminder.due_date), 'MMM d, yyyy h:mm a')}
                     </div>
                     {isBefore(new Date(reminder.due_date), new Date()) && 
@@ -213,7 +222,7 @@ export function ReminderList() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={statusVariant[reminder.status]}>
+                    <Badge variant={(statusVariant[reminder.status] as any) || 'outline'}>
                       {reminder.status.toLowerCase()}
                     </Badge>
                   </TableCell>
@@ -226,7 +235,7 @@ export function ReminderList() {
                             size="sm"
                             onClick={() => handleComplete(reminder.id)}
                           >
-                            <Check className="h-4 w-4 mr-1" />
+                            <LuCheck className="h-4 w-4 mr-1" />
                             Complete
                           </Button>
                           <Button
@@ -234,7 +243,7 @@ export function ReminderList() {
                             size="sm"
                             onClick={() => handleDismiss(reminder.id)}
                           >
-                            <X className="h-4 w-4 mr-1" />
+                            <LuX className="h-4 w-4 mr-1" />
                             Dismiss
                           </Button>
                         </>

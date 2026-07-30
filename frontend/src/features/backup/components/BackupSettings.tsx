@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { Card, Button, Form, Select, Typography, message } from 'antd';
 import { CloudUploadOutlined } from '@ant-design/icons';
 import { useBackup } from '../hooks/useBackup';
-<<<<<<< HEAD
 import styles from './BackupSettings.module.css';
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -38,19 +35,11 @@ export const BackupSettings: React.FC = () => {
 
   return (
     <Card title="Backup Settings">
-<<<<<<< HEAD
-      <div className={styles['description']}>
+      <div className={styles['description'] || ""} style={{ marginBottom: 24 }}>
         <Text>
           Create a manual backup of all your notes. This will allow you to restore your data if needed.
         </Text>
-        <div className={styles['buttonContainer']}>
-=======
-      <div style={{ marginBottom: 24 }}>
-        <Text>
-          Create a manual backup of all your notes. This will allow you to restore your data if needed.
-        </Text>
-        <div style={{ marginTop: 16 }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+        <div className={styles['buttonContainer'] || ""} style={{ marginTop: 16 }}>
           <Button
             type="primary"
             icon={<CloudUploadOutlined />}
@@ -63,17 +52,10 @@ export const BackupSettings: React.FC = () => {
       </div>
 
       <div>
-<<<<<<< HEAD
-        <Text strong className={styles['sectionTitle']}>
+        <Text strong className={styles['sectionTitle'] || ""} style={{ display: 'block', marginBottom: 8 }}>
           Automatic Backups
         </Text>
-        <Text type="secondary" className={styles['sectionDescription']}>
-=======
-        <Text strong style={{ display: 'block', marginBottom: 8 }}>
-          Automatic Backups
-        </Text>
-        <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+        <Text type="secondary" className={styles['sectionDescription'] || ""} style={{ display: 'block', marginBottom: 16 }}>
           Schedule automatic backups to run at regular intervals.
         </Text>
         
@@ -84,11 +66,11 @@ export const BackupSettings: React.FC = () => {
           initialValues={{ frequency: 'weekly' }}
         >
           <Form.Item name="frequency" label="Backup Frequency">
-<<<<<<< HEAD
-            <Select className={styles['frequencySelect']} disabled={isLoading || isScheduling}>
-=======
-            <Select style={{ width: 150 }} disabled={isLoading || isScheduling}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+            <Select 
+              className={styles['frequencySelect'] || ""} 
+              style={{ width: 150 }} 
+              disabled={isLoading || isScheduling}
+            >
               <Option value="daily">Daily</Option>
               <Option value="weekly">Weekly</Option>
               <Option value="monthly">Monthly</Option>

@@ -1,20 +1,11 @@
 import React, { createContext, useContext, ReactNode, useState, useCallback } from 'react';
-import { message } from 'antd';
-import api from '../../../services/api';
+import toast from 'react-hot-toast';
+import api from '../../../api';
+import { activitiesApi } from '../../../api';
 
-export interface Note {
-  id: string;
-  title: string;
-  content: string;
-  tags: string[];
-  isPinned: boolean;
-  isArchived: boolean;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  type?: 'text' | 'whiteboard' | 'video';
-  metadata?: Record<string, any>;
-}
+
+import { Note } from '../types/note';
+export type { Note };
 
 interface NoteContextType {
   // State
@@ -26,7 +17,7 @@ interface NoteContextType {
   // Actions
   fetchNotes: () => Promise<void>;
   getNote: (id: string) => Promise<Note | null>;
-  createNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => Promise<Note>;
+  createNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'userId' | 'version'>) => Promise<Note>;
   updateNote: (id: string, updates: Partial<Note>) => Promise<Note>;
   deleteNote: (id: string) => Promise<void>;
   pinNote: (id: string, pinned: boolean) => Promise<void>;
@@ -40,12 +31,26 @@ interface NoteContextType {
 }
 
 const NoteContext = createContext<NoteContextType | undefined>(undefined);
+const LOCAL_NOTES_KEY = 'notefusion_local_notes';
 
 export const NoteProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  const readLocalNotes = (): Note[] => {
+    try {
+      const raw = localStorage.getItem(LOCAL_NOTES_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const writeLocalNotes = (nextNotes: Note[]) => {
+    localStorage.setItem(LOCAL_NOTES_KEY, JSON.stringify(nextNotes));
+  };
 
   // Fetch all notes
   const fetchNotes = useCallback(async () => {
@@ -54,10 +59,15 @@ export const NoteProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const response = await api.get('/notes');
       setNotes(response.data);
+      writeLocalNotes(response.data);
     } catch (err) {
-      setError('Failed to fetch notes');
-      message.error('Failed to load notes');
-      console.error('Error fetching notes:', err);
+      const localNotes = readLocalNotes();
+      setNotes(localNotes);
+      setError(null);
+      toast('Offline: using cached notes', { icon: '📶' });
+
+
+      console.error('Error fetching notes, using local fallback:', err);
     } finally {
       setLoading(false);
     }
@@ -73,7 +83,8 @@ export const NoteProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return response.data;
     } catch (err) {
       setError('Failed to fetch note');
-      message.error('Failed to load note');
+      toast.error('Failed to load note');
+
       console.error('Error fetching note:', err);
       return null;
     } finally {
@@ -82,23 +93,36 @@ export const NoteProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   // Create new note
-  const createNote = useCallback(async (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'userId'>): Promise<Note> => {
+  const createNote = useCallback(async (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'userId' | 'version'>): Promise<Note> => {
     setLoading(true);
     setError(null);
     try {
       const response = await api.post('/notes', note);
       setNotes(prev => [response.data, ...prev]);
-      message.success('Note created successfully');
+      activitiesApi.logActivity('note_created').catch(console.error);
+      toast.success('Note created!');
+
       return response.data;
     } catch (err) {
-      setError('Failed to create note');
-      message.error('Failed to create note');
-      console.error('Error creating note:', err);
-      throw err;
+      const now = new Date().toISOString();
+      const localNote = {
+        ...(note as any),
+        id: `local-${Date.now()}`,
+        createdAt: now,
+        updatedAt: now,
+        userId: 'local-user',
+        version: 1,
+      } as Note;
+      const next = [localNote, ...notes];
+      setNotes(next);
+      writeLocalNotes(next);
+      toast('Note saved locally (offline mode)', { icon: '📶' });
+
+      return localNote;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [notes]);
 
   // Update existing note
   const updateNote = useCallback(async (id: string, updates: Partial<Note>): Promise<Note> => {
@@ -110,17 +134,27 @@ export const NoteProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         note.id === id ? { ...note, ...response.data, updatedAt: new Date().toISOString() } : note
       ));
       setCurrentNote(prev => prev?.id === id ? { ...prev, ...response.data } : prev);
-      message.success('Note updated successfully');
+      toast.success('Note saved');
+
       return response.data;
     } catch (err) {
-      setError('Failed to update note');
-      message.error('Failed to update note');
-      console.error('Error updating note:', err);
+      const updatedAt = new Date().toISOString();
+      let localResult: Note | null = null;
+      const next = notes.map(note => {
+        if (note.id !== id) return note;
+        localResult = { ...note, ...updates, updatedAt } as Note;
+        return localResult;
+      });
+      setNotes(next);
+      writeLocalNotes(next);
+      toast('Note updated locally (offline mode)', { icon: '📶' });
+
+      if (localResult) return localResult;
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [notes]);
 
   // Delete note
   const deleteNote = useCallback(async (id: string): Promise<void> => {
@@ -132,24 +166,28 @@ export const NoteProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (currentNote?.id === id) {
         setCurrentNote(null);
       }
-      message.success('Note deleted successfully');
+      toast.success('Note deleted');
+
     } catch (err) {
-      setError('Failed to delete note');
-      message.error('Failed to delete note');
-      console.error('Error deleting note:', err);
-      throw err;
+      const next = notes.filter(note => note.id !== id);
+      setNotes(next);
+      writeLocalNotes(next);
+      if (currentNote?.id === id) setCurrentNote(null);
+      toast('Note deleted locally (offline mode)', { icon: '📶' });
+
     } finally {
       setLoading(false);
     }
-  }, [currentNote]);
+  }, [currentNote, notes]);
 
   // Toggle pin status
   const pinNote = useCallback(async (id: string, pinned: boolean): Promise<void> => {
     try {
       await updateNote(id, { isPinned: pinned });
-      message.success(pinned ? 'Note pinned' : 'Note unpinned');
+      toast.success(pinned ? 'Note pinned' : 'Note unpinned');
     } catch (err) {
-      message.error(`Failed to ${pinned ? 'pin' : 'unpin'} note`);
+      toast.error(`Failed to ${pinned ? 'pin' : 'unpin'} note`);
+
     }
   }, [updateNote]);
 
@@ -157,9 +195,10 @@ export const NoteProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const archiveNote = useCallback(async (id: string, archived: boolean): Promise<void> => {
     try {
       await updateNote(id, { isArchived: archived });
-      message.success(archived ? 'Note archived' : 'Note restored');
+      toast.success(archived ? 'Note archived' : 'Note restored');
     } catch (err) {
-      message.error(`Failed to ${archived ? 'archive' : 'restore'} note`);
+      toast.error(`Failed to ${archived ? 'archive' : 'restore'} note`);
+
     }
   }, [updateNote]);
 
@@ -169,7 +208,8 @@ export const NoteProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const response = await api.get('/notes/search', { params: { q: query } });
       return response.data;
     } catch (err) {
-      message.error('Failed to search notes');
+      toast.error('Failed to search notes');
+
       console.error('Error searching notes:', err);
       return [];
     }
@@ -184,7 +224,8 @@ export const NoteProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         await updateNote(noteId, { tags: updatedTags });
       }
     } catch (err) {
-      message.error('Failed to add tag');
+      toast.error('Failed to add tag');
+
       console.error('Error adding tag:', err);
     }
   }, [notes, updateNote]);
@@ -198,7 +239,8 @@ export const NoteProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         await updateNote(noteId, { tags: updatedTags });
       }
     } catch (err) {
-      message.error('Failed to remove tag');
+      toast.error('Failed to remove tag');
+
       console.error('Error removing tag:', err);
     }
   }, [notes, updateNote]);

@@ -1,227 +1,279 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  HomeIcon, 
-  PlusIcon, 
-  FolderIcon,
-  AcademicCapIcon,
-  UserCircleIcon,
-  CogIcon,
-  CreditCardIcon,
-  LogoutIcon,
-<<<<<<< HEAD
-  ChevronDownIcon,
-  VolumeUpIcon,
-  ClipboardListIcon
-=======
-  ChevronDownIcon
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-} from '@heroicons/react/outline';
-import { 
-  LightBulbIcon as BrainIcon,
-  SparklesIcon,
-  UserIcon as SolidUserIcon
-} from '@heroicons/react/solid';
-import { useAuth } from '../contexts/AuthContext';
+  HomeOutlined, 
+  PlusOutlined, 
+  FolderOpenOutlined,
+  ReadOutlined,
+  UserOutlined,
+  SettingOutlined,
+  CreditCardOutlined,
+  LogoutOutlined,
+  DownOutlined,
+  AudioOutlined,
+  UnorderedListOutlined,
+  ExperimentOutlined,
+  ThunderboltFilled,
+  SearchOutlined,
+  CloseOutlined
+} from '@ant-design/icons';
+import { useAuth } from '../features/auth/context/AuthContext';
+import { Button, Dropdown, Avatar, Space, Typography, Badge } from 'antd';
+import './Navbar.css';
+
+const { Text } = Typography;
+
+const ALL_FEATURES = [
+  { name: 'Dashboard', path: '/dashboard', icon: '🏠', category: 'Core' },
+  { name: 'Notes', path: '/notes', icon: '📝', category: 'Core' },
+  { name: 'Note Editor', path: '/notes/new', icon: '✏️', category: 'Core' },
+  { name: 'Marketplace', path: '/marketplace', icon: '🛍️', category: 'Social' },
+  { name: 'Teacher Dashboard', path: '/teacher', icon: '👨‍🏫', category: 'Admin' },
+  { name: 'AI Tutor', path: '/ai-tutor', icon: '🤖', category: 'AI' },
+  { name: 'AI Playground', path: '/playground', icon: '⚡', category: 'AI' },
+  { name: 'Image Generation', path: '/image-gen', icon: '🎨', category: 'AI' },
+  { name: 'Video Generation', path: '/video-gen', icon: '🎬', category: 'AI' },
+  { name: 'Voice Notes', path: '/voice-notes', icon: '🎙️', category: 'Tools' },
+  { name: 'OCR Scanner', path: '/ocr', icon: '📷', category: 'Tools' },
+  { name: 'PDF Annotation', path: '/pdf', icon: '📄', category: 'Tools' },
+  { name: 'Mind Map', path: '/mindmap', icon: '🧠', category: 'Tools' },
+  { name: 'Graph View', path: '/graph', icon: '🕸️', category: 'Tools' },
+  { name: 'Whiteboard', path: '/whiteboard', icon: '🖊️', category: 'Tools' },
+  { name: 'Slide Maker', path: '/slides', icon: '📊', category: 'Tools' },
+  { name: 'Spreadsheet', path: '/spreadsheet', icon: '📈', category: 'Tools' },
+  { name: 'Spaced Repetition', path: '/spaced-repetition', icon: '🔁', category: 'Learning' },
+  { name: 'Quiz Builder', path: '/quiz', icon: '❓', category: 'Learning' },
+  { name: 'Learning Dashboard', path: '/learning', icon: '🎓', category: 'Learning' },
+  { name: 'Tasks', path: '/tasks', icon: '✅', category: 'Productivity' },
+  { name: 'Calendar', path: '/calendar', icon: '📅', category: 'Productivity' },
+  { name: 'Statistics', path: '/stats', icon: '📊', category: 'Productivity' },
+  { name: 'Token Shop', path: '/tokens', icon: '🪙', category: 'Billing' },
+  { name: 'Subscription', path: '/subscription', icon: '💳', category: 'Billing' },
+  { name: 'Settings', path: '/settings', icon: '⚙️', category: 'Account' },
+  { name: 'Profile', path: '/profile', icon: '👤', category: 'Account' },
+  { name: 'Notifications', path: '/notifications', icon: '🔔', category: 'Account' },
+];
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, signOut } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const { user, logout } = useAuth();
+  const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const searchInputRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
     };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Global Ctrl+K shortcut
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(prev => !prev);
+        setSearchQuery('');
+        setSelectedIndex(0);
+      }
+      if (e.key === 'Escape') setSearchOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      setTimeout(() => searchInputRef.current?.focus(), 50);
+    }
+  }, [searchOpen]);
+
+  const filteredFeatures = ALL_FEATURES.filter(f =>
+    f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    f.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'ArrowDown') {
+      setSelectedIndex(i => Math.min(i + 1, filteredFeatures.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      setSelectedIndex(i => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter' && filteredFeatures[selectedIndex]) {
+      navigate(filteredFeatures[selectedIndex].path);
+      setSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
 
   const isActive = (path) => {
     return location.pathname === path;
   };
 
   const navItems = [
-    { name: 'Dashboard', path: '/', icon: HomeIcon },
-<<<<<<< HEAD
-    { name: 'Tasks', path: '/tasks', icon: ClipboardListIcon },
-    { name: 'New Session', path: '/new', icon: PlusIcon },
-    { name: 'Sessions', path: '/sessions', icon: FolderIcon },
-    { name: 'Flashcards & Quizzes', path: '/flashcards-quizzes', icon: AcademicCapIcon },
-    { name: 'Audio Tools', path: '/audio-tools', icon: VolumeUpIcon },
-=======
-    { name: 'New Session', path: '/new', icon: PlusIcon },
-    { name: 'Sessions', path: '/sessions', icon: FolderIcon },
-    { name: 'Flashcards & Quizzes', path: '/flashcards-quizzes', icon: AcademicCapIcon },
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-    { name: 'Whiteboard', path: '/whiteboard', icon: SparklesIcon },
-    { name: 'Pricing', path: '/pricing', icon: CreditCardIcon },
+    { name: 'Dashboard', path: '/', icon: <HomeOutlined /> },
+    { name: 'Tasks', path: '/tasks', icon: <UnorderedListOutlined /> },
+    { name: 'New Session', path: '/new', icon: <PlusOutlined /> },
+    { name: 'Sessions', path: '/sessions', icon: <FolderOpenOutlined /> },
+    { name: 'Learning', path: '/flashcards-quizzes', icon: <ReadOutlined /> },
+    { name: 'Audio', path: '/audio-tools', icon: <AudioOutlined /> },
+    { name: 'Whiteboard', path: '/whiteboard', icon: <ExperimentOutlined /> },
+    { name: 'Pricing', path: '/pricing', icon: <CreditCardOutlined /> },
   ];
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      await logout();
       navigate('/login');
     } catch (error) {
       console.error('Failed to sign out', error);
     }
   };
 
+  const menuItems = [
+    {
+      key: 'profile-info',
+      label: (
+        <div style={{ padding: '4px 0' }}>
+          <Text strong style={{ display: 'block' }}>{user?.displayName || 'User'}</Text>
+          <Text type="secondary" style={{ fontSize: '12px' }}>{user?.email}</Text>
+        </div>
+      ),
+      disabled: true,
+    },
+    { type: 'divider' },
+    {
+      key: 'profile',
+      label: 'Your Profile',
+      icon: <UserOutlined />,
+      onClick: () => navigate('/account'),
+    },
+    {
+      key: 'subscription',
+      label: 'Subscription',
+      icon: <CreditCardOutlined />,
+      onClick: () => navigate('/subscription'),
+    },
+    {
+      key: 'settings',
+      label: 'Settings',
+      icon: <SettingOutlined />,
+      onClick: () => navigate('/settings'),
+    },
+    { type: 'divider' },
+    {
+      key: 'logout',
+      label: 'Sign out',
+      icon: <LogoutOutlined />,
+      danger: true,
+      onClick: handleSignOut,
+    },
+  ];
+
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-              <BrainIcon className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex items-center space-x-1">
-              <span className="text-xl font-bold text-gray-900">NoteFusion</span>
-              <SparklesIcon className="w-4 h-4 text-yellow-500" />
-            </div>
-          </Link>
-
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                    isActive(item.path)
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.name}</span>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* User Menu */}
-          <div className="relative ml-3" ref={dropdownRef}>
-            <div>
-              <button
-                type="button"
-                className="flex items-center max-w-xs rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                id="user-menu"
-                aria-expanded="false"
-                aria-haspopup="true"
-                onClick={() => setIsOpen(!isOpen)}
-              >
-                <span className="sr-only">Open user menu</span>
-                <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700">
-                  {currentUser?.photoURL ? (
-                    <img 
-                      className="h-8 w-8 rounded-full" 
-                      src={currentUser.photoURL} 
-                      alt="" 
-                    />
-                  ) : (
-                    <SolidUserIcon className="h-5 w-5" />
-                  )}
-                </div>
-                <ChevronDownIcon className="ml-1 h-4 w-4 text-gray-700" />
+    <>
+      {/* Quick Search Modal */}
+      {searchOpen && (
+        <div className="qs-overlay" onClick={() => setSearchOpen(false)}>
+          <div className="qs-modal" onClick={e => e.stopPropagation()}>
+            <div className="qs-input-row">
+              <SearchOutlined className="qs-icon" />
+              <input
+                ref={searchInputRef}
+                className="qs-input"
+                placeholder="Search features… (↑↓ to navigate, Enter to go)"
+                value={searchQuery}
+                onChange={e => { setSearchQuery(e.target.value); setSelectedIndex(0); }}
+                onKeyDown={handleSearchKeyDown}
+              />
+              <button className="qs-close" onClick={() => setSearchOpen(false)}>
+                <CloseOutlined />
               </button>
             </div>
-
-            {/* Dropdown menu */}
-            {isOpen && (
-              <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10" role="menu" aria-orientation="vertical" aria-labelledby="user-menu">
-                <div className="py-1" role="none">
-                  <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
-                    <p className="font-medium">{currentUser?.displayName || 'User'}</p>
-                    <p className="text-xs text-gray-500 truncate">{currentUser?.email}</p>
-                  </div>
-                  
-                  <Link
-                    to="/account"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    role="menuitem"
-                  >
-                    <UserCircleIcon className="mr-3 h-5 w-5 text-gray-400" />
-                    Your Profile
-                  </Link>
-                  
-                  <Link
-                    to="/subscription"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    role="menuitem"
-                  >
-                    <CreditCardIcon className="mr-3 h-5 w-5 text-gray-400" />
-                    Subscription
-                  </Link>
-                  
-                  <Link
-                    to="/settings"
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    role="menuitem"
-                  >
-                    <CogIcon className="mr-3 h-5 w-5 text-gray-400" />
-                    Settings
-                  </Link>
-                  
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    role="menuitem"
-                  >
-                    <LogoutIcon className="mr-3 h-5 w-5 text-gray-400" />
-                    Sign out
-                  </button>
+            <div className="qs-results">
+              {filteredFeatures.length === 0 && (
+                <div className="qs-empty">No features found for "{searchQuery}"</div>
+              )}
+              {filteredFeatures.map((f, i) => (
+                <div
+                  key={f.path}
+                  className={`qs-result-item ${i === selectedIndex ? 'qs-result-active' : ''}`}
+                  onClick={() => { navigate(f.path); setSearchOpen(false); setSearchQuery(''); }}
+                  onMouseEnter={() => setSelectedIndex(i)}
+                >
+                  <span className="qs-result-icon">{f.icon}</span>
+                  <span className="qs-result-name">{f.name}</span>
+                  <span className="qs-result-category">{f.category}</span>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+              ))}
+            </div>
+            <div className="qs-footer">
+              <span>↑↓ navigate</span>
+              <span>⏎ open</span>
+              <span>Esc close</span>
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Mobile Navigation */}
-        <div className="md:hidden border-t border-gray-200 py-4">
-          <div className="flex flex-col space-y-2">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                    isActive(item.path)
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.name}</span>
-                </Link>
-              );
-            })}
+    <nav className={`navbar-root ${scrolled ? 'navbar-scrolled' : ''}`}>
+      <div className="navbar-container">
+        {/* Logo */}
+        <Link to="/" className="navbar-logo">
+          <div className="logo-icon">
+            <ThunderboltFilled />
           </div>
+          <span className="logo-text">NoteFusion<span className="logo-accent">AI</span></span>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <div className="navbar-links">
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`nav-item ${isActive(item.path) ? 'nav-item-active' : ''}`}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">{item.name}</span>
+            </Link>
+          ))}
+        </div>
+
+        {/* Quick Search Trigger */}
+        <button className="qs-trigger" onClick={() => { setSearchOpen(true); setSearchQuery(''); }}>
+          <SearchOutlined style={{ fontSize: 14 }} />
+          <span className="qs-trigger-text">Search features…</span>
+          <span className="qs-trigger-kbd">Ctrl K</span>
+        </button>
+
+        {/* User Section */}
+        <div className="navbar-user">
+          <Space size="middle">
+            <Badge dot color="#1890ff">
+              <Button type="text" icon={<SettingOutlined />} style={{ color: '#666' }} />
+            </Badge>
+            
+            <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
+              <div className="user-dropdown-trigger">
+                <Avatar 
+                  src={user?.photoURL} 
+                  icon={!user?.photoURL && <UserOutlined />}
+                  style={{ backgroundColor: '#1890ff' }}
+                />
+                <DownOutlined style={{ fontSize: '10px', marginLeft: '4px', color: '#888' }} />
+              </div>
+            </Dropdown>
+          </Space>
         </div>
       </div>
     </nav>
+    </>
   );
 };
 
-export default Navbar; 
+export default Navbar;

@@ -43,8 +43,8 @@ const AIAssistantWrapper: React.FC<AIAssistantWrapperProps> = ({
       e.preventDefault();
       toggleAIAssistant();
     },
-    [toggleAIAssistant],
-    { enableOnFormTags: true }
+    { enableOnTags: ['INPUT', 'TEXTAREA', 'SELECT'] },
+    [toggleAIAssistant]
   );
 
   // Load user preferences from localStorage on mount

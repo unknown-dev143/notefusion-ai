@@ -73,17 +73,22 @@ const stretch = keyframes`
   20% { transform: scaleY(1); }
 `;
 
-const LoadingContainer = styled.div<{ fullScreen: boolean; bgColor: string }>`
+interface ContainerProps {
+  fullScreen: boolean;
+  bgColor: string;
+}
+
+const LoadingContainer = styled.div<ContainerProps>`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  padding: ${({ fullScreen }) => (fullScreen ? '2rem' : '1rem')};
-  background-color: ${({ bgColor }) => bgColor};
+  padding: ${props => (props.fullScreen ? '2rem' : '1rem')};
+  background-color: ${props => props.bgColor};
   border-radius: 0.5rem;
-  ${({ fullScreen }) =>
-    fullScreen &&
+  ${props =>
+    props.fullScreen &&
     css`
       position: fixed;
       top: 0;
@@ -95,16 +100,22 @@ const LoadingContainer = styled.div<{ fullScreen: boolean; bgColor: string }>`
     `}
 `;
 
-const SpinnerBase = styled.div<{ size: string; primary: string; secondary: string }>`
+interface BaseProps {
+  size: string;
+  primary: string;
+  secondary: string;
+}
+
+const SpinnerBase = styled.div<BaseProps>`
   position: relative;
-  width: ${({ size }) => size};
-  height: ${({ size }) => size};
+  width: ${props => props.size};
+  height: ${props => props.size};
 `;
 
 const SpinnerRing = styled(SpinnerBase)`
-  border: 4px solid ${({ secondary }) => secondary};
+  border: 4px solid ${props => props.secondary};
   border-radius: 50%;
-  border-top: 4px solid ${({ primary }) => primary};
+  border-top: 4px solid ${props => props.primary};
   animation: ${spin} 1s linear infinite;
 `;
 
@@ -116,7 +127,7 @@ const SpinnerDots = styled(SpinnerBase)`
   div {
     width: 20%;
     height: 20%;
-    background-color: ${({ primary }) => primary};
+    background-color: ${props => props.primary};
     border-radius: 50%;
     display: inline-block;
     animation: ${bounce} 1.4s infinite ease-in-out both;
@@ -132,7 +143,7 @@ const SpinnerBars = styled(SpinnerBase)`
   align-items: center;
   
   div {
-    background-color: ${({ primary }) => primary};
+    background-color: ${props => props.primary};
     height: 100%;
     width: 15%;
     display: inline-block;
@@ -146,16 +157,16 @@ const SpinnerBars = styled(SpinnerBase)`
 `;
 
 const SpinnerClassic = styled(SpinnerBase)`
-  border: 3px solid ${({ secondary }) => secondary};
+  border: 3px solid ${props => props.secondary};
   border-radius: 50%;
-  border-top: 3px solid ${({ primary }) => primary};
-  border-right: 3px solid ${({ primary }) => primary};
-  border-bottom: 3px solid ${({ primary }) => primary};
+  border-top: 3px solid ${props => props.primary};
+  border-right: 3px solid ${props => props.primary};
+  border-bottom: 3px solid ${props => props.primary};
   animation: ${spin} 0.8s linear infinite;
 `;
 
 const Message = styled.div<{ textColor: string }>`
-  color: ${({ textColor }) => textColor};
+  color: ${props => props.textColor};
   font-size: 1rem;
   font-weight: 500;
   text-align: center;

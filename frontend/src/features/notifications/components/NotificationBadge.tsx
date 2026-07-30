@@ -87,10 +87,10 @@ export const NotificationBadge: React.FC<NotificationBadgeProps> = ({
 
   return (
     <Dropdown
-      overlay={overlay}
+      dropdownRender={() => overlay}
       trigger={['click']}
-      visible={isOpen}
-      onVisibleChange={handleVisibleChange}
+      open={isOpen}
+      onOpenChange={handleVisibleChange}
       placement="bottomRight"
       overlayClassName={styles.notificationDropdownOverlay}
     >

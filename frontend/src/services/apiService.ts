@@ -62,6 +62,50 @@ export const apiService = {
     config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> => 
     apiClient.patch<T>(url, data, config),
+
+  // Notes
+  getNotes: async () => {
+    const response = await apiClient.get('/notes');
+    return response.data;
+  },
+  getNote: async (id: string) => {
+    const response = await apiClient.get(`/notes/${id}`);
+    return response.data;
+  },
+  createNote: async (note: any) => {
+    const response = await apiClient.post('/notes', note);
+    return response.data;
+  },
+  updateNote: async (id: string, updates: any) => {
+    const response = await apiClient.patch(`/notes/${id}`, updates);
+    return response.data;
+  },
+  deleteNote: async (id: string) => {
+    await apiClient.delete(`/notes/${id}`);
+  },
+  searchNotes: async (query: string) => {
+    const response = await apiClient.get('/notes/search', { params: { q: query } });
+    return response.data;
+  },
+
+  // Folders
+  createFolder: async (name: string) => {
+    const response = await apiClient.post('/folders', { name });
+    return response.data;
+  },
+  addNoteToFolder: async (noteId: string, folderId: string) => {
+    await apiClient.post(`/folders/${folderId}/notes/${noteId}`);
+  },
+
+  // Media
+  uploadMedia: async (formData: FormData) => {
+    const response = await apiClient.post('/media/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data.url;
+  },
 };
 
 export default apiService;

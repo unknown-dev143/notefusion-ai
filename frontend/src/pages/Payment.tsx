@@ -1,171 +1,92 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import PaymentModal from '../components/PaymentModal';
-import toast from 'react-hot-toast';
-
-interface Plan {
-  id: string;
-  name: string;
-  price: number;
-  features: string[];
-  popular?: boolean;
-}
 
 const Payment: React.FC = () => {
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isFreeMode] = useState(true); // All features are free
+    const bundles = [
+        { id: 'starter', name: 'Lite Scholar', tokens: 100, price: 4.99, color: 'from-blue-500 to-blue-600' },
+        { id: 'pro', name: 'Master Scholar', tokens: 500, price: 14.99, color: 'from-indigo-600 to-purple-700', popular: true, bonus: '+50 Bonus' },
+        { id: 'unlimited', name: 'Apex Scholar', tokens: 2000, price: 39.99, color: 'from-slate-800 to-slate-950', bonus: '+200 Bonus' },
+    ];
 
-  const plans: Plan[] = [
-    {
-      id: 'basic',
-      name: 'Basic',
-      price: 999, // $9.99
-      features: [
-        '5 Whiteboards',
-        'Basic shapes and tools',
-        'Local storage only',
-        'Standard support'
-      ]
-    },
-    {
-      id: 'pro',
-      name: 'Pro',
-      price: 1999, // $19.99
-      popular: true,
-      features: [
-        'Unlimited Whiteboards',
-        'All drawing tools',
-        'Cloud sync (Firebase)',
-        'Google Drive integration',
-        'Export to PDF',
-        'Priority support',
-        'Collaboration features'
-      ]
-    },
-    {
-      id: 'enterprise',
-      name: 'Enterprise',
-      price: 4999, // $49.99
-      features: [
-        'Everything in Pro',
-        'Team collaboration',
-        'Advanced analytics',
-        'Custom integrations',
-        'Dedicated support',
-        'API access',
-        'White-label options'
-      ]
-    }
-  ];
-
-  const handleSelectPlan = (plan: Plan) => {
-    setSelectedPlan(plan);
-    setIsModalOpen(true);
-  };
-
-  const handlePaymentSuccess = () => {
-    toast.success('Payment successful! Your account has been upgraded.');
-    // Update user subscription status
-    localStorage.setItem('subscription', selectedPlan?.id || '');
-    setIsModalOpen(false);
-  };
-
-  return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="text-center">
-        <div className="mb-4 inline-block px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full text-lg font-semibold animate-pulse">
-          🎉 All Features Are Free!
-        </div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">NoteFusion AI - Free & Open</h1>
-        <p className="text-xl text-gray-600">All premium features are now accessible to everyone worldwide</p>
-      </div>
-
-      {/* Free Access Banner */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg p-6 text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">✨ Everything is Free!</h2>
-        <p className="text-gray-700 mb-4">
-          We believe in making powerful tools accessible to everyone. All features including whiteboard, 
-          AI note generation, cloud sync, and Google Drive integration are completely free.
-        </p>
-        <div className="grid md:grid-cols-3 gap-4 mt-6">
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="text-3xl mb-2">🎨</div>
-            <h3 className="font-semibold">Full Whiteboard</h3>
-            <p className="text-sm text-gray-600">All drawing tools & features</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="text-3xl mb-2">🤖</div>
-            <h3 className="font-semibold">AI Features</h3>
-            <p className="text-sm text-gray-600">Unlimited AI note generation</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <div className="text-3xl mb-2">☁️</div>
-            <h3 className="font-semibold">Cloud Sync</h3>
-            <p className="text-sm text-gray-600">Firebase & Google Drive</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Optional: Show plans for reference (but everything is free) */}
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-8 border-2 border-green-500">
-          <div className="text-center mb-6">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">All Features Included</h2>
-            <p className="text-2xl text-green-600 font-semibold">100% Free Forever</p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-semibold text-lg mb-3 text-gray-800">🎨 Whiteboard Features</h3>
-              <ul className="space-y-2 text-gray-700">
-                <li>✓ All drawing tools (Pen, Shapes, Text)</li>
-                <li>✓ Undo/Redo functionality</li>
-                <li>✓ Multiple colors & line widths</li>
-                <li>✓ Export to PNG & PDF</li>
-                <li>✓ Real-time collaboration</li>
-                <li>✓ Cloud sync with Firebase</li>
-                <li>✓ Google Drive integration</li>
-              </ul>
+    return (
+        <div className="max-w-7xl mx-auto px-6 py-12 animate-slide-up">
+            {/* Header */}
+            <div className="text-center mb-16">
+                <div className="inline-block px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-4">Token Marketplace</div>
+                <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">Fuel Your Intelligence</h1>
+                <p className="max-w-xl mx-auto text-slate-400 font-medium">Acquire Scholar Tokens to power advanced AI synthesis, image generation, and real-time Peer-Sync sessions.</p>
+                
+                <div className="mt-8 flex justify-center gap-8">
+                   <div className="text-center">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Active Balance</p>
+                      <p className="text-2xl font-black text-slate-900">850 Tokens</p>
+                   </div>
+                   <div className="w-px h-10 bg-slate-100"></div>
+                   <div className="text-center">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Rewards Tier</p>
+                      <p className="text-2xl font-black text-blue-600">Gold Scholar</p>
+                   </div>
+                </div>
             </div>
-            
-            <div>
-              <h3 className="font-semibold text-lg mb-3 text-gray-800">🤖 AI Features</h3>
-              <ul className="space-y-2 text-gray-700">
-                <li>✓ File upload & transcription</li>
-                <li>✓ AI note generation</li>
-                <li>✓ Multiple detail levels</li>
-                <li>✓ Practice questions</li>
-                <li>✓ Export to PDF/Markdown</li>
-                <li>✓ AI model selection</li>
-                <li>✓ Custom AI settings</li>
-              </ul>
+
+            {/* Bundles */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {bundles.map((bundle) => (
+                    <div key={bundle.id} className={`group relative bg-white border border-slate-100 rounded-[48px] p-10 flex flex-col transition-all hover:shadow-2xl hover:shadow-slate-200/50 ${bundle.popular ? 'ring-4 ring-blue-500/10 scale-105' : ''}`}>
+                        {bundle.popular && (
+                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-blue-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">Most Scalable</div>
+                        )}
+                        
+                        <div className="mb-8">
+                            <h3 className="text-xl font-black text-slate-900 mb-1">{bundle.name}</h3>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Single Purchase</p>
+                        </div>
+
+                        <div className={`w-full aspect-video rounded-[32px] bg-gradient-to-br ${bundle.color} mb-8 flex flex-col items-center justify-center text-white relative overflow-hidden`}>
+                           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform"></div>
+                           <span className="text-4xl mb-2 font-black">🪙 {bundle.tokens}</span>
+                           <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Scholar Tokens</span>
+                           {bundle.bonus && (
+                            <div className="mt-4 px-3 py-1 bg-white/20 rounded-full text-[9px] font-black uppercase">{bundle.bonus}</div>
+                           )}
+                        </div>
+
+                        <div className="flex items-baseline gap-1 mb-8">
+                            <span className="text-4xl font-black text-slate-900">${bundle.price}</span>
+                            <span className="text-xs font-bold text-slate-400">/one-time</span>
+                        </div>
+
+                        <div className="space-y-4 mb-10 flex-1">
+                            {['Neural Synthesis', 'Image Synthesis', 'Peer Session Lock', '24/7 Expert Tutor'].map(feat => (
+                                <div key={feat} className="flex items-center gap-3">
+                                    <div className="w-5 h-5 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-[10px]">✓</div>
+                                    <span className="text-xs font-bold text-slate-600">{feat}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <button className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-100 hover:bg-black group-hover:scale-105 active:scale-95 transition-all">
+                           Secure Purchase
+                        </button>
+                    </div>
+                ))}
             </div>
-          </div>
 
-          <div className="mt-8 text-center">
-            <Link
-              to="/dashboard"
-              className="inline-block px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
-            >
-              Start Using All Features Now →
-            </Link>
-          </div>
+            <div className="mt-20 p-10 bg-slate-50 rounded-[48px] border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-8">
+               <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-sm">🛡️</div>
+                  <div>
+                     <h4 className="text-lg font-black text-slate-900 leading-none mb-2">Military-Grade Encryption</h4>
+                     <p className="text-xs font-medium text-slate-400">All transactions are processed via Stripe with 256-bit SSL encryption.</p>
+                  </div>
+               </div>
+               <div className="flex gap-4">
+                  <div className="w-12 h-8 bg-white border border-slate-100 rounded-lg opacity-40"></div>
+                  <div className="w-12 h-8 bg-white border border-slate-100 rounded-lg opacity-40"></div>
+                  <div className="w-12 h-8 bg-white border border-slate-100 rounded-lg opacity-40"></div>
+               </div>
+            </div>
         </div>
-      </div>
-
-      {selectedPlan && (
-        <PaymentModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          amount={selectedPlan.price}
-          planName={selectedPlan.name}
-          onSuccess={handlePaymentSuccess}
-        />
-      )}
-    </div>
-  );
+    );
 };
 
 export default Payment;
-

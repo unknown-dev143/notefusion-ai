@@ -17,7 +17,7 @@ export const useBackup = () => {
 
     try {
       setIsLoading(true);
-      const backup = await backupService.createBackup(user.id);
+      const backup = await backupService.createBackup(user.id!);
       message.success('Backup created successfully');
       return backup;
     } catch (error) {
@@ -74,7 +74,7 @@ export const useBackup = () => {
 
     try {
       setIsLoading(true);
-      const jobId = await backupService.scheduleBackup(user.id, frequency);
+      const jobId = await backupService.scheduleBackup(user.id!, frequency);
       message.success(`${frequency.charAt(0).toUpperCase() + frequency.slice(1)} backup scheduled`);
       return jobId;
     } catch (error) {
@@ -91,7 +91,7 @@ export const useBackup = () => {
 
     try {
       setIsLoading(true);
-      const userBackups = await backupService.getBackups(user.id);
+      const userBackups = await backupService.getBackups(user.id!);
       setBackups(userBackups);
       return userBackups;
     } catch (error) {

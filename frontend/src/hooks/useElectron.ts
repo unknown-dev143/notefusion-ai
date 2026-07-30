@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { isElectron } from '../utils/electron-utils';
+import isElectron from '../utils/electron-utils';
 
 type ElectronAPI = typeof window.electron;
 

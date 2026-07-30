@@ -6,15 +6,17 @@ import axios, {
   InternalAxiosRequestConfig,
   AxiosRequestHeaders
 } from 'axios';
-import { useAuth } from '../contexts/AuthContext';
+// api.ts - Axios configuration and interceptors
 
 // Create axios instance with base URL
+const API_BASE = (import.meta as any).env?.VITE_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1';
+
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseURL: API_BASE,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Important for cookies/sessions
+  withCredentials: false,
 });
 
 // Helper function to get auth token
@@ -26,8 +28,7 @@ const getAuthToken = (): string | null => {
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = getAuthToken();
-    if (token) {
-      config.headers = config.headers || {};
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -50,9 +51,9 @@ api.interceptors.response.use(
       try {
         // Try to refresh the token
         const response = await axios.post(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/auth/refresh`,
+          `${API_BASE}/auth/refresh`,
           {},
-          { withCredentials: true }
+          { withCredentials: false }
         );
         
         const { token } = response.data;
@@ -66,10 +67,9 @@ api.interceptors.response.use(
         // Retry the original request
         return api(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, log the user out
-        const { signOut } = useAuth();
-        await signOut();
-        window.location.href = '/login';
+        // In Demo Mode, we don't force logout on refresh failure. 
+        // We let the backend's permissive auth handle the requests.
+        console.warn('Refresh failed, proceeding in Demo/Restricted mode.');
         return Promise.reject(refreshError);
       }
     }

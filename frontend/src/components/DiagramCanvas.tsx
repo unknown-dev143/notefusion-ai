@@ -10,7 +10,7 @@ interface DiagramCanvasProps {
   onSave: (data: string) => void;
   initialData?: string;
   readOnly?: boolean;
-  canvasRef?: React.MutableRefObject<fabric.Canvas | null>;
+  canvasRef?: React.MutableRefObject<any>;
 }
 
 const DiagramCanvas: React.FC<DiagramCanvasProps> = ({
@@ -20,7 +20,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({
   canvasRef: externalCanvasRef,
 }) => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const internalCanvasRef = useRef<fabric.Canvas | null>(null);
+  const internalCanvasRef = useRef<any>(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
   const [activeTool, setActiveTool] = useState<Tool>('select');
   const [color, setColor] = useState<Color>('#000000');
@@ -94,7 +94,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({
     
     canvas.defaultCursor = cursor;
     canvas.selection = activeTool === 'select' && !readOnly;
-    canvas.forEachObject(obj => {
+    canvas.forEachObject((obj: any) => {
       obj.selectable = activeTool === 'select' && !readOnly;
     });
     
@@ -111,7 +111,7 @@ const DiagramCanvas: React.FC<DiagramCanvasProps> = ({
       canvas.freeDrawingBrush.color = color;
       canvas.freeDrawingBrush.width = brushWidth;
     } else if (activeTool === 'eraser') {
-      canvas.freeDrawingBrush = new fabric.EraserBrush(canvas);
+      canvas.freeDrawingBrush = new (fabric as any).EraserBrush(canvas);
       canvas.freeDrawingBrush.width = brushWidth * 3; // Make eraser slightly larger
     }
   }, [activeTool, color, brushWidth]);

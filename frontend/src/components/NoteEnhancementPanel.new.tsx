@@ -1,8 +1,8 @@
 import { FC, useState, useCallback, ReactNode } from 'react';
 import { FaMagic, FaQuestion, FaKey, FaListUl } from 'react-icons/fa';
 import type { IconType } from 'react-icons';
-import { Button } from './ui/Button';
-import Tooltip from './ui/Tooltip';
+import { Button } from './ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './ui/Tooltip';
 
 type EnhancementType = 'summary' | 'questions' | 'keypoints' | 'outline' | 'no2' | 'no3' | 'no4' | 'no5';
 
@@ -54,34 +54,6 @@ const ENHANCEMENT_BUTTONS: EnhancementButton[] = [
     tooltip: 'Create an outline from your notes',
     minContentLength: 100,
   },
-  {
-    type: 'no2',
-    icon: 'NO2',
-    label: 'NO2',
-    tooltip: 'NO2 enhancement',
-    minContentLength: 10,
-  },
-  {
-    type: 'no3',
-    icon: 'NO3',
-    label: 'NO3',
-    tooltip: 'NO3 enhancement',
-    minContentLength: 10,
-  },
-  {
-    type: 'no4',
-    icon: 'NO4',
-    label: 'NO4',
-    tooltip: 'NO4 enhancement',
-    minContentLength: 10,
-  },
-  {
-    type: 'no5',
-    icon: 'NO5',
-    label: 'NO5',
-    tooltip: 'NO5 enhancement',
-    minContentLength: 10,
-  },
 ];
 
 const DEFAULT_MAX_CONTENT_LENGTH = 10000;
@@ -93,12 +65,12 @@ const generatePlaceholderContent = (type: EnhancementType): string => {
     questions: '## Study Questions\n1. What are the main points?\n2. How do these concepts connect?',
     keypoints: '## Key Points\n- Main idea 1\n- Main idea 2\n- Supporting detail',
     outline: '## Outline\n1. Main Topic\n   - Subtopic 1\n   - Subtopic 2\n2. Second Main Topic',
-    no2: 'NO2 Enhancement Content',
-    no3: 'NO3 Enhancement Content',
-    no4: 'NO4 Enhancement Content',
-    no5: 'NO5 Enhancement Content',
+    no2: 'NO2 enhancement',
+    no3: 'NO3 enhancement',
+    no4: 'NO4 enhancement',
+    no5: 'NO5 enhancement',
   };
-  return placeholders[type];
+  return placeholders[type] || 'Content';
 };
 
 export const NoteEnhancementPanel: FC<NoteEnhancementPanelProps> = ({
@@ -174,22 +146,28 @@ export const NoteEnhancementPanel: FC<NoteEnhancementPanelProps> = ({
   const renderButton = (button: EnhancementButton) => {
     const Icon = button.icon as IconType;
     const isButtonDisabled = disabled || isLoading[button.type];
-    const buttonMinLength = Math.max(button.minContentLength, minContentLength);
     
     return (
-      <Tooltip key={button.type} content={button.tooltip}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleEnhance(button.type)}
-          disabled={isButtonDisabled}
-          isLoading={isLoading[button.type]}
-          className="flex items-center gap-2"
-        >
-          {typeof Icon === 'function' ? <Icon /> : button.label}
-          <span className="sr-only">{button.label}</span>
-        </Button>
-      </Tooltip>
+      <TooltipProvider key={button.type}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleEnhance(button.type)}
+              disabled={isButtonDisabled}
+              loading={isLoading[button.type]}
+              className="flex items-center gap-2"
+            >
+              {typeof Icon === 'function' ? <Icon /> : button.label}
+              <span className="sr-only">{button.label}</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {button.tooltip}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   };
 

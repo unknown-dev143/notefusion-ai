@@ -26,7 +26,7 @@ const RichTextEditorWithDrawing: React.FC<RichTextEditorProps> = ({
   'aria-label': ariaLabel = 'Rich text editor'
 }) => {
   const [content, setContent] = useState(initialContent);
-  const [isDrawingOpen] = useState(false);
+  const [isDrawingOpen, setIsDrawingOpen] = useState(false);
   const quillRef = useRef(null);
 
   // Update content when initialContent changes
@@ -49,12 +49,14 @@ const RichTextEditorWithDrawing: React.FC<RichTextEditorProps> = ({
 
   // Handle insert drawing
   const handleInsertDrawing = (dataUrl: string) => {
-    if (quillInstance.current) {
-      const range = quillInstance.current.getSelection();
+    // @ts-ignore
+    const editor = quillRef.current?.getEditor();
+    if (editor) {
+      const range = editor.getSelection();
       if (range) {
-        quillInstance.current.insertEmbed(range.index, 'image', dataUrl, 'user');
+        editor.insertEmbed(range.index, 'image', dataUrl, 'user');
         // Move cursor after the inserted image
-        quillInstance.current.setSelection(range.index + 1, 0, 'api');
+        editor.setSelection(range.index + 1, 0, 'api');
       }
       setIsDrawingOpen(false);
     }
@@ -124,6 +126,7 @@ const RichTextEditorWithDrawing: React.FC<RichTextEditorProps> = ({
             modules={quillModules}
             formats={quillFormats}
             className="rich-text-editor"
+            // @ts-ignore
             ref={quillRef}
             aria-label={ariaLabel}
           />

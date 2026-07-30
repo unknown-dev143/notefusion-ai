@@ -8,7 +8,7 @@ const { Content } = Layout;
 const FeatureFlagsPage: React.FC = () => {
   return (
     <Layout className="app-layout">
-      <AppHeader title="Feature Flags" />
+      <AppHeader collapsed={false} toggleCollapsed={() => {}} isMobile={false} />
       <Content style={{ padding: '24px' }}>
         <FeatureFlagExample />
       </Content>

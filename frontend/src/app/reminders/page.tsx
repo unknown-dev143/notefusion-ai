@@ -1,8 +1,8 @@
 'use client';
 
 import { Suspense } from 'react';
-import { ReminderList } from '@/features/reminders';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ReminderList } from '../../features/reminders';
+import { Skeleton } from '../../components/ui/skeleton';
 
 export default function RemindersPage() {
   return (

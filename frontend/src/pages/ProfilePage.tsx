@@ -1,264 +1,125 @@
-<<<<<<< HEAD
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, Typography } from 'antd';
-import { useAuth } from '@/features/auth/context/AuthContext';
-import { UserProfile } from '@/features/user/components/UserProfile';
-import styles from './ProfilePage.module.css';
-
-// Type definition for CSS modules with exact properties
-type ProfilePageStyles = {
-  readonly [key: string]: string;
-  readonly container: string;
-  readonly card: string;
-  readonly title: string;
-};
-
-const typedStyles = styles as unknown as ProfilePageStyles;
-
-const ProfilePage: React.FC = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-
-  if (!user) {
-    navigate('/login', { replace: true });
-    return null;
-  }
-
-  return (
-    <div className={typedStyles.container}>
-      <Card className={typedStyles.card}>
-        <Typography.Title level={2} className={typedStyles.title}>
-          User Profile
-        </Typography.Title>
-        <UserProfile />
-=======
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, Button, Typography, message, Upload, Avatar, Space, Skeleton } from 'antd';
-import { UserOutlined, UploadOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
-import { useAuth } from '../features/auth/context/AuthContext';
-
-const { Title, Text } = Typography;
 
 const ProfilePage: React.FC = () => {
-  const { user, updateProfile } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [form] = Form.useForm();
-  const [avatarUrl, setAvatarUrl] = useState<string>('');
+  const [name, setName] = useState('Premium Scholar');
+  const [email, setEmail] = useState('scholar@notefusion.ai');
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      // Simulate loading user data
-      setTimeout(() => {
-        form.setFieldsValue({
-          name: user.name || '',
-          email: user.email || '',
-        });
-        setLoading(false);
-      }, 500);
-    }
-  }, [user, form]);
+    setTimeout(() => setLoading(false), 500);
+  }, []);
 
-  const handleAvatarChange = (info: any) => {
-    if (info.file.status === 'done') {
-      // Here you would typically upload the file to your server
-      // and get back the URL to save in the user's profile
-      const url = URL.createObjectURL(info.file.originFileObj);
-      setAvatarUrl(url);
-      message.success('Profile picture updated successfully');
-    }
-  };
-
-  const onFinish = async (values: any) => {
-    try {
-      setUpdating(true);
-      // Replace with actual API call
-      // await userApi.updateProfile(values);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
-      if (updateProfile) {
-        updateProfile({
-          ...user,
-          ...values,
-          avatar: avatarUrl || user?.avatar,
-        });
-      }
-      
-      message.success('Profile updated successfully');
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-      message.error('Failed to update profile');
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const handlePasswordChange = async (values: any) => {
-    try {
-      setUpdating(true);
-      // Replace with actual API call
-      // await authApi.changePassword(values);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      message.success('Password updated successfully');
-    } catch (error) {
-      console.error('Failed to update password:', error);
-      message.error('Failed to update password');
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div style={{ padding: '2rem' }}>
-        <Skeleton active paragraph={{ rows: 4 }} />
-      </div>
-    );
-  }
+  if (loading) return <div className="p-20 text-center font-black text-slate-200 animate-pulse text-4xl">FUSING PROFILE...</div>;
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <Title level={2}>Profile Settings</Title>
-      
-      <Card title="Profile Information" style={{ marginBottom: '2rem' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <Upload
-            name="avatar"
-            listType="picture-card"
-            className="avatar-uploader"
-            showUploadList={false}
-            onChange={handleAvatarChange}
-            beforeUpload={() => false} // Prevent default upload
-          >
-            {avatarUrl || user?.avatar ? (
-              <Avatar
-                src={avatarUrl || user?.avatar}
-                size={100}
-                style={{ fontSize: '40px' }}
-              />
-            ) : (
-              <div>
-                <UserOutlined style={{ fontSize: '40px' }} />
-                <div style={{ marginTop: 8 }}>Upload</div>
+    <div className="max-w-5xl mx-auto px-4 py-8 animate-slide-up">
+      <div className="flex flex-col lg:flex-row gap-12">
+        {/* Left Col: Avatar & Status */}
+        <div className="lg:w-80 space-y-8">
+           <div className="bg-white border border-slate-100 rounded-[40px] p-10 text-center shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
+              <div className="relative mb-6 inline-block">
+                <img 
+                  src="https://ui-avatars.com/api/?name=Premium+Scholar&background=020617&color=fff&size=200" 
+                  alt="Avatar" 
+                  className="w-32 h-32 rounded-[32px] mx-auto border-4 border-white shadow-xl group-hover:scale-105 transition-transform"
+                />
+                <label className="absolute -bottom-2 -right-2 bg-slate-900 text-white w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer hover:bg-blue-600 shadow-lg transition-all">
+                  📷
+                  <input type="file" className="hidden" />
+                </label>
               </div>
-            )}
-          </Upload>
+              <h2 className="text-xl font-black text-slate-800 mb-1">{name}</h2>
+              <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 py-1.5 px-4 rounded-full inline-block">Pro Research Tier</p>
+              
+              <div className="mt-8 pt-8 border-t border-slate-50 grid grid-cols-2 gap-4">
+                 <div className="text-center">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Scholar Score</p>
+                    <p className="text-xl font-black text-slate-800">12,402</p>
+                 </div>
+                 <div className="text-center">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Expertise</p>
+                    <p className="text-xl font-black text-slate-800">Lvl 42</p>
+                 </div>
+              </div>
+           </div>
+
+           <div className="bg-slate-900 rounded-[40px] p-10 text-white">
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-6">Expertise Domains</h3>
+              <div className="space-y-4">
+                 {[
+                   { domain: 'Neural Science', val: '80%' },
+                   { domain: 'Discrete Math', val: '65%' },
+                   { domain: 'Quantum Phys', val: '40%' },
+                 ].map(d => (
+                   <div key={d.domain} className="group cursor-default">
+                      <div className="flex justify-between text-[10px] font-black mb-2 opacity-60">
+                        <span>{d.domain}</span>
+                        <span>{d.val}</span>
+                      </div>
+                      <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500 w-[var(--val)] transition-all duration-1000" style={{ '--val': d.val } as any}></div>
+                      </div>
+                   </div>
+                 ))}
+              </div>
+           </div>
         </div>
 
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-          initialValues={user}
-        >
-          <Form.Item
-            name="name"
-            label="Full Name"
-            rules={[{ required: true, message: 'Please input your name!' }]}
-          >
-            <Input
-              prefix={<UserOutlined />}
-              placeholder="Full Name"
-              size="large"
-            />
-          </Form.Item>
+        {/* Right Col: Edit Form */}
+        <div className="flex-1 space-y-8">
+           <div className="bg-white border border-slate-100 rounded-[40px] p-12 shadow-sm">
+             <h3 className="text-2xl font-black text-slate-800 mb-8 px-2">Knowledge Identity</h3>
+             <form className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                   <div className="space-y-2">
+                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Public Name</label>
+                     <input 
+                      type="text" 
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      className="w-full p-5 bg-slate-50 rounded-2xl font-bold text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all" 
+                     />
+                   </div>
+                   <div className="space-y-2">
+                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Academic Email</label>
+                     <input 
+                      type="email" 
+                      value={email}
+                      disabled
+                      className="w-full p-5 bg-slate-50/50 text-slate-400 cursor-not-allowed rounded-2xl font-bold text-sm outline-none" 
+                     />
+                   </div>
+                </div>
 
-          <Form.Item
-            name="email"
-            label="Email"
-            rules={[
-              { required: true, message: 'Please input your email!' },
-              { type: 'email', message: 'Please enter a valid email!' },
-            ]}
-          >
-            <Input
-              prefix={<MailOutlined />}
-              placeholder="Email"
-              size="large"
-              disabled
-            />
-          </Form.Item>
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Bio / Research Focus</label>
+                   <textarea 
+                    rows={4}
+                    className="w-full p-5 bg-slate-50 rounded-2xl font-bold text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all"
+                    placeholder="Tell your collaborators what you are working on..."
+                   ></textarea>
+                </div>
 
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={updating}
-              size="large"
-            >
-              Update Profile
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
+                <div className="pt-8 flex justify-end gap-4">
+                   <button type="button" className="px-8 py-4 bg-slate-50 text-slate-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-all">Reset Changes</button>
+                   <button type="submit" className="px-12 py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-100 hover:scale-105 active:scale-95 transition-all">Save Profile</button>
+                </div>
+             </form>
+           </div>
 
-      <Card title="Change Password">
-        <Form
-          name="change_password"
-          onFinish={handlePasswordChange}
-          layout="vertical"
-        >
-          <Form.Item
-            name="currentPassword"
-            label="Current Password"
-            rules={[{ required: true, message: 'Please input your current password!' }]}
-          >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="Current Password"
-              size="large"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="newPassword"
-            label="New Password"
-            rules={[{ required: true, message: 'Please input your new password!' }]}
-          >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="New Password"
-              size="large"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="confirmPassword"
-            label="Confirm New Password"
-            dependencies={['newPassword']}
-            rules={[
-              { required: true, message: 'Please confirm your new password!' },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue('newPassword') === value) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(new Error('The two passwords do not match!'));
-                },
-              }),
-            ]}
-          >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="Confirm New Password"
-              size="large"
-            />
-          </Form.Item>
-
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={updating}
-              size="large"
-            >
-              Change Password
-            </Button>
-          </Form.Item>
-        </Form>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-      </Card>
+           <div className="bg-rose-50/20 border border-rose-100 rounded-[40px] p-12">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                 <div>
+                    <h3 className="text-xl font-black text-rose-600 mb-1">Deactive Workspace</h3>
+                    <p className="text-xs font-medium text-rose-500/60 max-w-md">Once you deactivate your profile, all synthesized knowledge, whiteboard assets, and collaborative history will be archived permanently.</p>
+                 </div>
+                 <button className="px-8 py-4 bg-rose-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-rose-100 hover:bg-rose-700 transition-all">Initiate Archival</button>
+              </div>
+           </div>
+        </div>
+      </div>
     </div>
   );
 };

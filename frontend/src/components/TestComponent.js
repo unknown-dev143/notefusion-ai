@@ -1,226 +1,181 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Card, Button, Typography, Space, Tag, List, Divider, message } from 'antd';
+import { 
+  RocketOutlined, 
+  CheckCircleOutlined, 
+  CloseCircleOutlined, 
+  ApiOutlined,
+  CloudUploadOutlined,
+  PlayCircleOutlined
+} from '@ant-design/icons';
+
+const { Title, Text, Paragraph } = Typography;
 
 const TestComponent = () => {
   const [backendStatus, setBackendStatus] = useState('Checking...');
   const [testResults, setTestResults] = useState([]);
+  const [loading, setLoading] = useState({});
 
   useEffect(() => {
     testBackendConnection();
   }, []);
 
   const testBackendConnection = async () => {
+    setLoading(prev => ({ ...prev, health: true }));
     try {
-      const response = await axios.get('http://localhost:8000/');
-      setBackendStatus('✅ Connected');
-      setTestResults(prev => [...prev, { test: 'Backend Health Check', status: '✅ Passed', details: response.data }]);
+      const response = await axios.get('http://localhost:8001/');
+      setBackendStatus('Connected');
+      addResult('Backend Health Check', 'Passed', response.data);
     } catch (error) {
-      setBackendStatus('❌ Failed');
-      setTestResults(prev => [...prev, { test: 'Backend Health Check', status: '❌ Failed', details: error.message }]);
+      setBackendStatus('Failed');
+      addResult('Backend Health Check', 'Failed', error.message);
+    } finally {
+      setLoading(prev => ({ ...prev, health: false }));
     }
   };
 
+  const addResult = (test, status, details) => {
+    setTestResults(prev => [{
+      test,
+      status,
+      details,
+      time: new Date().toLocaleTimeString()
+    }, ...prev]);
+  };
+
   const testSessionsAPI = async () => {
+    setLoading(prev => ({ ...prev, sessions: true }));
     try {
-      const response = await axios.get('http://localhost:8000/api/sessions');
-      setTestResults(prev => [...prev, { test: 'Sessions API', status: '✅ Passed', details: response.data }]);
+      const response = await axios.get('http://localhost:8001/api/v1/sessions');
+      addResult('Sessions API', 'Passed', response.data);
+      message.success('Sessions API test passed');
     } catch (error) {
-      setTestResults(prev => [...prev, { test: 'Sessions API', status: '❌ Failed', details: error.message }]);
+      addResult('Sessions API', 'Failed', error.message);
+      message.error('Sessions API test failed');
+    } finally {
+      setLoading(prev => ({ ...prev, sessions: false }));
     }
   };
 
   const testUploadAPI = async () => {
+    setLoading(prev => ({ ...prev, upload: true }));
     try {
       const testFile = new File(['This is a test file'], 'test.txt', { type: 'text/plain' });
       const formData = new FormData();
       formData.append('file', testFile);
 
-      const response = await axios.post('http://localhost:8000/api/upload', formData, {
+      const response = await axios.post('http://localhost:8001/api/v1/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setTestResults(prev => [...prev, { test: 'Upload API', status: '✅ Passed', details: response.data }]);
+      addResult('Upload API', 'Passed', response.data);
+      message.success('Upload API test passed');
     } catch (error) {
-      setTestResults(prev => [...prev, { test: 'Upload API', status: '❌ Failed', details: error.message }]);
+      addResult('Upload API', 'Failed', error.message);
+      message.error('Upload API test failed');
+    } finally {
+      setLoading(prev => ({ ...prev, upload: false }));
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">🧪 NoteFusion AI Test Dashboard</h2>
-      
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Backend Status</h3>
-        <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-          backendStatus.includes('✅') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        }`}>
-          {backendStatus}
-        </div>
-      </div>
+    <div style={{ maxWidth: 800, margin: '24px auto', padding: '0 16px' }}>
+      <Card 
+        title={
+          <Space>
+            <RocketOutlined style={{ color: '#1890ff' }} />
+            <span>NoteFusion AI Test Dashboard</span>
+          </Space>
+        }
+        extra={
+          <Tag color={backendStatus === 'Connected' ? 'success' : 'error'} icon={backendStatus === 'Connected' ? <CheckCircleOutlined /> : <CloseCircleOutlined />}>
+            Backend: {backendStatus}
+          </Tag>
+        }
+      >
+        <Paragraph>
+          Use this dashboard to verify the connection between the frontend and the backend services.
+        </Paragraph>
 
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">API Tests</h3>
-        <div className="space-y-2">
-          <button
-            onClick={testSessionsAPI}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mr-2"
-          >
-            Test Sessions API
-          </button>
-          <button
-            onClick={testUploadAPI}
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
-          >
-            Test Upload API
-          </button>
-        </div>
-      </div>
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <Card size="small" title="Connection Tests">
+            <Space wrap>
+              <Button 
+                type="primary" 
+                icon={<ApiOutlined />} 
+                onClick={testSessionsAPI}
+                loading={loading.sessions}
+              >
+                Test Sessions API
+              </Button>
+              <Button 
+                type="primary" 
+                icon={<CloudUploadOutlined />} 
+                onClick={testUploadAPI}
+                loading={loading.upload}
+              >
+                Test Upload API
+              </Button>
+              <Button 
+                icon={<PlayCircleOutlined />} 
+                onClick={testBackendConnection}
+                loading={loading.health}
+              >
+                Check Health
+              </Button>
+            </Space>
+          </Card>
 
-      <div>
-        <h3 className="text-lg font-semibold mb-2">Test Results</h3>
-        <div className="space-y-2">
-          {testResults.map((result, index) => (
-            <div key={index} className="border rounded p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-medium">{result.test}</span>
-                <span className={`px-2 py-1 rounded text-sm ${
-                  result.status.includes('✅') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                  {result.status}
-                </span>
-              </div>
-              <div className="text-sm text-gray-600">
-                <pre className="whitespace-pre-wrap">{JSON.stringify(result.details, null, 2)}</pre>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+          <Divider orientation="horizontal">Test Results</Divider>
 
-      <div className="mt-6 p-4 bg-gray-50 rounded">
-        <h3 className="text-lg font-semibold mb-2">Quick Start Guide</h3>
-        <div className="text-sm text-gray-700 space-y-1">
-          <p>1. Ensure backend is running: <code className="bg-gray-200 px-1 rounded">py -m uvicorn main:app --reload</code></p>
-          <p>2. Frontend should be running on: <code className="bg-gray-200 px-1 rounded">http://localhost:3000</code></p>
-          <p>3. Backend API available at: <code className="bg-gray-200 px-1 rounded">http://localhost:8000</code></p>
-          <p>4. Test the APIs using the buttons above</p>
+          <List
+            dataSource={testResults}
+            renderItem={item => (
+              <List.Item>
+                <Card 
+                  style={{ width: '100%' }} 
+                  size="small"
+                  title={
+                    <Space justify="space-between" style={{ width: '100%' }}>
+                      <Text strong>{item.test}</Text>
+                      <Tag color={item.status === 'Passed' ? 'success' : 'error'}>
+                        {item.status}
+                      </Tag>
+                    </Space>
+                  }
+                  extra={<Text type="secondary" style={{ fontSize: '12px' }}>{item.time}</Text>}
+                >
+                  <pre style={{ 
+                    maxHeight: '150px', 
+                    overflow: 'auto', 
+                    backgroundColor: '#f5f5f5', 
+                    padding: '8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    margin: 0
+                  }}>
+                    {JSON.stringify(item.details, null, 2)}
+                  </pre>
+                </Card>
+              </List.Item>
+            )}
+            locale={{ emptyText: 'No tests run yet' }}
+          />
+        </Space>
+
+        <Divider />
+
+        <div style={{ backgroundColor: '#fffbe6', padding: '16px', borderRadius: '8px', border: '1px solid #ffe58f' }}>
+          <Title level={5}>Quick Start Guide</Title>
+          <ul style={{ paddingLeft: '20px', margin: 0 }}>
+            <li>Backend: <Text code>http://localhost:8001/api/v1</Text></li>
+            <li>Frontend: <Text code>http://localhost:3000</Text></li>
+            <li>Run Backend: <Text code>py -m uvicorn main:app --reload</Text></li>
+          </ul>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };
 
-=======
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-
-const TestComponent = () => {
-  const [backendStatus, setBackendStatus] = useState('Checking...');
-  const [testResults, setTestResults] = useState([]);
-
-  useEffect(() => {
-    testBackendConnection();
-  }, []);
-
-  const testBackendConnection = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/');
-      setBackendStatus('✅ Connected');
-      setTestResults(prev => [...prev, { test: 'Backend Health Check', status: '✅ Passed', details: response.data }]);
-    } catch (error) {
-      setBackendStatus('❌ Failed');
-      setTestResults(prev => [...prev, { test: 'Backend Health Check', status: '❌ Failed', details: error.message }]);
-    }
-  };
-
-  const testSessionsAPI = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/sessions');
-      setTestResults(prev => [...prev, { test: 'Sessions API', status: '✅ Passed', details: response.data }]);
-    } catch (error) {
-      setTestResults(prev => [...prev, { test: 'Sessions API', status: '❌ Failed', details: error.message }]);
-    }
-  };
-
-  const testUploadAPI = async () => {
-    try {
-      const testFile = new File(['This is a test file'], 'test.txt', { type: 'text/plain' });
-      const formData = new FormData();
-      formData.append('file', testFile);
-
-      const response = await axios.post('http://localhost:8000/api/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setTestResults(prev => [...prev, { test: 'Upload API', status: '✅ Passed', details: response.data }]);
-    } catch (error) {
-      setTestResults(prev => [...prev, { test: 'Upload API', status: '❌ Failed', details: error.message }]);
-    }
-  };
-
-  return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">🧪 NoteFusion AI Test Dashboard</h2>
-      
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Backend Status</h3>
-        <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-          backendStatus.includes('✅') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        }`}>
-          {backendStatus}
-        </div>
-      </div>
-
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">API Tests</h3>
-        <div className="space-y-2">
-          <button
-            onClick={testSessionsAPI}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mr-2"
-          >
-            Test Sessions API
-          </button>
-          <button
-            onClick={testUploadAPI}
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
-          >
-            Test Upload API
-          </button>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-lg font-semibold mb-2">Test Results</h3>
-        <div className="space-y-2">
-          {testResults.map((result, index) => (
-            <div key={index} className="border rounded p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-medium">{result.test}</span>
-                <span className={`px-2 py-1 rounded text-sm ${
-                  result.status.includes('✅') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                  {result.status}
-                </span>
-              </div>
-              <div className="text-sm text-gray-600">
-                <pre className="whitespace-pre-wrap">{JSON.stringify(result.details, null, 2)}</pre>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-6 p-4 bg-gray-50 rounded">
-        <h3 className="text-lg font-semibold mb-2">Quick Start Guide</h3>
-        <div className="text-sm text-gray-700 space-y-1">
-          <p>1. Ensure backend is running: <code className="bg-gray-200 px-1 rounded">py -m uvicorn main:app --reload</code></p>
-          <p>2. Frontend should be running on: <code className="bg-gray-200 px-1 rounded">http://localhost:3000</code></p>
-          <p>3. Backend API available at: <code className="bg-gray-200 px-1 rounded">http://localhost:8000</code></p>
-          <p>4. Test the APIs using the buttons above</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-export default TestComponent; 
+export default TestComponent;

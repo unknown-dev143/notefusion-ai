@@ -1,4 +1,4 @@
-import { message } from 'antd';
+import { api, handleApiError } from '../../../lib/api';
 
 interface Flashcard {
   question: string;
@@ -7,7 +7,6 @@ interface Flashcard {
 
 class AIService {
   private static instance: AIService;
-  private apiUrl = process.env.REACT_APP_AI_API_URL || 'http://localhost:3001/api/ai';
 
   private constructor() {}
 
@@ -20,84 +19,82 @@ class AIService {
 
   public async summarizeNote(content: string): Promise<string> {
     try {
-      // In a real implementation, this would call your backend AI service
-      // For now, we'll use a simple extractive summarization
-      if (!content) return '';
-      
-      // Simple extractive summarization (first 3 sentences)
-      const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
-      const summary = sentences.slice(0, 3).join('. ') + '.';
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      return summary;
+      const response = await api.post('/ai/summarize', {
+        content,
+        options: { focus: 'key-points', format: 'bullets' }
+      });
+      return response.data.content;
     } catch (error) {
       console.error('Error generating summary:', error);
-      message.error('Failed to generate summary');
-      throw error;
+      throw new Error(handleApiError(error, 'Failed to generate summary'));
     }
   }
 
   public async generateFlashcards(content: string): Promise<Flashcard[]> {
     try {
-      // In a real implementation, this would call your backend AI service
-      if (!content) return [];
-      
-      // Simple flashcard generation (split by paragraphs)
-      const paragraphs = content.split('\n\n').filter(p => p.trim().length > 0);
-      const flashcards: Flashcard[] = [];
-      
-      for (let i = 0; i < Math.min(5, paragraphs.length); i++) {
-        const paragraph = paragraphs[i];
-        const sentences = paragraph.split(/[.!?]+/).filter(s => s.trim().length > 0);
-        
-        if (sentences.length >= 2) {
-          flashcards.push({
-            question: sentences[0].trim() + '?',
-            answer: sentences.slice(1).join('. ').trim() + '.'
-          });
-        }
-      }
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      return flashcards.length > 0 ? flashcards : [{
-        question: 'No flashcards could be generated',
-        answer: 'The content might be too short or not suitable for flashcard generation.'
-      }];
+      const response = await api.post('/ai/flashcards', { content });
+      return response.data.flashcards || response.data;
     } catch (error) {
       console.error('Error generating flashcards:', error);
-      message.error('Failed to generate flashcards');
-      throw error;
+      throw new Error(handleApiError(error, 'Failed to generate flashcards'));
     }
   }
 
   public async improveText(text: string): Promise<string> {
     try {
-      // In a real implementation, this would call your backend AI service
-      if (!text) return '';
-      
-      // Simple text improvement (capitalization and spacing)
-      let improved = text
-        .replace(/\s+/g, ' ')
-        .replace(/\.\s+([a-z])/g, (_, p1) => `. ${p1.toUpperCase()}`)
-        .trim();
-      
-      // Ensure proper capitalization
-      if (improved.length > 0) {
-        improved = improved[0].toUpperCase() + improved.slice(1);
-      }
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      return improved;
+      const response = await api.post('/ai/generate', {
+        prompt: 'Improve the clarity, grammar, and professional tone of the following text while maintaining its core meaning.',
+        content: text
+      });
+      return response.data.content;
     } catch (error) {
       console.error('Error improving text:', error);
-      message.error('Failed to improve text');
-      throw error;
+      throw new Error(handleApiError(error, 'Failed to improve text'));
+    }
+  }
+
+  public async semanticSearch(query: string, allNotes: any[]): Promise<any[]> {
+    try {
+      const response = await api.post('/ai/synapse', { content: query });
+      return response.data.connections || [];
+    } catch (error) {
+      console.error('Semantic search failed:', error);
+      return [];
+    }
+  }
+
+  public async suggestKnowledgeBridges(currentNote: any, allNotes: any[]): Promise<any[]> {
+    try {
+      // Mapping this to synapse or specialized bridge endpoint if needed.
+      // For now, synapse provides semantic connections which acts as bridges.
+      const response = await api.post('/ai/synapse', { content: currentNote.content });
+      return (response.data.connections || []).map((c: any) => ({
+        note: c,
+        reason: 'Semantic intersection in core concepts'
+      }));
+    } catch (error) {
+      console.error('Bridge analysis failed:', error);
+      return [];
+    }
+  }
+
+  public async generateGlossary(content: string): Promise<Record<string, string>> {
+     try {
+       const response = await api.post('/ai/glossary', { content });
+       return response.data;
+     } catch (error) {
+       console.error('Glossary generation failed:', error);
+       return {};
+     }
+  }
+
+  public async generateStudyGuide(content: string): Promise<any> {
+    try {
+      const response = await api.post('/ai/study-guide', { content });
+      return response.data;
+    } catch (error) {
+      console.error('Study guide creation failed:', error);
+      throw new Error(handleApiError(error, 'Failed to create study guide'));
     }
   }
 }

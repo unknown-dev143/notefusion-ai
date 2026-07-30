@@ -1,30 +1,48 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Card, 
-  Button, 
-  Input, 
-  Space, 
-  message, 
-  Tooltip, 
-  Divider
-} from 'antd';
-import { 
-  SaveOutlined, 
-  PushpinOutlined, 
-  PushpinFilled, 
-  RobotOutlined,
-  FileTextOutlined
-} from '@ant-design/icons';
-import AIToolbar from './ai/AIToolbar';
-import AITemplateManager from './ai/AITemplateManager';
-import AISuggestions from './ai/AISuggestions';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import dynamic from 'react-dynamic';
+import { 
+  LuSave, 
+  LuPin, 
+  LuPinOff, 
+  LuBot, 
+  LuFileText, 
+  LuTag, 
+  LuX, 
+  LuLightbulb, 
+  LuShare2 as LuShare, 
+  LuUsers, 
+  LuMail, 
+  LuFileDown, 
+  LuFile, 
+  LuLoader as LuLoader2, 
+  LuTrash2 as LuTrash, 
+  LuChevronLeft 
+} from 'react-icons/lu';
+import { useForm, SubmitHandler } from "react-hook-form"
 
-// Import/Export UI
+import { useNotes } from '../features/notes/context/NoteContext';
+import AIToolbar from './ai/AIToolbar';
+import AISuggestions from './ai/AISuggestions';
 import ImportExportMenu from './ImportExportMenu';
 
-// Types
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Card, CardContent, CardHeader } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Separator } from '../components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/Tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger, 
+  DropdownMenuSeparator 
+} from '../components/ui/dropdown-menu';
+import { Label } from '../components/ui/label';
+import { useToast } from '../components/ui/use-toast';
+
 type SharePermission = 'view' | 'edit';
 
 interface NoteEditorProps {
@@ -48,78 +66,11 @@ interface NoteEditorState {
   isLoading: boolean;
 }
 
-// Dynamically import ReactQuill for better performance
-const ReactQuill = dynamic(() => import('react-quill'), { 
-  ssr: false,
-  loading: () => <div><LoadingOutlined /> Loading editor...</div>,
-});
-
-// Define toolbar options for the rich text editor
-const editorModules = {
-  toolbar: {
-    container: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
-      ['link', 'image', 'video'],
-      ['clean'],
-      ['code-block'],
-      ['ai-tools']
-    ],
-    handlers: {
-      'ai-tools': () => toggleAITools()
-    }
-  },
-};
-
-// Register AI Tools button in Quill
-useEffect(() => {
-  if (typeof window === 'undefined') return;
-  
-  const quill = document.querySelector('.ql-toolbar');
-  if (!quill) return;
-  
-  const aiButton = document.createElement('button');
-  aiButton.className = 'ql-ai-tools';
-  aiButton.innerHTML = '<span class="ql-ai-icon">AI</span>';
-  aiButton.title = 'AI Tools';
-  
-  const handleClick = (e: MouseEvent) => {
-    e.preventDefault();
-    setState(prev => ({
-      ...prev,
-      showAITools: !prev.showAITools
-    }));
-  };
-  
-  aiButton.addEventListener('click', handleClick);
-  quill.appendChild(aiButton);
-  
-  return () => {
-    aiButton.removeEventListener('click', handleClick);
-    if (quill.contains(aiButton)) {
-      quill.removeChild(aiButton);
-    }
-  };
-}, []);
-
-const editorFormats = [
-  'header',
-  'bold', 'italic', 'underline', 'strike',
-  'list', 'bullet',
-  'link', 'image', 'video',
-  'code-block',
-  'color', 'background',
-  'align'
-];
-
-interface NoteEditorProps {
-  noteId?: string;
-  onClose?: () => void;
+interface ShareFormData {
+  email: string;
+  permission: string;
 }
 
-interface NoteEditorState {
-  title: string;
 const NoteEditor: React.FC<NoteEditorProps> = ({ noteId, onClose }) => {
   const [state, setState] = useState<NoteEditorState>({
     title: '',
@@ -137,17 +88,70 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ noteId, onClose }) => {
     isLoading: false,
   });
 
-  const editorRef = useRef<ReactQuill>(null);
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<ShareFormData>();
+  const { toast } = useToast();
+
   const { 
     getNote, 
     createNote, 
     updateNote, 
     deleteNote, 
-    addMediaToNote,
-    togglePinNote,
-    loading 
+    pinNote 
   } = useNotes();
   
+  const toggleAITools = useCallback(() => {
+    setState(prev => ({ ...prev, showAITools: !prev.showAITools }));
+  }, []);
+
+  const toggleAISuggestions = useCallback(() => {
+    setState(prev => ({ ...prev, showAISuggestions: !prev.showAISuggestions }));
+  }, []);
+
+  const editorModules = useMemo(() => ({
+    toolbar: {
+      container: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+        ['link', 'image', 'video'],
+        ['clean'],
+        ['code-block'],
+        ['ai-tools']
+      ],
+      handlers: {
+        'ai-tools': toggleAITools
+      }
+    },
+  }), [toggleAITools]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const quill = document.querySelector('.ql-toolbar');
+    if (!quill) return;
+    
+    if (quill.querySelector('.ql-ai-tools')) return;
+
+    const aiButton = document.createElement('button');
+    aiButton.className = 'ql-ai-tools';
+    aiButton.innerHTML = '<span class="ql-ai-icon">AI</span>';
+    aiButton.title = 'AI Tools';
+    
+    const handleClick = (e: Event) => {
+      e.preventDefault();
+      toggleAITools();
+    };
+    
+    aiButton.addEventListener('click', handleClick);
+    quill.appendChild(aiButton);
+    
+    return () => {
+      aiButton.removeEventListener('click', handleClick);
+      if (quill.contains(aiButton)) {
+        quill.removeChild(aiButton);
+      }
+    };
+  }, [toggleAITools]);
+
   useEffect(() => {
     const loadNote = async () => {
       if (noteId) {
@@ -182,138 +186,12 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ noteId, onClose }) => {
     }));
   }, []);
 
-  const handlePinToggle = () => {
-    setState(prev => ({
-      ...prev,
-      isPinned: !prev.isPinned
-    }));
-  };
-
-  const handleTagInputKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && state.newTag) {
-      e.preventDefault();
-      handleAddTag();
-    }
-  };
-
-  const handleShareViaEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!state.shareEmail) return;
-    
-    try {
-      await shareNote(noteId || '', {
-        email: state.shareEmail,
-        permission: state.sharePermission,
-        message: `Check out this note: ${state.title}`
-      });
-      message.success('Note shared successfully');
-      setState(prev => ({
-        ...prev,
-        shareEmail: '',
-        isSharing: false
-      }));
-    } catch (error) {
-      console.error('Error sharing note:', error);
-      message.error('Failed to share note');
-    }
-  };
-
-  const handleExport = (format: 'pdf' | 'markdown' | 'html') => {
-    try {
-      exportNote({
-        id: noteId || 'new-note',
-        title: state.title,
-        content: state.content,
-        format
-      });
-      message.success(`Exported to ${format.toUpperCase()} successfully`);
-    } catch (error) {
-      console.error('Error exporting note:', error);
-      message.error('Failed to export note');
-    }
-  };
-
-  const handleMediaUpload = async (file: File): Promise<string> => {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-      
-      const { url } = await response.json();
-      return url;
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      message.error('Failed to upload file');
-      return '';
-    }
-  };
-
-  // toggleAITools is now handled directly in the effect
-
-  const toggleTemplateManager = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      showTemplateManager: !prev.showTemplateManager
-    }));
-  }, []);
-
-  const handleApplyTemplate = useCallback((template: { content: string; name: string }) => {
-    setState(prev => ({
-      ...prev,
-      content: template.content,
-      showTemplateManager: false
-    }));
-    message.success(`Applied template: ${template.name}`);
-  }, []);
-
-  const handleSave = async () => {
-    try {
-      if (!state.title.trim()) {
-        message.error('Please enter a title');
-        return;
-      }
-
-      const noteData = {
-        title: state.title.trim(),
-        content: state.content,
-        tags: state.tags,
-        isPinned: state.isPinned,
-        updatedAt: new Date().toISOString(),
-      };
-
-      if (state.isNewNote) {
-        await createNote(noteData);
-        message.success('Note created successfully');
-      } else if (noteId) {
-        await updateNote(noteId, noteData);
-        message.success('Note updated successfully');
-      }
-
-      if (onClose) onClose();
-    } catch (error) {
-      console.error('Error saving note:', error);
-      message.error('Failed to save note');
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!noteId) return;
-    
-    try {
-      await deleteNote(noteId);
-      message.success('Note deleted successfully');
-      if (onClose) onClose();
-    } catch (error) {
-      console.error('Error deleting note:', error);
-      message.error('Failed to delete note');
+  const handleTogglePin = async () => {
+    if (noteId) {
+      await pinNote(noteId, !state.isPinned);
+      setState(prev => ({ ...prev, isPinned: !prev.isPinned }));
+    } else {
+        setState(prev => ({ ...prev, isPinned: !prev.isPinned }));
     }
   };
 
@@ -333,119 +211,37 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ noteId, onClose }) => {
     }));
   };
 
-  const handleMediaEmbed = (url: string, type: 'image' | 'video') => {
-    let mediaHtml = '';
-    
-    switch (type) {
-      case 'image':
-        mediaHtml = `<img src="${url}" alt="Embedded image" style="max-width: 100%;" />`;
-        break;
-      case 'video':
-        mediaHtml = `
-          <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden;">
-            <video 
-              src="${url}" 
-              controls 
-              style="position:absolute; top:0; left:0; width:100%; height:100%;"
-            ></video>
-          </div>
-        `;
-        break;
-      default:
-        mediaHtml = `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-    }
-    
-    setState(prev => ({ ...prev, content: prev.content + mediaHtml }));
-  };
-
-  const handleUpload = async (file: File) => {
-    if (!noteId) {
-      message.warning('Please save the note before uploading files');
-      return '';
-    }
-    
+  const onShareSubmit = async (data: ShareFormData) => {
     try {
-      const url = await addMediaToNote(noteId, file);
-      return url;
-    } catch (error) {
-      message.error('Failed to upload file');
-      throw error;
-    }
-  };
-
-  const handleTogglePin = async () => {
-    if (noteId) {
-      await togglePinNote(noteId);
-      setState(prev => ({ ...prev, isPinned: !prev.isPinned }));
-    }
-  };
-
-  const handleApplySuggestion = useCallback((type: string, content: string) => {
-    setState(prev => ({
-      ...prev,
-      content: content
-    }));
-  }, []);
-        // Add summary at the top of the content
-        setState(prev => ({ ...prev, content: `<h2>Summary</h2><p>${content}</p>\n\n${prev.content}` }));
-        break;
-      case 'related-note':
-        // Add related note link
-        setState(prev => ({ ...prev, content: `${prev.content}\n\nRelated: ${content}` }));
-        break;
-      default:
-        break;
-    }
-  };
-
-  const handleShareNote = async () => {
-    if (!noteId) return;
-    
-    try {
-      await navigator.clipboard.writeText(`${window.location.origin}/shared/${noteId}`);
-      message.success('Shareable link copied to clipboard');
-    } catch (error) {
-      message.error('Failed to copy share link');
-    }
-  };
-
-  const handleShareViaEmail = async () => {
-    if (!state.shareEmail) {
-      message.warning('Please enter an email address');
-      return;
-    }
-
-    try {
-      // In a real app, you would call your API to send the email
-      message.loading({ content: 'Sharing note...', key: 'share' });
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      toast({ title: 'Sharing note...', description: `Sending invite to ${data.email}` });
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      message.success({ 
-        content: `Note shared with ${state.shareEmail} (${state.sharePermission} access)`,
-        key: 'share'
+      toast({ 
+        title: 'Note shared', 
+        description: `Note shared with ${data.email} (${state.sharePermission} access)`
       });
-      setState(prev => ({ ...prev, shareEmail: '', isSharing: false }));
+      setState(prev => ({
+        ...prev,
+        shareEmail: '',
+        isSharing: false
+      }));
+      reset();
     } catch (error) {
-      message.error({ content: 'Failed to share note', key: 'share' });
+      console.error('Error sharing note:', error);
+      toast({ title: 'Failed to share note', variant: 'destructive' });
     }
   };
 
   const exportAsPDF = () => {
-    // In a real app, you would generate a PDF from the note content
-    message.info('Exporting as PDF...');
-    // This is a placeholder for PDF generation logic
+    toast({ title: 'Exporting as PDF...' });
   };
 
   const exportAsMarkdown = () => {
-    // Convert HTML to Markdown (simplified)
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = state.content;
-    
-    // Simple HTML to Markdown conversion (would need a proper library in production)
     let markdown = `# ${state.title}\n\n`;
     markdown += tempDiv.innerText;
     
-    // Create download link
     const blob = new Blob([markdown], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -457,242 +253,301 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ noteId, onClose }) => {
     URL.revokeObjectURL(url);
   };
 
-  const shareMenu = (
-    <Menu
-      items={[
-        {
-          key: 'email',
-          label: 'Share via Email',
-          icon: <MailOutlined />,
-          onClick: handleShareNote
-        },
-        {
-          key: 'email',
-          label: 'Share via Email',
-          icon: <MailOutlined />,
-          onClick: () => setState(prev => ({ ...prev, isSharing: true }))
-        },
-        {
-          key: 'collaborate',
-          label: 'Invite Collaborators',
-          icon: <TeamOutlined />,
-          disabled: true // Future feature
-        },
-        {
-          type: 'divider'
-        },
-        {
-          key: 'export-pdf',
-          label: 'Export as PDF',
-          icon: <FilePdfOutlined />,
-          onClick: exportAsPDF
-        },
-        {
-          key: 'export-markdown',
-          label: 'Export as Markdown',
-          icon: <FileMarkdownOutlined />,
-          onClick: exportAsMarkdown
-        }
-      ]}
-    />
-  );
+  const toggleTemplateManager = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      showTemplateManager: !prev.showTemplateManager
+    }));
+  }, []);
 
-  
+  const handleSave = async () => {
+    try {
+      if (!state.title.trim()) {
+        toast({ title: 'Please enter a title', variant: 'destructive' });
+        return;
+      }
+
+      const noteData = {
+        title: state.title.trim(),
+        content: state.content,
+        tags: state.tags,
+        isPinned: state.isPinned,
+        updatedAt: new Date().toISOString(),
+        version: 1,
+      };
+
+      if (state.isNewNote) {
+        await createNote({ ...noteData, isArchived: false, folderId: undefined });
+        toast({ title: 'Note created successfully' });
+      } else if (noteId) {
+        await updateNote(noteId, noteData);
+        toast({ title: 'Note updated successfully' });
+      }
+
+      if (onClose) onClose();
+    } catch (error) {
+      console.error('Error saving note:', error);
+      toast({ title: 'Failed to save note', variant: 'destructive' });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!noteId) return;
+    
+    try {
+      await deleteNote(noteId);
+      toast({ title: 'Note deleted successfully' });
+      if (onClose) onClose();
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      toast({ title: 'Failed to delete note', variant: 'destructive' });
+    }
+  };
 
   return (
-    <div className="note-editor">
-      <Card
-        title={
-          <Input
-            placeholder="Note Title"
-          value={state.title}
-          onChange={(e) => setState(prev => ({ ...prev, title: e.target.value }))}
-          bordered={false}
-          className="text-2xl font-bold"
-        />
-      }
-      extra={[
-        <Space key="actions" size="middle">
-          <Tooltip title={state.isPinned ? 'Unpin' : 'Pin'}>
-            <Button
-              type="text"
-              icon={state.isPinned ? <PushpinFilled /> : <PushpinOutlined />}
-              onClick={handleTogglePin}
-            />
-          </Tooltip>
-          <Tooltip title="AI Suggestions">
-            <Button
-              type="text"
-              icon={<BulbOutlined />}
-              onClick={toggleAISuggestions}
-              className={state.showAISuggestions ? 'bg-blue-50' : ''}
-            />
-          </Tooltip>
-          <Dropdown overlay={shareMenu} trigger={['click']}>
-            <Button icon={<ShareAltOutlined />}>Share</Button>
-          </Dropdown>
-          <ImportExportMenu 
-            content={state.content}
-            title={state.title || 'untitled'}
-            onImport={(imported) => setState(prev => ({
-              ...prev,
-              content: prev.content ? `${prev.content}\n\n${imported}` : imported
-            }))}
-          />
-          <Button
-            type="primary"
-            icon={<SaveOutlined />}
-            onClick={handleSave}
-            loading={state.isLoading}
-          >
-            Save
-          </Button>
-          {!state.isNewNote && (
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              onClick={handleDelete}
-              disabled={state.isLoading}
-            />
-          )}
-          {onClose && (
-            <Button icon={<CloseOutlined />} onClick={onClose} />
-          )}
-        </Space>
-      ]}
-      className="h-full flex flex-col"
-      bodyStyle={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 0 }}
-    >
-      <div className="p-4 border-b">
-        <Space size={[0, 8]} wrap>
-          {state.tags.map(tag => (
-            <Tag
-              key={tag}
-              closable
-              onClose={() => handleRemoveTag(tag)}
-              className="flex items-center"
-            >
-              {tag}
-            </Tag>
-          ))}
-          <Input
-            size="small"
-            placeholder="Add tag"
-            value={state.newTag}
-            onChange={(e) => setState(prev => ({ ...prev, newTag: e.target.value }))}
-            onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-            onBlur={handleAddTag}
-            className="w-24"
-            prefix={<TagOutlined />}
-          />
-        </Space>
-      </div>
-      <div className="flex-1 overflow-auto">
-        <div className="editor-toolbar" style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-          <Space>
-            <Tooltip title="Save">
-              <Button 
-                icon={<SaveOutlined />} 
-                onClick={handleSave}
-                disabled={!state.title.trim()}
-              />
-            </Tooltip>
-            
-            <Tooltip title="AI Tools">
-              <Button 
-                icon={<RobotOutlined />} 
-                onClick={toggleAITools}
-                type={state.showAITools ? 'primary' : 'default'}
-              />
-            </Tooltip>
-            
-            <Tooltip title="Templates">
-              <Button 
-                icon={<FileTextOutlined />} 
-                onClick={toggleTemplateManager}
-              />
-            </Tooltip>
-            
-            <Divider type="vertical" />
-            
-            <Tooltip title={state.isPinned ? 'Unpin' : 'Pin to top'}>
-              <Button 
-                icon={state.isPinned ? <PushpinFilled /> : <PushpinOutlined />} 
-                onClick={handleTogglePin}
-              />
-            </Tooltip>
-          </Space>
-        </div>
-        <div className="editor-content">
-          {state.showAITools && (
-            <div className="ai-toolbar-container" style={{ marginBottom: '16px' }}>
-              <AIToolbar 
-                noteId={noteId || 'new'}
-                content={state.content}
-                onContentUpdate={handleContentUpdate}
-                onSaveTemplate={() => toggleTemplateManager()}
-              />
+    <div className="h-full flex flex-col bg-background">
+      <Card className="flex-1 flex flex-col border-0 shadow-none rounded-none">
+        <CardHeader className="border-b py-3">
+            <div className="flex items-center gap-2">
+                {onClose && (
+                    <Button variant="ghost" size="icon" onClick={onClose} className="mr-2">
+                        <LuChevronLeft className="h-4 w-4" />
+                    </Button>
+                )}
+                <Input
+                    placeholder="Note Title"
+                    value={state.title}
+                    onChange={(e) => setState(prev => ({ ...prev, title: e.target.value }))}
+                    className="text-lg font-bold border-none shadow-none focus-visible:ring-0 px-0 h-auto"
+                />
+                
+                <div className="flex items-center gap-1 ml-auto">
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleTogglePin}
+                                >
+                                    {state.isPinned ? <LuPin className="h-4 w-4 fill-foreground" /> : <LuPinOff className="h-4 w-4" />}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{state.isPinned ? 'Unpin' : 'Pin'}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant={state.showAISuggestions ? 'secondary' : 'ghost'}
+                                    size="icon"
+                                    onClick={toggleAISuggestions}
+                                >
+                                    <LuLightbulb className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>AI Suggestions</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="gap-2">
+                                <LuShare className="h-4 w-4" /> Share
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setState(prev => ({ ...prev, isSharing: true }))}>
+                                <LuMail className="mr-2 h-4 w-4" /> Share via Email
+                            </DropdownMenuItem>
+                            <DropdownMenuItem disabled>
+                                <LuUsers className="mr-2 h-4 w-4" /> Invite Collaborators
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={exportAsPDF}>
+                                <LuFileDown className="mr-2 h-4 w-4" /> Export as PDF
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={exportAsMarkdown}>
+                                <LuFileText className="mr-2 h-4 w-4" /> Export as Markdown
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <Button
+                        variant="default"
+                        size="sm"
+                        onClick={handleSave}
+                        loading={state.isLoading}
+                        className="gap-2"
+                    >
+                        {state.isLoading ? <LuLoader2 className="h-4 w-4 animate-spin" /> : <LuSave className="h-4 w-4" />}
+                        Save
+                    </Button>
+
+                    {!state.isNewNote && (
+                        <Button
+                            variant="destructive"
+                            size="icon"
+                            onClick={handleDelete}
+                            disabled={state.isLoading}
+                        >
+                            <LuTrash className="h-4 w-4" />
+                        </Button>
+                    )}
+                </div>
             </div>
-          )}
-          <ReactQuill
-            theme="snow"
-            value={state.content}
-            onChange={handleContentChange}
-            modules={editorModules}
-            placeholder="Start writing your note here..."
-            style={{ height: '50vh' }}
-          />
-          <AISuggestions
-            noteId={noteId || 'new'}
-            content={state.content}
-            onApplySuggestion={handleContentUpdate}
-          />
-        </div>
-      )}
-      <Modal
-        title="Share Note"
-        open={state.isSharing}
-        onCancel={() => setState(prev => ({ ...prev, isSharing: false }))}
-        footer={null}
-      >
-        <Form layout="vertical" onFinish={handleShareViaEmail}>
-          <Form.Item
-            label="Email"
-            name="email"
-            rules={[
-              { required: true, message: 'Please input email address' },
-              { type: 'email', message: 'Please enter a valid email' }
-            ]}
-          >
-            <Input
-              placeholder="Enter email address"
-              value={state.shareEmail}
-              onChange={(e) => setState(prev => ({ ...prev, shareEmail: e.target.value }))}
-            />
-          </Form.Item>
-          <Form.Item
-            label="Permission"
-            name="permission"
-            initialValue={state.sharePermission}
-          >
-            <select
-              className="w-full p-2 border rounded"
-              value={state.sharePermission}
-              onChange={(e) => setState(prev => ({
-                ...prev,
-                sharePermission: e.target.value as SharePermission
-              }))}
-            >
-              <option value="view">Can View</option>
-              <option value="edit">Can Edit</option>
-            </select>
-          </Form.Item>
-          <Button type="primary" htmlType="submit" block>
-            Share
-          </Button>
-        </Form>
-      </Modal>
-    </Card>
+        </CardHeader>
+        
+        <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+            <div className="p-4 border-b flex flex-wrap gap-2 items-center bg-muted/20">
+                {state.tags.map(tag => (
+                    <Badge key={tag} variant="secondary" className="gap-1 pr-1">
+                        {tag}
+                        <button onClick={() => handleRemoveTag(tag)} className="ml-1 hover:text-destructive focus:outline-none">
+                            <LuX className="h-3 w-3" />
+                        </button>
+                    </Badge>
+                ))}
+                <div className="flex items-center gap-2">
+                    <LuTag className="h-4 w-4 text-muted-foreground" />
+                    <Input
+                        className="h-7 w-32 border-none shadow-none focus-visible:ring-0 bg-transparent"
+                        placeholder="Add tag..."
+                        value={state.newTag}
+                        onChange={(e) => setState(prev => ({ ...prev, newTag: e.target.value }))}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+                        onBlur={handleAddTag}
+                    />
+                </div>
+            </div>
+
+            <div className="flex-1 flex overflow-hidden">
+                 <div className="flex-1 flex flex-col relative overflow-hidden">
+                     <div className="p-2 border-b flex gap-1 flex-wrap bg-background z-10">
+                        <TooltipProvider>
+                            <Tooltip>
+                             <TooltipTrigger asChild>
+                                 <Button variant="ghost" size="sm" onClick={handleSave} disabled={!state.title.trim()}>
+                                     <LuSave className="h-4 w-4" />
+                                 </Button>
+                             </TooltipTrigger>
+                             <TooltipContent>Save</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+
+                         <TooltipProvider>
+                             <Tooltip>
+                                 <TooltipTrigger asChild>
+                                     <Button 
+                                         variant={state.showAITools ? 'secondary' : 'ghost'} 
+                                         size="sm" 
+                                         onClick={toggleAITools}
+                                     >
+                                         <LuBot className="h-4 w-4" />
+                                     </Button>
+                                 </TooltipTrigger>
+                                 <TooltipContent>AI Tools</TooltipContent>
+                             </Tooltip>
+                         </TooltipProvider>
+                         
+                         <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                     <Button variant="ghost" size="sm" onClick={toggleTemplateManager}>
+                                         <LuFile className="h-4 w-4" />
+                                     </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Templates</TooltipContent>
+                            </Tooltip>
+                         </TooltipProvider>
+
+                         <Separator orientation="vertical" className="h-6" />
+
+                         <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                     <Button variant="ghost" size="sm" onClick={handleTogglePin}>
+                                         {state.isPinned ? <LuPin className="h-4 w-4" /> : <LuPinOff className="h-4 w-4" />}
+                                     </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{state.isPinned ? 'Unpin' : 'Pin to top'}</TooltipContent>
+                            </Tooltip>
+                         </TooltipProvider>
+                     </div>
+
+                    <div className="flex-1 overflow-auto relative p-4">
+                         {state.showAITools && (
+                            <div className="mb-4 p-4 border rounded-md bg-muted/30">
+                              <AIToolbar 
+                                noteId={noteId || 'new'}
+                                content={state.content}
+                                onContentUpdate={handleContentUpdate}
+                                onSaveTemplate={() => toggleTemplateManager()}
+                              />
+                            </div>
+                          )}
+                          <ReactQuill
+                            theme="snow"
+                            value={state.content}
+                            onChange={handleContentChange}
+                            modules={editorModules}
+                            placeholder="Start writing your note here..."
+                            className="h-[calc(100%-2rem)]"
+                          />
+                          <div className="mt-4">
+                              <AISuggestions
+                                noteId={noteId || 'new'}
+                                content={state.content}
+                                onApplySuggestion={handleContentUpdate}
+                              />
+                          </div>
+                    </div>
+                 </div>
+            </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={state.isSharing} onOpenChange={(open) => setState(prev => ({ ...prev, isSharing: open }))}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Share Note</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit(onShareSubmit)} className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="email">Email address</Label>
+                    <Input 
+                        id="email" 
+                        placeholder="Enter email address" 
+                        {...register("email", { required: true, pattern: /^\S+@\S+$/i })} 
+                    />
+                    {errors.email && <span className="text-destructive text-sm">Please enter a valid email</span>}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="permission">Permission</Label>
+                    <select
+                        id="permission"
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        value={state.sharePermission}
+                        onChange={(e) => setState(prev => ({ ...prev, sharePermission: e.target.value }))}
+                    >
+                        <option value="view">Can View</option>
+                        <option value="edit">Can Edit</option>
+                    </select>
+                </div>
+                <DialogFooter>
+                    <Button type="submit">Share</Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
+};
 
 export default NoteEditor;

@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { FloatButton, Modal, Tabs, Button } from 'antd';
+import { FloatButton, Modal, Tabs, Button, message } from 'antd';
 import { RobotOutlined, FileTextOutlined, TagsOutlined, FolderOutlined } from '@ant-design/icons';
 import AIService from '../../services/ai/AIService';
 import AISummarizer from './AISummarizer';
 import AITagger from './AITagger';
 import AIContentGenerator from './AIContentGenerator';
 import AINoteOrganizer from './AINoteOrganizer';
+import { useProgression } from '../../contexts/ProgressionContext';
+import { Sparkles, Brain, Zap, Target, Combine, Flame } from 'lucide-react';
 import styles from './AIAssistant.module.css';
 
 export type AIAssistantStyles = typeof styles;
@@ -41,6 +43,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [isLoading, setIsLoading] = useState(false);
   const [isVisibleState, setIsVisibleState] = useState(isVisible);
+  const { addXP } = useProgression();
 
   // Sync with parent visibility state
   useEffect(() => {
@@ -76,6 +79,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
       throw error;
     } finally {
       setIsLoading(false);
+      addXP(50); // Reward for using Ema's specialized tools
     }
   }, [content, isVisibleState]);
 
@@ -95,16 +99,26 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
         onClick={toggleModal}
         className={`${styles.aiAssistantButton} ${className}`}
         tooltip="AI Assistant"
-        disabled={disabled}
+
       />
 
       <Modal
-        title="AI Assistant"
+        title={
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-600 rounded-lg text-white">
+              <Sparkles size={18} />
+            </div>
+            <div>
+              <p className="font-black text-xs uppercase tracking-widest text-slate-800 leading-none">Ema Engineering</p>
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1 italic">Active Research Layer</p>
+            </div>
+          </div>
+        }
         open={isVisibleState}
         onCancel={handleClose}
         footer={[
-          <Button key="close" onClick={toggleModal}>
-            Close
+          <Button key="close" onClick={toggleModal} className="!rounded-xl !font-bold !text-xs !bg-slate-900 !text-white !border-none !h-10 px-6">
+            Release Interface
           </Button>
         ]}
         width={800}
@@ -173,11 +187,14 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
           >
             <AINoteOrganizer
               content={content}
-              onUpdate={(structure: any) => {
-                console.log('Structure updated:', structure);
-                // Handle structure updates here if needed
+              onOrganize={handleAIAction}
+              onApplyOrganization={(organization: any) => {
+                 message.loading('Neural Core: Restructuring knowledge tree...');
+                 setTimeout(() => {
+                    console.log('Applying organization:', organization);
+                    message.success('Content restructured successfully.');
+                 }, 1500);
               }}
-              initialTags={initialTags}
             />
           </TabPane>
         </Tabs>

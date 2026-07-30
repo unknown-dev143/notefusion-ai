@@ -437,9 +437,8 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
             >
               Add Text
             </Button>
-          </div>
         </div>
-        )}
+        </div>
       </div>
     </div>
   );

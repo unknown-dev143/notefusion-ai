@@ -49,10 +49,12 @@ export const AudioNoteTaker: React.FC<AudioNoteTakerProps> = ({ onSave, initialN
   }, []);
 
   const startRecording = async () => {
+    // Optimistically set recording state to show UI early
+    setIsRecording(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-      
+
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       mediaRecorderRef.current = new MediaRecorder(stream);
       audioChunksRef.current = [];
@@ -76,8 +78,6 @@ export const AudioNoteTaker: React.FC<AudioNoteTakerProps> = ({ onSave, initialN
       };
 
       mediaRecorderRef.current.start();
-      setIsRecording(true);
-      
       // Start time tracking
       const startTime = Date.now() - (currentTime * 1000);
       
@@ -87,12 +87,14 @@ export const AudioNoteTaker: React.FC<AudioNoteTakerProps> = ({ onSave, initialN
       };
       
       animationFrameRef.current = requestAnimationFrame(updateTime);
-      
     } catch (error) {
+      // Reset recording flag on failure
+      setIsRecording(false);
       console.error('Error accessing microphone:', error);
       message.error(t('audio.microphoneAccessDenied'));
     }
   };
+
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {

@@ -3,10 +3,7 @@ import { Modal, Tree, Button } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { FolderOutlined, FolderOpenOutlined } from '@ant-design/icons';
 import { Folder } from '../types/folder';
-<<<<<<< HEAD
 import styles from './MoveFolderDialog.module.css';
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 interface MoveFolderDialogProps {
   visible: boolean;
@@ -42,11 +39,11 @@ const MoveFolderDialog: React.FC<MoveFolderDialogProps> = ({
   };
 
   const handleMove = async () => {
-    if (selectedKey === undefined) return;
+    if (selectedKey === null) return;
     
     try {
       setIsMoving(true);
-      await onMove(selectedKey || null);
+      await onMove(selectedKey === 'root' ? null : selectedKey);
       onCancel();
     } finally {
       setIsMoving(false);
@@ -77,7 +74,7 @@ const MoveFolderDialog: React.FC<MoveFolderDialogProps> = ({
           key="move"
           type="primary"
           onClick={handleMove}
-          disabled={selectedKey === undefined}
+          disabled={selectedKey === null}
           loading={isMoving}
         >
           Move Here
@@ -85,17 +82,10 @@ const MoveFolderDialog: React.FC<MoveFolderDialogProps> = ({
       ]}
       width={400}
     >
-<<<<<<< HEAD
-      <div className={styles.dialogContent}>
+      <div className={styles.dialogContent || ""} style={{ marginBottom: 16 }}>
         Select a destination folder or "Root" to move to the top level
       </div>
-      <div className={styles.treeContainer}>
-=======
-      <div style={{ marginBottom: 16 }}>
-        Select a destination folder or "Root" to move to the top level
-      </div>
-      <div style={{ maxHeight: 300, overflow: 'auto', border: '1px solid #d9d9d9', borderRadius: 4, padding: 8 }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+      <div className={styles.treeContainer || ""} style={{ maxHeight: 300, overflow: 'auto', border: '1px solid #d9d9d9', borderRadius: 4, padding: 8 }}>
         <Tree
           showIcon
           defaultExpandAll
@@ -109,7 +99,7 @@ const MoveFolderDialog: React.FC<MoveFolderDialogProps> = ({
             },
           ]}
           selectedKeys={selectedKey ? [selectedKey] : []}
-          icon={({ expanded }) => expanded ? <FolderOpenOutlined /> : <FolderOutlined />}
+          icon={({ expanded }) => (expanded ? <FolderOpenOutlined /> : <FolderOutlined />)}
         />
       </div>
     </Modal>

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api/audio';
+const API_BASE_URL = '/audio';
 
 export interface TTSRequest {
   text: string;

@@ -4,7 +4,7 @@ import type { ReactQuillProps } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
 // Define the Quill instance type
-type QuillInstance = InstanceType<typeof ReactQuill>;
+type QuillInstance = any;
 
 // Extend ReactQuillProps to include the ref
 interface RichTextEditorWithDrawingProps extends Omit<ReactQuillProps, 'onChange' | 'value'> {
@@ -72,7 +72,6 @@ const RichTextEditorWithDrawing = forwardRef<QuillInstance, RichTextEditorWithDr
           modules={quillModules}
           formats={quillFormats}
           className="rich-text-editor"
-          ref={ref}
           aria-label={ariaLabel}
           {...rest}
         />

@@ -21,6 +21,12 @@ export const subscriptionApi = {
   getUsage: async () => {
     const response = await axios.get(`${API_BASE_URL}/subscription/usage`);
     return response.data;
+  },
+
+  // Create checkout session
+  createCheckoutSession: async (planId: string) => {
+    const response = await axios.post(`${API_BASE_URL}/subscription/checkout`, { planId });
+    return response.data;
   }
 };
 

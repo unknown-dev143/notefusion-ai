@@ -104,6 +104,7 @@ export interface NotificationFilters {
   search?: string;
   user_id?: string;
   reminder_id?: string;
+  is_read?: boolean;
 }
 
 // Paginated response for notifications

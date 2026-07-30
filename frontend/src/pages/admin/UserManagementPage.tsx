@@ -3,34 +3,20 @@ import {
   Table, 
   Button, 
   Input, 
-<<<<<<< HEAD
-=======
   Space, 
   Modal, 
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   Form, 
   Select, 
   Tag, 
   Typography, 
   Card, 
   Popconfirm, 
-<<<<<<< HEAD
-  message,
-  Avatar,
-  Tooltip,
-  Switch,
-  Space,
-  Modal
+  message, 
+  Avatar, 
+  Tooltip, 
+  Switch 
 } from 'antd';
 import styles from './UserManagementPage.module.css';
-=======
-  message, 
-  Badge,
-  Avatar,
-  Tooltip,
-  Switch
-} from 'antd';
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 import { 
   SearchOutlined, 
   PlusOutlined, 
@@ -153,23 +139,39 @@ const UserManagementPage: React.FC = () => {
     fetchUsers();
   }, [tableParams.pagination?.current, tableParams.pagination?.pageSize]);
 
-  const fetchUsers = () => {
+  const fetchUsers = async () => {
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      // Apply search filter if searchText exists
+    try {
+      // Assuming api is configured with base URL
+      const response = await fetch(`${(import.meta as any).env.VITE_API_URL || 'http://localhost:8000/api/v1'}/admin/users`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('authToken')}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      const data = await response.json();
+      
+      const formattedUsers = data.map((u: any) => ({
+        id: u.id.toString(),
+        key: u.id.toString(),
+        name: u.username,
+        email: u.email,
+        role: u.is_admin ? 'admin' : 'user',
+        status: u.is_active ? 'active' : 'suspended',
+        lastActive: new Date().toISOString(), // Mocking as backend doesn't return lastActive currently
+        joinDate: u.created_at,
+        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${u.username}`
+      }));
+      
       const filteredData = searchText
-        ? mockUsers.filter(
-            (user) =>
+        ? formattedUsers.filter(
+            (user: any) =>
               user.name.toLowerCase().includes(searchText.toLowerCase()) ||
               user.email.toLowerCase().includes(searchText.toLowerCase())
           )
-        : mockUsers;
+        : formattedUsers;
 
       setUsers(filteredData);
-      setLoading(false);
-      
-      // Update pagination
       setTableParams({
         ...tableParams,
         pagination: {
@@ -177,7 +179,12 @@ const UserManagementPage: React.FC = () => {
           total: filteredData.length,
         },
       });
-    }, 500);
+    } catch (error) {
+      console.error(error);
+      message.error('Failed to fetch users');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTableChange = (
@@ -188,7 +195,7 @@ const UserManagementPage: React.FC = () => {
     setTableParams({
       pagination,
       filters,
-      ...sorter,
+      ...Array.isArray(sorter) ? {} : sorter,
     });
   };
 
@@ -212,42 +219,74 @@ const UserManagementPage: React.FC = () => {
   };
 
   const handleDeleteUser = (userId: string) => {
-    // Simulate delete API call
+    // Delete API not implemented yet, so we just hide it
     setUsers(users.filter(user => user.id !== userId));
-    message.success('User deleted successfully');
+    message.success('User deleted successfully (mock)');
   };
 
-  const handleStatusChange = (userId: string, status: User['status']) => {
-    // Simulate status update API call
-    setUsers(users.map(user => 
-      user.id === userId ? { ...user, status } : user
-    ));
-    message.success(`User status updated to ${status}`);
+  const handleStatusChange = async (userId: string, status: User['status']) => {
+    try {
+      const isActive = status === 'active';
+      const response = await fetch(`${(import.meta as any).env.VITE_API_URL || 'http://localhost:8000/api/v1'}/admin/users/${userId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify({ is_active: isActive })
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || 'Failed to update status');
+      }
+      setUsers(users.map(user => 
+        user.id === userId ? { ...user, status } : user
+      ));
+      message.success(`User status updated to ${status}`);
+    } catch (error: any) {
+      message.error(error.message || 'Failed to update status');
+    }
+  };
+  
+  const handleRoleChange = async (userId: string, role: string) => {
+    try {
+      const isAdmin = role === 'admin';
+      const response = await fetch(`${(import.meta as any).env.VITE_API_URL || 'http://localhost:8000/api/v1'}/admin/users/${userId}/role`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify({ is_admin: isAdmin })
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || 'Failed to update role');
+      }
+      setUsers(users.map(user => 
+        user.id === userId ? { ...user, role: isAdmin ? 'admin' : 'user' } : user
+      ));
+      message.success(`User promoted to ${role}`);
+    } catch (error: any) {
+      message.error(error.message || 'Failed to update role');
+    }
   };
 
   const handleModalSubmit = () => {
     form.validateFields().then(values => {
       if (editingUser) {
-        // Update existing user
-        setUsers(users.map(user => 
-          user.id === editingUser.id ? { ...user, ...values } : user
-        ));
-        message.success('User updated successfully');
+        // Update user
+        if (values.role !== editingUser.role) {
+          handleRoleChange(editingUser.id, values.role);
+        }
+        if (values.status && values.status !== editingUser.status) {
+          handleStatusChange(editingUser.id, values.status);
+        }
+        setIsModalVisible(false);
       } else {
-        // Add new user
-        const newUser: User = {
-          ...values,
-          id: Math.random().toString(36).substr(2, 9),
-          key: Math.random().toString(36).substr(2, 9),
-          status: 'active',
-          joinDate: new Date().toISOString().split('T')[0],
-          lastActive: new Date().toISOString(),
-        };
-        setUsers([...users, newUser]);
-        message.success('User added successfully');
+        message.warning('Creating users manually is not fully implemented yet.');
+        setIsModalVisible(false);
       }
-      setIsModalVisible(false);
-      form.resetFields();
     });
   };
 
@@ -369,13 +408,8 @@ const UserManagementPage: React.FC = () => {
   ];
 
   return (
-<<<<<<< HEAD
-    <div className={styles['pageContainer']}>
-      <div className={styles['header']}>
-=======
-    <div style={{ padding: '24px' }}>
-      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+    <div className={styles['pageContainer'] || ""} style={{ padding: '24px' }}>
+      <div className={styles['header'] || ""} style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Title level={3}>User Management</Title>
         <Button 
           type="primary" 
@@ -387,19 +421,12 @@ const UserManagementPage: React.FC = () => {
       </div>
 
       <Card>
-<<<<<<< HEAD
-        <div className={styles['toolbar']}>
+        <div className={styles['toolbar'] || ""} style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
           <Input
             placeholder="Search users..."
             prefix={<SearchOutlined />}
-            className={styles['searchInput']}
-=======
-        <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between' }}>
-          <Input
-            placeholder="Search users..."
-            prefix={<SearchOutlined />}
+            className={styles['searchInput'] || ""}
             style={{ width: 300 }}
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             onPressEnter={(e: any) => handleSearch(e.target.value)}

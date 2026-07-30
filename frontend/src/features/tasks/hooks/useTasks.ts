@@ -6,14 +6,16 @@ export const useTasks = () => {
 
   // Get all tasks
   const {
-    data: tasks = [],
+    data,
     isLoading: isLoadingTasks,
     error: tasksError,
     refetch: refetchTasks,
-  } = useQuery<Task[], Error>({
+  } = useQuery({
     queryKey: ['tasks'],
     queryFn: () => taskApiService.getTasks(),
   });
+
+  const tasks = data || [];
 
   // Get tasks by status
   const getTasksByStatus = (status: TaskStatus) => {
@@ -27,7 +29,7 @@ export const useTasks = () => {
 
   // Create task mutation
   const createTaskMutation = useMutation({
-    mutationFn: (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'completed_at'>) => 
+    mutationFn: (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'completed_at' | 'owner_id'>) => 
       taskApiService.createTask(taskData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });

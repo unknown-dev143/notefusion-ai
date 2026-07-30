@@ -19,7 +19,7 @@ export interface ImportResult {
 }
 
 class ExportImportService {
-  private apiBaseUrl = '/api/export-import';
+  private apiBaseUrl = '/export-import';
 
   // Single note export
   async exportNote(note: Note, options: ExportOptions): Promise<Blob> {

@@ -15,18 +15,16 @@ const PwaTest: React.FC = () => {
       indexedDB: 'indexedDB' in window ? 'Supported' : 'Not Supported',
       caches: 'caches' in window ? 'Supported' : 'Not Supported',
     },
-    installPrompt: null as BeforeInstallPromptEvent | null,
+    installPrompt: null as any | null,
   });
 
   useEffect(() => {
-                       document.referrer.includes('android-app://');
-
     // Handle beforeinstallprompt event
-    const handleBeforeInstallPrompt = (e: Event) => {
+    const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setPwaState(prev => ({
         ...prev,
-        installPrompt: e as BeforeInstallPromptEvent,
+        installPrompt: e,
         isInstalled: false
       }));
     };
@@ -105,7 +103,7 @@ const PwaTest: React.FC = () => {
             {renderStatus(pwaState.serviceWorker)}
           </div>
           
-          <Divider orientation="left">Storage Support</Divider>
+          <Divider orientation="horizontal">Storage Support</Divider>
           <div>
             <Text strong>Local Storage: </Text>
             {renderStatus(pwaState.storage.localStorage)}
@@ -119,7 +117,7 @@ const PwaTest: React.FC = () => {
             {renderStatus(pwaState.storage.caches)}
           </div>
 
-          <Divider orientation="left">Actions</Divider>
+          <Divider orientation="horizontal">Actions</Divider>
           <Space>
             <Button 
               type="primary" 
@@ -136,7 +134,7 @@ const PwaTest: React.FC = () => {
             </Button>
           </Space>
 
-          <Divider orientation="left">Testing Instructions</Divider>
+          <Divider orientation="horizontal">Testing Instructions</Divider>
           <Paragraph>
             <ol>
               <li>Click 'Install App' to install the PWA (if available)</li>

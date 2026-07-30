@@ -59,7 +59,7 @@ const TaskList: React.FC = () => {
     searchTasks,
   } = useTasks();
 
-  const [newTask, setNewTask] = useState<Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'completed_at'>>({
+  const [newTask, setNewTask] = useState<Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'completed_at' | 'owner_id'>>({
     title: '',
     description: '',
     status: 'pending',
@@ -68,7 +68,7 @@ const TaskList: React.FC = () => {
     reminder_enabled: false,
     reminder_time: null,
     category: null,
-    tags: [],
+    tags: [] as string[],
   });
 
   const [newTag, setNewTag] = useState('');
@@ -86,7 +86,7 @@ const TaskList: React.FC = () => {
     
     try {
       // Format dates for API
-      const taskToCreate = {
+      const taskToCreate: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'completed_at' | 'owner_id'> = {
         ...newTask,
         due_date: newTask.due_date ? format(new Date(newTask.due_date), 'yyyy-MM-dd') : null,
         reminder_time: newTask.reminder_enabled && newTask.reminder_time 
@@ -104,7 +104,7 @@ const TaskList: React.FC = () => {
         reminder_enabled: false,
         reminder_time: null,
         category: null,
-        tags: [],
+        tags: [] as string[],
       });
       setNewTag('');
     } catch (error) {
@@ -238,7 +238,7 @@ const TaskList: React.FC = () => {
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <Paper component="form" onSubmit={handleCreateTask} sx={{ p: 2, mb: 3 }}>
             <Grid container spacing={2}>
-              <Grid item xs={12} md={5}>
+              <Grid size={{ xs: 12, md: 5 }}>
                 <TextField
                   fullWidth
                   variant="outlined"
@@ -250,7 +250,7 @@ const TaskList: React.FC = () => {
                 />
               </Grid>
               
-              <Grid item xs={12} md={7}>
+              <Grid size={{ xs: 12, md: 7 }}>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   <FormControl sx={{ minWidth: 120 }} size="small">
                     <InputLabel>Priority</InputLabel>
@@ -284,8 +284,10 @@ const TaskList: React.FC = () => {
 
                   <DatePicker
                     label="Due date"
-                    value={newTask.due_date}
-                    onChange={(date) => setNewTask({ ...newTask, due_date: date })}
+                    value={newTask.due_date ? new Date(newTask.due_date) : null}
+                    onChange={(date: Date | null) => 
+                      setNewTask({ ...newTask, due_date: date ? date.toISOString() : null })
+                    }
                     slotProps={{
                       textField: {
                         size: 'small',
@@ -307,7 +309,7 @@ const TaskList: React.FC = () => {
                 </Box>
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   variant="outlined"
@@ -320,7 +322,7 @@ const TaskList: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                   <FormControlLabel
                     control={
@@ -336,8 +338,10 @@ const TaskList: React.FC = () => {
                   {newTask.reminder_enabled && (
                     <TimePicker
                       label="Reminder time"
-                      value={newTask.reminder_time || null}
-                      onChange={(time) => setNewTask({ ...newTask, reminder_time: time })}
+                      value={newTask.reminder_time ? new Date(newTask.reminder_time) : null}
+                      onChange={(time: Date | null) => 
+                        setNewTask({ ...newTask, reminder_time: time ? time.toISOString() : null })
+                      }
                       slotProps={{
                         textField: {
                           size: 'small',
@@ -349,7 +353,7 @@ const TaskList: React.FC = () => {
                 </Box>
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
                   <Autocomplete
                     multiple
@@ -423,7 +427,30 @@ const TaskList: React.FC = () => {
         ) : (
           filteredTasks.map((task) => (
             <Paper key={task.id} elevation={1} sx={{ mb: 1 }}>
-              <ListItem>
+              <ListItem
+                disablePadding
+                sx={{ p: 1, display: 'flex', alignItems: 'flex-start' }}
+                secondaryAction={
+                  editingTaskId !== task.id && (
+                    <Box>
+                      <IconButton
+                        size="small"
+                        onClick={() => startEditing(task)}
+                        aria-label="edit"
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDeleteTask(task.id)}
+                        aria-label="delete"
+                      >
+                        <DeleteIcon fontSize="small" color="error" />
+                      </IconButton>
+                    </Box>
+                  )
+                }
+              >
                 <Checkbox
                   edge="start"
                   checked={task.status === 'completed'}
@@ -435,124 +462,146 @@ const TaskList: React.FC = () => {
                   }
                   tabIndex={-1}
                   disableRipple
+                  sx={{ mt: 0.5 }}
                 />
                 
-                {editingTaskId === task.id && editingTask ? (
-                  <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <TextField
-                      fullWidth
-                      value={editingTask.title}
-                      onChange={(e) => 
-                        setEditingTask({ ...editingTask, title: e.target.value })
-                      }
-                      size="small"
-                    />
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={2}
-                      value={editingTask.description || ''}
-                      onChange={(e) => 
-                        setEditingTask({ ...editingTask, description: e.target.value })
-                      }
-                      size="small"
-                    />
-                    <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                      <FormControl size="small" sx={{ minWidth: 120 }}>
-                        <Select
-                          value={editingTask.status || 'pending'}
-                          onChange={(e) => 
-                            setEditingTask({ ...editingTask, status: e.target.value as TaskStatus })
-                          }
+                <Box sx={{ width: '100%', ml: 2, mr: editingTaskId !== task.id ? 2 : 0 }}>
+                  {editingTaskId === task.id && editingTask ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%', pr: 2 }}>
+                      <TextField
+                        fullWidth
+                        label="Title"
+                        value={editingTask.title}
+                        onChange={(e) => 
+                          setEditingTask({ ...editingTask, title: e.target.value })
+                        }
+                        size="small"
+                      />
+                      <TextField
+                        fullWidth
+                        multiline
+                        rows={2}
+                        label="Description"
+                        value={editingTask.description || ''}
+                        onChange={(e) => 
+                          setEditingTask({ ...editingTask, description: e.target.value })
+                        }
+                        size="small"
+                      />
+                      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                          <InputLabel>Status</InputLabel>
+                          <Select
+                            value={editingTask.status || 'pending'}
+                            label="Status"
+                            onChange={(e) => 
+                              setEditingTask({ ...editingTask, status: e.target.value as TaskStatus })
+                            }
+                          >
+                            <MenuItem value="pending">Pending</MenuItem>
+                            <MenuItem value="in_progress">In Progress</MenuItem>
+                            <MenuItem value="completed">Completed</MenuItem>
+                            <MenuItem value="cancelled">Cancelled</MenuItem>
+                          </Select>
+                        </FormControl>
+                        <FormControl size="small" sx={{ minWidth: 120 }}>
+                          <InputLabel>Priority</InputLabel>
+                          <Select
+                            value={editingTask.priority || 'medium'}
+                            label="Priority"
+                            onChange={(e) => 
+                              setEditingTask({ ...editingTask, priority: e.target.value as TaskPriority })
+                            }
+                          >
+                            <MenuItem value="low">Low</MenuItem>
+                            <MenuItem value="medium">Medium</MenuItem>
+                            <MenuItem value="high">High</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                        <Button size="small" onClick={() => setEditingTaskId(null)}>Cancel</Button>
+                        <Button size="small" variant="contained" onClick={saveEdit}>Save</Button>
+                      </Box>
+                    </Box>
+                  ) : (
+                    <Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 0.5 }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            textDecoration: task.status === 'completed' ? 'line-through' : 'none',
+                            color: task.status === 'completed' ? 'text.secondary' : 'text.primary',
+                            fontWeight: 500
+                          }}
                         >
-                          <MenuItem value="pending">Pending</MenuItem>
-                          <MenuItem value="in_progress">In Progress</MenuItem>
-                          <MenuItem value="completed">Completed</MenuItem>
-                          <MenuItem value="cancelled">Cancelled</MenuItem>
-                        </Select>
-                      </FormControl>
-                      <FormControl size="small" sx={{ minWidth: 120 }}>
-                        <Select
-                          value={editingTask.priority || 'medium'}
-                          onChange={(e) => 
-                            setEditingTask({ ...editingTask, priority: e.target.value as TaskPriority })
-                )}
-              </Box>
-              
-              {task.description && (
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    textDecoration:
-                      task.status === 'completed' ? 'line-through' : 'none',
-                    mb: 1,
-                    whiteSpace: 'pre-line',
-                  }}
-                >
-                  {task.description}
-                </Typography>
-              )}
-              
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                {task.due_date && (
-                  <Chip
-                    icon={<EventIcon fontSize="small" />}
-                    label={format(new Date(task.due_date), 'MMM d, yyyy')}
-                    size="small"
-                    variant="outlined"
-                    color={new Date(task.due_date) < new Date() && task.status !== 'completed' ? 'error' : 'default'}
-                  />
-                )}
-                
-                {task.reminder_enabled && task.reminder_time && (
-                  <Chip
-                    icon={<AlarmIcon fontSize="small" />}
-                    label={format(new Date(task.reminder_time), 'MMM d, h:mm a')}
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                  />
-                )}
-                
-                {task.tags?.map((tag) => (
-                  <Chip
-                    key={tag}
-                    label={tag}
-                    size="small"
-                    variant="outlined"
-                    onDelete={() => {}}
-                  />
-                ))}
-              </Box>
-            </Box>
-            
-            <Box sx={{ display: 'flex', flexDirection: 'column', ml: 1 }}>
-              <IconButton
-                size="small"
-                onClick={() => {
-                  setEditingTaskId(task.id);
-                  setEditingTask(task);
-                }}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
-              <IconButton
-                size="small"
-                onClick={() => handleDeleteTask(task.id)}
-              >
-                <DeleteIcon fontSize="small" color="error" />
-              </IconButton>
-            </Box>
-          </Box>
-        </ListItem>
-      </Paper>
-    ))
-  )}
-</List>
-                    </>
+                          {task.title}
+                        </Typography>
+                        <Chip 
+                          label={task.priority} 
+                          size="small" 
+                          color={priorityColors[task.priority]} 
+                          variant="outlined"
+                          sx={{ height: 20, fontSize: '0.75rem' }}
+                        />
+                        {task.category && (
+                          <Chip 
+                            label={task.category} 
+                            size="small" 
+                            variant="outlined"
+                            sx={{ height: 20, fontSize: '0.75rem' }}
+                          />
+                        )}
+                      </Box>
+                      
+                      {task.description && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            textDecoration: task.status === 'completed' ? 'line-through' : 'none',
+                            mb: 1,
+                            whiteSpace: 'pre-line',
+                          }}
+                        >
+                          {task.description}
+                        </Typography>
+                      )}
+                      
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                        {task.due_date && (
+                          <Chip
+                            icon={<EventIcon fontSize="small" />}
+                            label={format(new Date(task.due_date), 'MMM d, yyyy')}
+                            size="small"
+                            variant="outlined"
+                            color={new Date(task.due_date) < new Date() && task.status !== 'completed' ? 'error' : 'default'}
+                          />
+                        )}
+                        
+                        {task.reminder_enabled && task.reminder_time && (
+                          <Chip
+                            icon={<AlarmIcon fontSize="small" />}
+                            label={format(new Date(task.reminder_time), 'MMM d, h:mm a')}
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                          />
+                        )}
+                        
+                        {task.tags?.map((tag) => (
+                          <Chip
+                            key={tag}
+                            label={tag}
+                            size="small"
+                            variant="outlined"
+                            onDelete={() => handleRemoveTag(tag)}
+                          />
+                        ))}
+                      </Box>
+                    </Box>
                   )}
-                </ListItemSecondaryAction>
+                </Box>
               </ListItem>
             </Paper>
           ))

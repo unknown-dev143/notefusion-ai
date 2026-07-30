@@ -57,7 +57,7 @@ const sendTestNotification = async (title: string, options?: NotificationOptions
       badge: '/logo192.png',
       vibrate: [200, 100, 200],
       ...options
-    });
+    } as any);
   } catch (error) {
     console.error('Error showing notification:', error);
     toast.error('Failed to show notification');
@@ -86,10 +86,9 @@ const subscribeToPushNotifications = async (): Promise<PushSubscription | null> 
     
     subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: convertedVapidKey
+      applicationServerKey: convertedVapidKey as any
     });
 
-    // In a real app, you would send the subscription to your server here
     console.log('Push subscription:', subscription);
     
     return subscription;

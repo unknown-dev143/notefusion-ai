@@ -1,138 +1,88 @@
 import React, { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
-<<<<<<< HEAD
-import authService, { Tokens } from '../services/authService';
+import authService from '../services/authService';
+import { 
+  getAuth, 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  GithubAuthProvider, 
+  OAuthProvider 
+} from 'firebase/auth';
+import { auth as firebaseAuth } from '../../../firebase';
 
 // Key for storing auth data in localStorage
 const AUTH_STORAGE_KEY = 'notefusion_auth';
-=======
-import authService from '../services/authService';
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 
 export interface User {
   id: string;
   email: string;
   name: string;
   role: string;
+  is_admin?: boolean;
+  is_premium?: boolean;
+  xp?: number;
+  level?: number;
+  streak_days?: number;
   emailVerified: boolean;
   verificationToken?: string;
+  token?: string;
+  username?: string;
 }
 
-<<<<<<< HEAD
-interface UpdateProfileData {
-  name?: string;
-  email?: string;
-  currentPassword?: string;
-  newPassword?: string;
-}
-
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
-<<<<<<< HEAD
-  tokens: Tokens | null;
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
   login: (email: string, password: string) => Promise<void>;
   register: (data: { name: string; email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
   verifyEmail: (token: string) => Promise<{ success: boolean; message: string }>;
+  resendVerificationEmail: (email: string) => Promise<{ success: boolean; message: string }>;
   forgotPassword: (email: string) => Promise<{ success: boolean; message: string }>;
   resetPassword: (token: string, password: string, passwordConfirmation: string) => Promise<{ success: boolean; message: string }>;
-<<<<<<< HEAD
-  updateProfile: (data: UpdateProfileData) => Promise<void>;
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+  updateProfile: (data: { name?: string; email?: string; currentPassword?: string; newPassword?: string }) => Promise<void>;
+  updateEmail: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signInWithGithub: () => Promise<void>;
+  signInWithMicrosoft: () => Promise<void>;
   clearError: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-<<<<<<< HEAD
-  // Initialize state from localStorage if available
-  const [user, setUser] = useState<User | null>(() => {
-    const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
-    return storedAuth ? JSON.parse(storedAuth).user : null;
-  });
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
-  const [tokens, setTokens] = useState<Tokens | null>(() => {
-    const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
-    return storedAuth ? JSON.parse(storedAuth).tokens : null;
-  });
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
-  // Update user data in context and localStorage
-  const updateUser = useCallback((updatedUser: Partial<User>) => {
-    setUser(prevUser => {
-      if (!prevUser) return null;
-      const newUser = { ...prevUser, ...updatedUser };
-      const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (storedAuth) {
-        localStorage.setItem(
-          AUTH_STORAGE_KEY,
-          JSON.stringify({
-            ...JSON.parse(storedAuth),
-            user: newUser,
-          })
-        );
-      }
-      return newUser;
-    });
-  }, []);
-
-  // Save auth state to localStorage when it changes
-  useEffect(() => {
-    if (user && tokens) {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user, tokens }));
-    } else {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-    }
-  }, [user, tokens]);
-
-  // Setup token refresh interval
-  useEffect(() => {
-    if (!tokens?.refreshToken) return;
-
-    const refreshInterval = setInterval(async () => {
-      try {
-        const newTokens = await authService.refreshToken(tokens.refreshToken);
-        setTokens(newTokens);
-      } catch (error) {
-        console.error('Failed to refresh token:', error);
-        await logout();
-      }
-    }, 14 * 60 * 1000); // Refresh token 14 minutes before expiry (assuming 15min expiry)
-
-    return () => clearInterval(refreshInterval);
-  }, [tokens?.refreshToken]);
-=======
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [initialized, setInitialized] = useState<boolean>(false);
 
-  // Check if user is logged in on initial load
+  const isAuthenticated = !!user;
+
+  // Initialize auth state from localStorage
   useEffect(() => {
-    const checkAuth = async () => {
+    const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (storedAuth) {
       try {
-        if (authService.isAuthenticated()) {
-          const userData = await authService.getCurrentUser();
-          setUser(userData);
-        }
+        const authData = JSON.parse(storedAuth);
+        setUser(authData.user);
       } catch (error) {
-        console.error('Auth check failed:', error);
-        await authService.logout();
-      } finally {
-        setLoading(false);
-        setInitialized(true);
+        console.error('Error parsing stored auth data:', error);
+        localStorage.removeItem(AUTH_STORAGE_KEY);
       }
-    };
-
-    checkAuth();
+    }
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -140,33 +90,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
     
     try {
-<<<<<<< HEAD
-      const { user, tokens } = await authService.login({ email, password });
-      setUser(user);
-      setTokens(tokens);
-=======
-      const { user } = await authService.login({ email, password });
-      setUser(user);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'An error occurred during login';
-      setError(message);
+      const response = await authService.login({ email, password });
+      setUser(response.user);
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(response));
+    } catch (error: any) {
+      setError(error.message || 'Login failed');
       throw error;
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const register = useCallback(async ({ name, email, password }: { name: string; email: string; password: string }) => {
+  const register = useCallback(async (data: { name: string; email: string; password: string }) => {
     setLoading(true);
     setError(null);
     
     try {
-      const { user } = await authService.register({ name, email, password });
-      setUser(user);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Registration failed';
-      setError(message);
+      const username = data.email.split('@')[0];
+      const response = await authService.register({ ...data, username });
+      setUser(response.user);
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(response));
+    } catch (error: any) {
+      setError(error.message || 'Registration failed');
       throw error;
     } finally {
       setLoading(false);
@@ -174,16 +119,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const logout = useCallback(async () => {
+    setLoading(true);
+    
     try {
       await authService.logout();
       setUser(null);
-<<<<<<< HEAD
-      setTokens(null);
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
-    } catch (error) {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch (error: any) {
       console.error('Logout error:', error);
-      setError('Failed to logout. Please try again.');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -192,12 +137,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
     
     try {
-      const result = await authService.verifyEmail(token);
-      setUser(prev => prev ? { ...prev, emailVerified: true } : null);
-      return result;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to verify email';
-      setError(message);
+      const response = await authService.verifyEmail(token);
+      if (response.success && user) {
+        setUser({ ...user, emailVerified: true });
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user: { ...user, emailVerified: true } }));
+      }
+      return response;
+    } catch (error: any) {
+      setError(error.message || 'Email verification failed');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const resendVerificationEmail = useCallback(async (email: string) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await authService.resendVerificationEmail(email);
+      return response;
+    } catch (error: any) {
+      setError(error.message || 'Failed to resend verification email');
       throw error;
     } finally {
       setLoading(false);
@@ -209,10 +171,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
     
     try {
-      return await authService.forgotPassword(email);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to send password reset email';
-      setError(message);
+      const response = await authService.forgotPassword(email);
+      return response;
+    } catch (error: any) {
+      setError(error.message || 'Password reset failed');
       throw error;
     } finally {
       setLoading(false);
@@ -224,10 +186,59 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
     
     try {
-      return await authService.resetPassword(token, password, passwordConfirmation);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to reset password';
-      setError(message);
+      const response = await authService.resetPassword(token, password, passwordConfirmation);
+      return response;
+    } catch (error: any) {
+      setError(error.message || 'Password reset failed');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateProfile = useCallback(async (data: { name?: string; email?: string; currentPassword?: string; newPassword?: string }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Mock/Real API call
+      // await authService.updateProfile(data);
+      if (user) {
+        const updatedUser = { ...user, name: data.name || user.name, email: data.email || user.email };
+        setUser(updatedUser);
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user: updatedUser }));
+      }
+    } catch (error: any) {
+      setError(error.message || 'Profile update failed');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const updateEmail = useCallback(async (email: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (user) {
+        const updatedUser = { ...user, email };
+        setUser(updatedUser);
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user: updatedUser }));
+      }
+    } catch (error: any) {
+      setError(error.message || 'Email update failed');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const updatePassword = useCallback(async (password: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Mock/Real API call
+    } catch (error: any) {
+      setError(error.message || 'Password update failed');
       throw error;
     } finally {
       setLoading(false);
@@ -238,56 +249,136 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
   }, []);
 
-<<<<<<< HEAD
-  const updateProfile = useCallback(async (data: UpdateProfileData) => {
+  const refreshUser = useCallback(async () => {
     try {
-      setLoading(true);
-      // In a real app, you would call your API to update the user's profile
-      // const response = await api.patch('/users/me', data);
-      // For now, we'll just update the local state
-      if (data.name || data.email) {
-        updateUser({
-          ...(data.name && { name: data.name }),
-          ...(data.email && { email: data.email }),
-        });
+      const response = await authService.getCurrentUser();
+      if (response) {
+        setUser(prev => ({ ...prev, ...response } as User));
+        const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (storedAuth) {
+          const authData = JSON.parse(storedAuth);
+          authData.user = { ...authData.user, ...response };
+          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
+        }
       }
-      // If password is being updated, log the user out to re-authenticate
-      if (data.newPassword) {
-        await logout();
+    } catch (err) {
+      console.error('Failed to refresh user stats:', err);
+    }
+  }, []);
+
+  const signInWithGoogle = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(firebaseAuth, provider);
+      const token = await result.user.getIdToken();
+      const user: User = {
+        id: result.user.uid,
+        email: result.user.email || '',
+        name: result.user.displayName || '',
+        role: 'user',
+        emailVerified: result.user.emailVerified,
+      };
+      setUser(user);
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user, token }));
+      localStorage.setItem('authToken', token);
+    } catch (error: any) {
+      let errorMessage = error.message || 'Google Auth failed';
+      if (error.code === 'auth/operation-not-allowed') {
+        errorMessage = 'Google Sign-In is not enabled. Please enable it in your Firebase Console (Authentication > Sign-in method).';
+      } else if (error.code === 'auth/unauthorized-domain') {
+        errorMessage = 'Social login is disabled on this test domain. Please use the email login (scholar@notefusion.ai / notefusion2026).';
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update profile';
-      setError(message);
-      throw error;
+      setError(errorMessage);
+      throw { ...error, message: errorMessage };
     } finally {
       setLoading(false);
     }
-  }, [logout, updateUser]);
+  }, []);
 
-  const value = {
+  const signInWithGithub = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const provider = new GithubAuthProvider();
+      const result = await signInWithPopup(firebaseAuth, provider);
+      const token = await result.user.getIdToken();
+      const user: User = {
+        id: result.user.uid,
+        email: result.user.email || '',
+        name: result.user.displayName || '',
+        role: 'user',
+        emailVerified: result.user.emailVerified,
+      };
+      setUser(user);
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user, token }));
+      localStorage.setItem('authToken', token);
+    } catch (error: any) {
+      let errorMessage = error.message || 'Github Auth failed';
+      if (error.code === 'auth/operation-not-allowed') {
+        errorMessage = 'GitHub Sign-In is not enabled. Please enable it in your Firebase Console (Authentication > Sign-in method).';
+      } else if (error.code === 'auth/unauthorized-domain') {
+        errorMessage = 'Social login is disabled on this test domain. Please use the email login (scholar@notefusion.ai / notefusion2026).';
+      }
+      setError(errorMessage);
+      throw { ...error, message: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const signInWithMicrosoft = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const provider = new OAuthProvider('microsoft.com');
+      const result = await signInWithPopup(firebaseAuth, provider);
+      const token = await result.user.getIdToken();
+      const user: User = {
+        id: result.user.uid,
+        email: result.user.email || '',
+        name: result.user.displayName || '',
+        role: 'user',
+        emailVerified: result.user.emailVerified,
+      };
+      setUser(user);
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user, token }));
+      localStorage.setItem('authToken', token);
+    } catch (error: any) {
+      let errorMessage = error.message || 'Microsoft Auth failed';
+      if (error.code === 'auth/operation-not-allowed') {
+        errorMessage = 'Microsoft Sign-In is not enabled. Please enable it in your Firebase Console (Authentication > Sign-in method).';
+      } else if (error.code === 'auth/unauthorized-domain') {
+        errorMessage = 'Social login is disabled on this test domain. Please use the email login (scholar@notefusion.ai / notefusion2026).';
+      }
+      setError(errorMessage);
+      throw { ...error, message: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const value: AuthContextType = {
     user,
-    isAuthenticated: !!user && !!tokens?.accessToken,
-    loading: loading || !initialized,
+    isAuthenticated,
+    loading,
     error,
-    tokens,
-=======
-  const value = {
-    user,
-    isAuthenticated: !!user,
-    loading: loading || !initialized,
-    error,
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     login,
     register,
     logout,
     verifyEmail,
+    resendVerificationEmail,
     forgotPassword,
     resetPassword,
-<<<<<<< HEAD
     updateProfile,
-=======
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
+    updateEmail,
+    updatePassword,
+    signInWithGoogle,
+    signInWithGithub,
+    signInWithMicrosoft,
     clearError,
+    refreshUser
   };
 
   return (
@@ -297,10 +388,4 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export default AuthProvider;

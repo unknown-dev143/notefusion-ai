@@ -158,7 +158,7 @@ export const LoginPage: React.FC = () => {
         onDecline={handleTermsDecline}
       />
 
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .auth-page {
           display: flex;
           justify-content: center;
@@ -209,7 +209,7 @@ export const LoginPage: React.FC = () => {
           font-weight: 500;
           color: #1890ff;
         }
-      `}</style>
+      `}} />
     </div>
   );
 };

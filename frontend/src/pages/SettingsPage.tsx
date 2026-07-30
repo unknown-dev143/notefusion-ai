@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-<<<<<<< HEAD
 import { 
   Tabs, 
   Form, 
@@ -11,17 +10,19 @@ import {
   Button, 
   Input,
   Divider,
-  CardProps,
-  ButtonProps,
-  SelectProps
 } from 'antd';
 import type { TabsProps } from 'antd';
 import { 
-  GlobalOutlined,
-  UserOutlined,
-  LockOutlined,
-  BulbOutlined
-} from '@ant-design/icons';
+  ShieldCheck, 
+  BellRing, 
+  Palette, 
+  Trash2, 
+  UserCircle,
+  CreditCard,
+  Zap,
+  Globe,
+  Sparkles
+} from 'lucide-react';
 import styles from './SettingsPage.module.css';
 
 const { Title } = Typography;
@@ -40,6 +41,8 @@ interface LoadingState {
   account: boolean;
 }
 
+import { useLanguage } from '../contexts/LanguageContext';
+
 const SettingsPage: React.FC = () => {
   const [loading, setLoading] = useState<LoadingState>({
     profile: false,
@@ -54,7 +57,7 @@ const SettingsPage: React.FC = () => {
     news: true
   });
   
-  const [language, setLanguage] = useState('en');
+  const { language, setLanguage } = useLanguage();
   const [passwordForm] = Form.useForm();
 
 
@@ -63,42 +66,11 @@ const SettingsPage: React.FC = () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-=======
-import { Tabs, Card, Button, Switch, Form, Select, Input, Typography, Divider, message } from 'antd';
-import { 
-  UserOutlined, 
-  BellOutlined, 
-  LockOutlined, 
-  CreditCardOutlined, 
-  NotificationOutlined,
-  GlobalOutlined,
-  DeleteOutlined
-} from '@ant-design/icons';
-import { useAuth } from '../features/auth/context/AuthContext';
-
-const { TabPane } = Tabs;
-const { Title, Text } = Typography;
-const { Option } = Select;
-
-const SettingsPage: React.FC = () => {
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [form] = Form.useForm();
-  const [passwordForm] = Form.useForm();
-
-  const handleProfileUpdate = async (values: any) => {
-    try {
-      setLoading(true);
-      // Replace with actual API call
-      // await userApi.updateProfile(values);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       message.success('Profile updated successfully');
     } catch (error) {
       console.error('Failed to update profile:', error);
       message.error('Failed to update profile');
     } finally {
-<<<<<<< HEAD
       setLoading(prev => ({ ...prev, profile: false }));
     }
   };
@@ -108,25 +80,12 @@ const SettingsPage: React.FC = () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-=======
-      setLoading(false);
-    }
-  };
-
-  const handlePasswordChange = async (values: any) => {
-    try {
-      setLoading(true);
-      // Replace with actual API call
-      // await authApi.changePassword(values);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
       message.success('Password updated successfully');
       passwordForm.resetFields();
     } catch (error) {
       console.error('Failed to update password:', error);
       message.error('Failed to update password');
     } finally {
-<<<<<<< HEAD
       setLoading(prev => ({ ...prev, password: false }));
     }
   };
@@ -136,21 +95,11 @@ const SettingsPage: React.FC = () => {
       ...prev,
       [type]: checked
     }));
-=======
-      setLoading(false);
-    }
-  };
-
-  const handleNotificationChange = (checked: boolean, setting: string) => {
-    console.log(`Notification setting ${setting} changed to ${checked}`);
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     // Here you would typically update the notification settings via an API
   };
 
   const handleLanguageChange = (value: string) => {
-<<<<<<< HEAD
-    setLanguage(value);
-    // Here you would typically update the language setting via an API
+    setLanguage(value as any);
   };
 
   const handleDeleteAccount = async () => {
@@ -175,459 +124,223 @@ const SettingsPage: React.FC = () => {
       key: '1',
       label: (
         <span className={styles['tabLabel']}>
-          <UserOutlined className={styles['tabIcon']} />
-          Profile
+          <UserCircle size={18} />
+          Account Profile
         </span>
       ),
       children: (
-        <Card className={styles['settingsCard'] as string}>
-          <Form
-            layout="vertical"
-            onFinish={handleProfileUpdate}
-            className={styles['profileForm']}
-          >
-            <Form.Item name="name" label="Name" rules={[{ required: true }]}>
-              <Input prefix={<UserOutlined />} placeholder="Your name" />
-            </Form.Item>
-            <Form.Item name="email" label="Email" rules={[{ type: 'email', required: true }]}>
-              <Input type="email" placeholder="your.email@example.com" />
-            </Form.Item>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              loading={loading.profile}
-              className={styles['submitButton'] as string}
+        <div className={styles['settingsCard']}>
+          <div className="p-8">
+            <h3 className="text-xl font-black text-slate-900 mb-6">Profile Settings</h3>
+            <Form
+              layout="vertical"
+              onFinish={handleProfileUpdate}
+              className={styles['profileForm']}
             >
-              Save Changes
-            </Button>
-          </Form>
-        </Card>
+              <Form.Item name="name" label="Full Name" rules={[{ required: true }]}>
+                <Input placeholder="E.g. Dr. Jane Doe" className="!rounded-2xl !py-4" />
+              </Form.Item>
+              <Form.Item name="email" label="Contact Email" rules={[{ type: 'email', required: true }]}>
+                <Input type="email" placeholder="jane@example.com" className="!rounded-2xl !py-4" />
+              </Form.Item>
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                loading={loading.profile}
+                className="!h-14 !rounded-2xl !px-10 !bg-slate-900 !font-black !uppercase !text-[10px] !tracking-widest !border-none hover:!bg-blue-600 transition-all"
+              >
+                Sync Changes
+              </Button>
+            </Form>
+          </div>
+        </div>
       ),
     },
     {
       key: '2',
-      label: 'Security',
+      label: (
+        <span className={styles['tabLabel']}>
+          <ShieldCheck size={18} />
+          Security Access
+        </span>
+      ),
       children: (
-        <Card className={styles['settingsCard'] as string}>
-          <Form
-            layout="vertical"
-            onFinish={handlePasswordChange}
-            className={styles['passwordForm']}
-          >
-            <Form.Item 
-              name="currentPassword" 
-              label="Current Password" 
-              rules={[{ required: true }]}
+        <div className={styles['settingsCard']}>
+          <div className="p-8">
+            <h3 className="text-xl font-black text-slate-900 mb-6">Security & Authentication</h3>
+            <Form
+              layout="vertical"
+              onFinish={handlePasswordChange}
+              className={styles['passwordForm']}
+              form={passwordForm}
             >
-              <Input.Password prefix={<LockOutlined />} placeholder="Current password" />
-            </Form.Item>
-            <Form.Item 
-              name="newPassword" 
-              label="New Password" 
-              rules={[{ required: true, min: 8 }]}
-            >
-              <Input.Password placeholder="New password" />
-            </Form.Item>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              loading={loading.password}
-              className={styles['submitButton'] as string}
-            >
-              Update Password
-            </Button>
-          </Form>
-        </Card>
+              <Form.Item 
+                name="currentPassword" 
+                label="Current Authorization Key" 
+                rules={[{ required: true }]}
+              >
+                <Input.Password placeholder="Enter current passphrase" stroke-width="3" className="!rounded-2xl !py-4" />
+              </Form.Item>
+              <Form.Item 
+                name="newPassword" 
+                label="New Neural Hash" 
+                rules={[{ required: true, min: 8 }]}
+              >
+                <Input.Password placeholder="Enter new strong password" className="!rounded-2xl !py-4" />
+              </Form.Item>
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                loading={loading.password}
+                className="!h-14 !rounded-2xl !px-10 !bg-slate-900 !font-black !uppercase !text-[10px] !tracking-widest !border-none hover:!bg-indigo-600 transition-all"
+              >
+                Update Access Key
+              </Button>
+            </Form>
+          </div>
+        </div>
       ),
     },
     {
       key: '3',
-      label: 'Notifications',
+      label: (
+        <span className={styles['tabLabel']}>
+          <BellRing size={18} />
+          Neural Alerts
+        </span>
+      ),
       children: (
-        <Card className={styles['settingsCard'] as string}>
-          <div className={styles['notificationSettings']}>
-            <div className={styles['notificationSetting']}>
-              <div className={styles['settingTitle']}>Email Notifications</div>
-              <div className={styles['settingDescription']}>Receive email notifications</div>
-              <Switch 
-                checked={notificationSettings.email} 
-                onChange={(checked) => handleNotificationChange('email', checked)} 
-              />
-            </div>
-            <div className={styles['notificationSetting']}>
-              <div className={styles['settingTitle']}>Push Notifications</div>
-              <div className={styles['settingDescription']}>Receive push notifications</div>
-              <Switch 
-                checked={notificationSettings.push} 
-                onChange={(checked) => handleNotificationChange('push', checked)} 
-              />
-            </div>
-            <div className={styles['notificationSetting']}>
-              <div className={styles['settingTitle']}>Newsletter</div>
-              <div className={styles['settingDescription']}>Receive our newsletter</div>
-              <Switch 
-                checked={notificationSettings.news} 
-                onChange={(checked) => handleNotificationChange('news', checked)} 
-              />
+        <div className={styles['settingsCard']}>
+          <div className="p-8 space-y-6">
+            <h3 className="text-xl font-black text-slate-900 mb-8">Notification Protocol</h3>
+            <div className="space-y-4">
+              {[
+                { id: 'email', title: 'Intelligence Delivery', desc: 'Summary of AI research delivered to your inbox', icon: <Globe size={18}/> },
+                { id: 'push', title: 'Neural Pulse', desc: 'Real-time desktop sync alerts', icon: <Zap size={18}/> },
+                { id: 'news', title: 'System Updates', desc: 'New cognitive features and patches', icon: <Sparkles size={18}/> }
+              ].map(item => (
+                <div key={item.id} className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-blue-200 transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 group-hover:text-blue-500 shadow-sm transition-colors">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <div className="text-sm font-black text-slate-800">{item.title}</div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.desc}</div>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={(notificationSettings as any)[item.id]} 
+                    onChange={(checked) => handleNotificationChange(item.id as any, checked)} 
+                    className="!bg-slate-200 data-[state=checked]:!bg-blue-600"
+                  />
+                </div>
+              ))}
             </div>
           </div>
-        </Card>
+        </div>
       ),
     },
     {
       key: '4',
-      label: 'Preferences',
+      label: (
+        <span className={styles['tabLabel']}>
+          <Palette size={18} />
+          Visual Matrix
+        </span>
+      ),
       children: (
-        <Card className={styles['settingsCard'] as string}>
-          <div className={styles['preferences']}>
-            <div className={styles['preference']}>
-              <div className={styles['preferenceTitle']}>Language</div>
-              <Select 
-                value={language} 
-                onChange={handleLanguageChange}
-                className={styles['languageSelect'] as string}
-              >
-                <Option value="en">English</Option>
-                <Option value="es">Español</Option>
-                <Option value="fr">Français</Option>
-                <Option value="de">Deutsch</Option>
-              </Select>
-            </div>
-            <div className={styles['preference']}>
-              <div className={styles['preferenceTitle']}>Theme</div>
-              <div className={styles['theme']}>
-                <BulbOutlined className={styles['themeIcon']} />
-                <span className={styles['themeText']}>Light / Dark</span>
+        <div className={styles['settingsCard']}>
+          <div className="p-8 space-y-10">
+            <h3 className="text-xl font-black text-slate-900">Environment Preferences</h3>
+            <div className="flex flex-col gap-8">
+              <div className="flex items-center justify-between">
+                <div>
+                   <div className="text-sm font-black text-slate-800">Interface Language</div>
+                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Global localization settings</div>
+                </div>
+                <Select 
+                  value={language} 
+                  onChange={handleLanguageChange}
+                  className="!w-48 !h-12"
+                >
+                  <Option value="en">English (US)</Option>
+                  <Option value="es">Español</Option>
+                  <Option value="fr">Français</Option>
+                  <Option value="de">Deutsch</Option>
+                  <Option value="zh">中文 (Chinese)</Option>
+                  <Option value="ja">日本語 (Japanese)</Option>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between pt-8 border-t border-slate-50">
+                <div>
+                   <div className="text-sm font-black text-slate-800">Visual Core Mode</div>
+                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Switch between Dark and Light subspaces</div>
+                </div>
+                <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-2">
+                   <button className="px-5 py-2.5 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">Light</button>
+                   <button className="px-5 py-2.5 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/50 transition-all">Dark</button>
+                </div>
               </div>
             </div>
           </div>
-        </Card>
+        </div>
       ),
     },
     {
       key: '5',
-      label: 'Account',
+      label: (
+        <span className={styles['tabLabel']}>
+          <Trash2 size={18} />
+          Terminal Phase
+        </span>
+      ),
       children: (
-        <Card className={styles['settingsCard'] as string}>
-          <div className={styles['dangerZoneContainer']}>
-            <Title level={4} className={styles['dangerZoneTitle'] as string}>Danger Zone</Title>
-            <div className={styles['dangerZone']}>
-              <div className={styles['dangerAction']}>
-                <div className={styles['optionTitle']}>Delete Account</div>
-                <div className={styles['optionDescription']}>
-                  Permanently delete your account and all associated data. This action cannot be undone.
-                </div>
-                <Button 
-                  type="primary" 
-                  danger 
-                  onClick={handleDeleteAccount}
-                  loading={loading.account}
-                  className={styles['deleteButton'] as string}
-                >
-                  Delete My Account
-                </Button>
-              </div>
+        <div className={styles['settingsCard']}>
+          <div className="p-8">
+            <div className="bg-red-50/50 p-8 rounded-[32px] border border-red-100 flex flex-col items-center text-center">
+               <div className="w-14 h-14 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-6">
+                 <Trash2 size={24}/>
+               </div>
+               <h3 className="text-xl font-black text-red-900 mb-2">Neural Deletion Zone</h3>
+               <p className="max-w-md text-sm font-medium text-red-600/70 mb-8 leading-relaxed">
+                  Permanently erase your entire knowledge repository and neural identity. This action is irreversible.
+               </p>
+               <Button 
+                type="primary" 
+                danger 
+                onClick={handleDeleteAccount}
+                loading={loading.account}
+                className="!h-14 !rounded-2xl !px-12 !bg-red-600 !font-black !uppercase !text-[10px] !tracking-widest !border-none hover:!bg-red-700 transition-all shadow-xl shadow-red-200"
+               >
+                 Purge Neural Core
+               </Button>
             </div>
           </div>
-        </Card>
+        </div>
       ),
     },
   ];
 
   return (
-    <div className={styles['settingsPage']}>
-      <Title level={2} className={styles['sectionTitle'] as string}>
-        <GlobalOutlined className={styles['settingsIcon']} />
-        Settings
-      </Title>
+    <div className={`${styles['settingsPage']} animate-slide-up`}>
+      <div className="flex items-center gap-6 mb-12">
+        <div className="w-16 h-16 bg-slate-900 rounded-[28px] flex items-center justify-center text-white shadow-2xl">
+           <Zap size={32}/>
+        </div>
+        <div>
+          <Title level={2} className="!m-0 font-black tracking-tight text-slate-900">
+            System <span className="text-blue-600">Preferences</span>
+          </Title>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">NoteFusion Core Version 1.2.0</p>
+        </div>
+      </div>
       <Tabs 
         defaultActiveKey="1" 
         items={items} 
         tabPosition="left"
         className="settings-tabs"
       />
-=======
-    console.log(`Language changed to ${value}`);
-    // Here you would typically update the language setting via an API
-  };
-
-  const handleDeleteAccount = () => {
-    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      console.log('Account deletion requested');
-      // Here you would typically call an API to delete the account
-    }
-  };
-
-  return (
-    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <Title level={2}>Settings</Title>
-      <Tabs defaultActiveKey="1">
-        <TabPane
-          tab={
-            <span>
-              <UserOutlined />
-              Profile
-            </span>
-          }
-          key="1"
-        >
-          <Card>
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleProfileUpdate}
-              initialValues={{
-                name: user?.name || '',
-                email: user?.email || '',
-              }}
-            >
-              <Form.Item
-                name="name"
-                label="Full Name"
-                rules={[{ required: true, message: 'Please input your name!' }]}
-              >
-                <Input placeholder="Full Name" size="large" />
-              </Form.Item>
-
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: 'Please input your email!' },
-                  { type: 'email', message: 'Please enter a valid email!' },
-                ]}
-              >
-                <Input placeholder="Email" size="large" disabled />
-              </Form.Item>
-
-              <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading}>
-                  Update Profile
-                </Button>
-              </Form.Item>
-            </Form>
-          </Card>
-        </TabPane>
-
-        <TabPane
-          tab={
-            <span>
-              <BellOutlined />
-              Notifications
-            </span>
-          }
-          key="2"
-        >
-          <Card>
-            <Title level={4}>Email Notifications</Title>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <div>
-                  <Text strong>Account Notifications</Text>
-                  <div style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
-                    Receive emails about your account activity
-                  </div>
-                </div>
-                <Switch 
-                  defaultChecked 
-                  onChange={(checked) => handleNotificationChange(checked, 'account')} 
-                />
-              </div>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <div>
-                  <Text strong>Product Updates</Text>
-                  <div style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
-                    Get updates about new features and improvements
-                  </div>
-                </div>
-                <Switch 
-                  defaultChecked 
-                  onChange={(checked) => handleNotificationChange(checked, 'updates')} 
-                />
-              </div>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  <Text strong>Marketing Emails</Text>
-                  <div style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
-                    Receive promotional emails and offers
-                  </div>
-                </div>
-                <Switch 
-                  defaultChecked 
-                  onChange={(checked) => handleNotificationChange(checked, 'marketing')} 
-                />
-              </div>
-            </div>
-
-            <Divider />
-
-            <Title level={4}>In-App Notifications</Title>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <div>
-                  <Text strong>Desktop Notifications</Text>
-                  <div style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
-                    Show desktop notifications
-                  </div>
-                </div>
-                <Switch 
-                  defaultChecked 
-                  onChange={(checked) => handleNotificationChange(checked, 'desktop')} 
-                />
-              </div>
-            </div>
-
-            <Button type="primary" loading={loading}>
-              Save Notification Settings
-            </Button>
-          </Card>
-        </TabPane>
-
-        <TabPane
-          tab={
-            <span>
-              <LockOutlined />
-              Security
-            </span>
-          }
-          key="3"
-        >
-          <Card>
-            <Title level={4}>Change Password</Title>
-            <Form
-              form={passwordForm}
-              layout="vertical"
-              onFinish={handlePasswordChange}
-              style={{ maxWidth: '500px', marginBottom: '2rem' }}
-            >
-              <Form.Item
-                name="currentPassword"
-                label="Current Password"
-                rules={[{ required: true, message: 'Please input your current password!' }]}
-              >
-                <Input.Password placeholder="Current Password" size="large" />
-              </Form.Item>
-
-              <Form.Item
-                name="newPassword"
-                label="New Password"
-                rules={[{ required: true, message: 'Please input your new password!' }]}
-              >
-                <Input.Password placeholder="New Password" size="large" />
-              </Form.Item>
-
-              <Form.Item
-                name="confirmPassword"
-                label="Confirm New Password"
-                dependencies={['newPassword']}
-                rules={[
-                  { required: true, message: 'Please confirm your new password!' },
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      if (!value || getFieldValue('newPassword') === value) {
-                        return Promise.resolve();
-                      }
-                      return Promise.reject(new Error('The two passwords do not match!'));
-                    },
-                  }),
-                ]}
-              >
-                <Input.Password placeholder="Confirm New Password" size="large" />
-              </Form.Item>
-
-              <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading}>
-                  Change Password
-                </Button>
-              </Form.Item>
-            </Form>
-
-            <Divider />
-
-            <Title level={4}>Two-Factor Authentication</Title>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <Text strong>Two-Factor Authentication</Text>
-                  <div style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
-                    Add an extra layer of security to your account
-                  </div>
-                </div>
-                <Switch 
-                  defaultChecked={false}
-                  onChange={(checked) => console.log('2FA:', checked)} 
-                />
-              </div>
-            </div>
-          </Card>
-        </TabPane>
-
-        <TabPane
-          tab={
-            <span>
-              <GlobalOutlined />
-              Preferences
-            </span>
-          }
-          key="4"
-        >
-          <Card>
-            <Title level={4}>Language & Region</Title>
-            <div style={{ maxWidth: '500px', marginBottom: '2rem' }}>
-              <Form layout="vertical">
-                <Form.Item label="Language" name="language">
-                  <Select 
-                    defaultValue="en" 
-                    style={{ width: '100%' }}
-                    onChange={handleLanguageChange}
-                  >
-                    <Option value="en">English</Option>
-                    <Option value="es">Español</Option>
-                    <Option value="fr">Français</Option>
-                    <Option value="de">Deutsch</Option>
-                    <Option value="ja">日本語</Option>
-                  </Select>
-                </Form.Item>
-
-                <Form.Item label="Time Zone" name="timezone">
-                  <Select 
-                    defaultValue="UTC+00:00" 
-                    style={{ width: '100%' }}
-                  >
-                    <Option value="UTC-12:00">(UTC-12:00) International Date Line West</Option>
-                    <Option value="UTC-11:00">(UTC-11:00) Coordinated Universal Time-11</Option>
-                    <Option value="UTC+00:00">(UTC+00:00) Dublin, Edinburgh, Lisbon, London</Option>
-                    <Option value="UTC+04:00">(UTC+04:00) Abu Dhabi, Muscat</Option>
-                    <Option value="UTC+05:30">(UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi</Option>
-                  </Select>
-                </Form.Item>
-              </Form>
-            </div>
-
-            <Divider />
-
-            <Title level={4}>Danger Zone</Title>
-            <div style={{ marginTop: '1.5rem' }}>
-              <div style={{ marginBottom: '1rem' }}>
-                <Button 
-                  type="primary" 
-                  danger 
-                  icon={<DeleteOutlined />}
-                  onClick={handleDeleteAccount}
-                >
-                  Delete My Account
-                </Button>
-                <div style={{ color: 'rgba(0, 0, 0, 0.45)', marginTop: '0.5rem' }}>
-                  Permanently delete your account and all associated data
-                </div>
-              </div>
-            </div>
-          </Card>
-        </TabPane>
-      </Tabs>
->>>>>>> fc8ed2a6ee76667dd0759a129f0149acc56be76e
     </div>
   );
 };
