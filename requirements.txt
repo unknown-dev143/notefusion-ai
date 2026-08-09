@@ -47,14 +47,14 @@ openai>=1.3.0            # latest openai SDK
 # Audio Processing
 pydub>=0.25.1
 
-# OCR (optional – install tesseract separately)
+# OCR — Pillow only; tesseract binary not available on free hosting
 Pillow>=10.0.0
-pytesseract>=0.3.10
+# pytesseract>=0.3.10  # needs system Tesseract — use locally or Docker only
 
 # Export / Document Generation
 jinja2>=3.1.0
 markdown2>=2.4.10
-weasyprint>=60.1
+# weasyprint>=60.1  # needs Cairo system lib — disabled for free hosting
 
 # Stripe Payments
 stripe>=7.0.0
@@ -65,13 +65,10 @@ websockets>=12.0
 # Structured Logging
 structlog>=24.1.0
 
-# Testing
-pytest>=7.4.0
-pytest-cov>=4.1.0
-pytest-asyncio>=0.21.0
-httpx>=0.25.0            # used by TestClient
-anyio>=4.0.0
-
-# Code Quality (dev only)
-black>=23.0.0
-isort>=5.12.0
+# Testing & dev tools — install locally with: pip install -r requirements-dev.txt
+# pytest>=7.4.0
+# pytest-cov>=4.1.0
+# pytest-asyncio>=0.21.0
+# anyio>=4.0.0
+# black>=23.0.0
+# isort>=5.12.0

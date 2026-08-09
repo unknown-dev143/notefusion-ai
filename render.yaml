@@ -1,6 +1,6 @@
 services:
   # -------------------------------------------------------
-  # FastAPI Backend — free web service
+  # FastAPI Backend — free web service on Render
   # -------------------------------------------------------
   - type: web
     name: notefusion-backend
@@ -8,9 +8,7 @@ services:
     region: oregon
     plan: free
     rootDir: .
-    buildCommand: |
-      pip install --upgrade pip &&
-      pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
@@ -21,7 +19,7 @@ services:
       - key: DEBUG
         value: "false"
 
-      # --- Auto-generated secrets ---
+      # Auto-generated secrets
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET_KEY
@@ -29,42 +27,36 @@ services:
       - key: CSRF_SECRET_KEY
         generateValue: true
 
-      # --- Database (linked from below) ---
+      # Linked from the database below
       - key: DATABASE_URL
         fromDatabase:
           name: notefusion-db
           property: connectionString
 
-      # --- Redis (linked from below) ---
+      # Linked from the Redis cache below
       - key: REDIS_URL
         fromService:
           type: redis
           name: notefusion-redis
           property: connectionString
 
-      # --- CORS: allow Vercel frontend ---
+      # CORS: allow your Vercel frontend
       - key: BACKEND_CORS_ORIGINS
-        value: "https://notefusion-ai.vercel.app,http://localhost:3000"
+        value: "https://notefusion-ai.vercel.app,https://notefusion-frontend.vercel.app,http://localhost:3000"
 
-      # --- Google OAuth ---
+      # Set these manually in the Render dashboard after first deploy
       - key: GOOGLE_CLIENT_ID
-        sync: false   # set manually in Render dashboard
+        sync: false
       - key: GOOGLE_CLIENT_SECRET
         sync: false
-
-      # --- OpenAI ---
       - key: OPENAI_API_KEY
         sync: false
-
-      # --- Stripe ---
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_PUBLISHABLE_KEY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
-
-      # --- Email ---
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
@@ -75,7 +67,7 @@ services:
         sync: false
 
 # -------------------------------------------------------
-# PostgreSQL — free managed database
+# PostgreSQL — free managed database (90-day free tier)
 # -------------------------------------------------------
 databases:
   - name: notefusion-db
@@ -87,8 +79,8 @@ databases:
 # -------------------------------------------------------
 # Redis — free cache
 # -------------------------------------------------------
-  - type: redis
-    name: notefusion-redis
+caches:
+  - name: notefusion-redis
     plan: free
     region: oregon
     maxmemoryPolicy: allkeys-lru
