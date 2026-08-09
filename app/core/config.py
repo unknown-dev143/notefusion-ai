@@ -30,6 +30,9 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
+        # Free hosting URLs — updated after first deploy
+        "https://notefusion-ai.vercel.app",
+        "https://notefusion-frontend.vercel.app",
     ]
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
@@ -136,7 +139,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: Optional[str] = os.getenv("GOOGLE_CLIENT_SECRET")
     GOOGLE_REDIRECT_URI: str = os.getenv(
         "GOOGLE_REDIRECT_URI",
-        "http://localhost:8000/api/v1/auth/google/callback",
+        "https://notefusion-backend.onrender.com/api/v1/auth/google/callback",
     )
 
     # Domain (free hosting placeholder until you buy a real domain)

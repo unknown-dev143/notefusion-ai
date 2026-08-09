@@ -152,14 +152,15 @@ const normalizeWsBaseUrl = (raw: string): string => {
 };
 
 const RAW_API_URL =
+  (import.meta as any)?.env?.VITE_API_URL ||
   getConfig('API_URL', '') ||
   ((window as any)?._env_?.REACT_APP_API_URL as string | undefined) ||
   (process?.env?.REACT_APP_API_URL as string | undefined) ||
   'http://localhost:8000';
 
 const RAW_WS_URL =
+  (import.meta as any)?.env?.VITE_WS_URL ||
   getConfig('WS_URL', '') ||
-  ((window as any)?._env_?.REACT_APP_WS_URL as string | undefined) ||
   ((window as any)?._env_?.REACT_APP_WS_URL as string | undefined) ||
   (process?.env?.REACT_APP_WS_URL as string | undefined) ||
   'ws://localhost:8000';
