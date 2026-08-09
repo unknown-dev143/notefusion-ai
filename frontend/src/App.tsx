@@ -73,6 +73,7 @@ const TeacherDashboard = React.lazy(() => import('./pages/TeacherDashboard'));
 const NoteMarketplace = React.lazy(() => import('./pages/NoteMarketplace'));
 const SharedNoteView = React.lazy(() => import('./pages/SharedNoteView'));
 const GoogleSuccess = React.lazy(() => import('./pages/GoogleSuccess'));
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 
 const stripePromise = loadStripe(
   (import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_your_key'
@@ -226,8 +227,10 @@ function App() {
                               <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/playground" element={<AIPlayground />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/landing" element={<LandingPage />} />
             <Route
-              path="/"
+              path="/dashboard"
               element={
                 <Layout>
                   <Dashboard />
