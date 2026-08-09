@@ -46,7 +46,7 @@ class LearningEngine:
         Job: Answer tutor-like questions about the user's research.
         """
         if not self.client:
-            return "[Neural Sync Offline] This is a fallback AI response. Please connect your API key for full neural mentorship."
+            return "I am currently in fallback demo mode. Configure your OPENAI_API_KEY in environment variables for full real-time neural AI mentorship."
 
         default_system = "You are NoteFusion AI Mentor. Your job is to help users master their research. Use the chat history to provide context and be a supportive, encouraging world-class tutor."
         

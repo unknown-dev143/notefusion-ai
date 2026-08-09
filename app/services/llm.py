@@ -57,7 +57,7 @@ class _OpenAIBase:
     ) -> str:
         """Multi-turn chat using the OpenAI Chat Completions API."""
         if not self.api_key:
-            return "[OpenAI API key not set – configure OPENAI_API_KEY in .env]"
+            return "NoteFusion AI is operating in preview mode. Set OPENAI_API_KEY in your deployment environment variables for full LLM responses."
 
         payload = {
             "model": self.model,
