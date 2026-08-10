@@ -1,10 +1,11 @@
+import json
 import os
 
 from functools import lru_cache
-from typing import Any, Dict, List, Optional, Union
+from typing import Annotated, Any, Dict, List, Optional, Union
 
 from pydantic import AnyHttpUrl, EmailStr, HttpUrl, PostgresDsn, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -24,8 +25,8 @@ class Settings(BaseSettings):
     JWT_ISSUER: str = "note_fusion"
     JWT_ALGORITHM: str = "HS256"
 
-    # CORS
-    BACKEND_CORS_ORIGINS: List[str] = [
+    # CORS — NoDecode so Render comma-separated env values are not JSON-parsed
+    BACKEND_CORS_ORIGINS: Annotated[List[str], NoDecode] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:8000",
@@ -36,11 +37,18 @@ class Settings(BaseSettings):
     ]
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
+    @classmethod
+    def assemble_cors_origins(cls, v: Union[str, List[str], None]) -> List[str]:
+        if v is None or v == "":
+            return []
+        if isinstance(v, list):
+            return [str(i).strip() for i in v if str(i).strip()]
+        if isinstance(v, str):
+            s = v.strip()
+            if s.startswith("["):
+                parsed = json.loads(s)
+                return [str(i).strip() for i in parsed if str(i).strip()]
+            return [i.strip() for i in s.split(",") if i.strip()]
         raise ValueError(v)
 
     # Database

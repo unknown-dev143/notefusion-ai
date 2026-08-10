@@ -78,7 +78,12 @@ async def rate_limit_middleware(request: Request, call_next):
 
 @app.on_event("startup")
 async def startup_event():
-    await init_db()
+    # Don't crash the whole service if DB is briefly unreachable on first boot
+    try:
+        await init_db()
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).error("Database init failed (will retry on requests): %s", exc)
     # Start background cleanup for the in-memory token blacklist
     import asyncio
     from app.core.token_store import start_cleanup_loop
