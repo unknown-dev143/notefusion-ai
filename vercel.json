@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "notefusion-ai",
   "buildCommand": "cd frontend && npm ci --legacy-peer-deps && npm run build",
   "outputDirectory": "frontend/dist",
   "installCommand": "cd frontend && npm ci --legacy-peer-deps",

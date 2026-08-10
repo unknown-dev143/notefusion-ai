@@ -1,0 +1,65 @@
+# Keep Vercel upload under 2GB — only frontend source is needed for the site build.
+
+# Backups / duplicate trees
+notefusion-ai/
+notefusion-ai-backup*/
+notefusion-ai-clean*/
+notefusion-ai-new/
+notefusion-ai-temp/
+notefusion-ai.worktrees/
+notefusion-app/
+notefusion-backup/
+notefusion-vite/
+notes-frontend/
+app_old_backup/
+backend_backup*/
+backend_broken_backup*/
+backup_*/
+frontend_backup*/
+temp-*/
+temp_workdir/
+pwa-test/
+vite-test-project/
+test-router/
+
+# Backend / Python (hosted on Render, not Vercel)
+app/
+backend/
+venv/
+venv_*/
+.venv/
+**/__pycache__/
+**/*.pyc
+**/*.db
+**/*.sqlite*
+
+# Dependencies & build artifacts (Vercel reinstalls)
+node_modules/
+**/node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/dev-dist/
+dist/
+build/
+
+# Local / heavy junk
+.git/
+.github/
+monitoring/
+deploy/
+docs/
+logs/
+scripts/
+public/
+*.log
+*.md
+!frontend/README.md
+.env
+.env.*
+!**/.env.example
+!**/.env.production
+
+# Nested package locks outside frontend
+package-lock.json
+package.json
