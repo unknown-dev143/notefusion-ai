@@ -33,10 +33,10 @@ services:
           name: notefusion-db
           property: connectionString
 
-      # Linked from the Redis cache below
+      # Linked from Key Value (Redis-compatible) below
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: notefusion-redis
           property: connectionString
 
@@ -66,8 +66,19 @@ services:
       - key: SMTP_PASSWORD
         sync: false
 
+  # -------------------------------------------------------
+  # Key Value (Redis-compatible) — free cache
+  # Must live under services (not a top-level "caches" key)
+  # -------------------------------------------------------
+  - type: keyvalue
+    name: notefusion-redis
+    plan: free
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []  # internal-only (required by Render)
+
 # -------------------------------------------------------
-# PostgreSQL — free managed database (90-day free tier)
+# PostgreSQL — free managed database (expires after 30 days)
 # -------------------------------------------------------
 databases:
   - name: notefusion-db
@@ -75,12 +86,3 @@ databases:
     user: notefusion_user
     plan: free
     region: oregon
-
-# -------------------------------------------------------
-# Redis — free cache
-# -------------------------------------------------------
-caches:
-  - name: notefusion-redis
-    plan: free
-    region: oregon
-    maxmemoryPolicy: allkeys-lru
