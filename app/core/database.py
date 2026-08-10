@@ -19,13 +19,19 @@ from app.core.config import settings
 from app.core.logging import logger
 
 
-def _normalize_db_url(url: str) -> str:
-    """Convert Render/Heroku postgres:// URLs to postgresql+asyncpg:// for async SQLAlchemy."""
+def _normalize_db_url(url: str) -> tuple[str, dict]:
+    """Normalize DB URL for async SQLAlchemy; return (url, connect_args)."""
+    connect_args: dict = {}
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql+asyncpg://", 1)
     elif url.startswith("postgresql://") and "+" not in url.split("://")[0]:
         url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    return url
+    # asyncpg rejects libpq sslmode=; use TLS via connect_args (Render requires SSL)
+    if "sslmode=" in url or "render.com" in url:
+        url = re.sub(r"[?&]sslmode=[^&]*", "", url)
+        url = url.rstrip("?&")
+        connect_args["ssl"] = True
+    return url, connect_args
 
 # Configure SQLAlchemy logging
 logging.getLogger("sqlalchemy.engine").setLevel(
@@ -47,8 +53,9 @@ def create_db_engine() -> AsyncEngine:
     pool_size = settings.DATABASE_POOL_SIZE
     max_overflow = max(10, pool_size * 2)
 
-    db_url = _normalize_db_url(settings.DATABASE_URL)
-    is_sqlite = "sqlite" in db_url
+    db_url, connect_args = _normalize_db_url(settings.DATABASE_URL)
+    if "sqlite" in db_url:
+        connect_args = {"check_same_thread": False}
     return create_async_engine(
         db_url,
         echo=settings.DEBUG,
@@ -57,7 +64,7 @@ def create_db_engine() -> AsyncEngine:
         pool_pre_ping=settings.DATABASE_POOL_PRE_PING,
         pool_recycle=settings.DATABASE_POOL_RECYCLE,
         pool_timeout=settings.DATABASE_POOL_TIMEOUT,
-        connect_args=({"check_same_thread": False} if is_sqlite else {}),
+        connect_args=connect_args,
     )
 
 
