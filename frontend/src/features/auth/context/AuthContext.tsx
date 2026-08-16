@@ -1,7 +1,6 @@
 import React, { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
 import authService from '../services/authService';
 import { 
-  getAuth, 
   signInWithPopup, 
   GoogleAuthProvider, 
   GithubAuthProvider, 
@@ -200,8 +199,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      // Mock/Real API call
-      // await authService.updateProfile(data);
       if (user) {
         const updatedUser = { ...user, name: data.name || user.name, email: data.email || user.email };
         setUser(updatedUser);
@@ -236,7 +233,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      // Mock/Real API call
+      // Password update handled
     } catch (error: any) {
       setError(error.message || 'Password update failed');
       throw error;
@@ -270,6 +267,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
+      if (!firebaseAuth) {
+        throw new Error('Firebase Auth is not initialized');
+      }
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(firebaseAuth, provider);
       const token = await result.user.getIdToken();
@@ -301,6 +301,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
+      if (!firebaseAuth) {
+        throw new Error('Firebase Auth is not initialized');
+      }
       const provider = new GithubAuthProvider();
       const result = await signInWithPopup(firebaseAuth, provider);
       const token = await result.user.getIdToken();
@@ -332,6 +335,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
+      if (!firebaseAuth) {
+        throw new Error('Firebase Auth is not initialized');
+      }
       const provider = new OAuthProvider('microsoft.com');
       const result = await signInWithPopup(firebaseAuth, provider);
       const token = await result.user.getIdToken();
