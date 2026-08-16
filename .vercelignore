@@ -59,7 +59,3 @@ public/
 .env.*
 !**/.env.example
 !**/.env.production
-
-# Nested package locks outside frontend
-package-lock.json
-package.json
