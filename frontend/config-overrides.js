@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const path = require('path');
 
 module.exports = function override(config) {
   // Add fallback for 'process/browser'
@@ -14,6 +15,12 @@ module.exports = function override(config) {
       process: 'process/browser',
     }),
   ]);
+
+  // Add alias for @/
+  config.resolve.alias = {
+    ...config.resolve.alias,
+    '@': path.resolve(__dirname, 'src'),
+  };
 
   return config;
 };
