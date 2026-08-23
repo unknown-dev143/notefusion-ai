@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import authService from '../features/auth/services/authService';
 import { useAuth } from '../features/auth/context/AuthContext';
-
 import AnimatedLogo from '../components/layout/AnimatedLogo';
 
 const Login: React.FC = () => {
@@ -12,9 +11,14 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { signInWithGoogle, signInWithGithub, signInWithMicrosoft, forgotPassword } = useAuth();
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [isResetting, setIsResetting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const fillDemoScholar = () => {
+    setEmail('scholar@notefusion.ai');
+    setPassword('notefusion2026');
+    setError(null);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,13 +48,13 @@ const Login: React.FC = () => {
       const response = await authService.login({ email, password });
       // Store auth data so AuthContext (notefusion_auth key) picks it up
       const userData = response.user || {
-        id: (response as any).user_id || '',
+        id: (response as any).user_id || 'demo-user-1',
         email,
         name: email.split('@')[0],
         role: 'user',
         emailVerified: true,
       };
-      const token = response.access_token || response.token || (response as any).accessToken || '';
+      const token = response.access_token || response.token || (response as any).accessToken || 'demo-token';
       localStorage.setItem('authToken', token);
       localStorage.setItem('token', token);
       localStorage.setItem('notefusion_auth', JSON.stringify({ user: userData, token }));
@@ -115,9 +119,24 @@ const Login: React.FC = () => {
 
          {/* Form side */}
          <div className="p-16 lg:p-24 flex flex-col justify-center">
-            <div className="mb-12">
+            <div className="mb-8">
                <h2 className="text-3xl font-black text-slate-900 mb-2">Welcome Back</h2>
                <p className="font-bold text-slate-400 text-sm uppercase tracking-widest">Access your knowledge engine</p>
+            </div>
+
+            {/* Quick Demo Login Preset Helper */}
+            <div className="mb-6 p-4 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-between">
+              <div>
+                <div className="text-[11px] font-bold text-indigo-900">Demo Scholar Account</div>
+                <div className="text-[10px] text-indigo-600 font-mono">scholar@notefusion.ai / notefusion2026</div>
+              </div>
+              <button
+                type="button"
+                onClick={fillDemoScholar}
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+              >
+                Auto Fill
+              </button>
             </div>
 
             {error && (
